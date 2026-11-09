@@ -1,0 +1,7 @@
+body { background: #111827; color: #f1f5f9; font: 26px sans-serif; margin: 48px; }
+h1 { font-size: 38px; } p { max-width: 1650px; line-height: 1.4; }
+button { font: inherit; padding: 14px 22px; margin: 0 14px 12px 0; background: #e2e8f0; color: #111827; border: 4px solid transparent; }
+button:focus { border-color: #fbbf24; outline: 3px solid white; }
+button:disabled { opacity: .5; } pre { font: 20px monospace; max-height: 400px; overflow: auto; background: #020617; padding: 20px; }
+strong { color: #fbbf24; }
+pre:focus { outline: 3px solid #fbbf24; }
