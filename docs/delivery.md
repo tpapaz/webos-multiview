@@ -23,8 +23,9 @@ GitHub integration, Codex can retry publishing without reimplementing the work.
 Alternatively, an authorized maintainer can use their own local Git credentials:
 
 ```sh
-git clone webos-multiview-phase0.bundle webos-multiview
+git clone --branch codex/phase-0-passive-probe webos-multiview-phase0.bundle webos-multiview
 cd webos-multiview
+git branch main origin/main
 git remote set-url origin https://github.com/tpapaz/webos-multiview.git
 git push origin main codex/phase-0-passive-probe
 gh pr create --repo tpapaz/webos-multiview --base main \
