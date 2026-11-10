@@ -1,0 +1,9 @@
+{
+  "id": "io.github.tpapaz.multiview.phase1",
+  "version": "0.1.0",
+  "vendor": "tpapaz",
+  "type": "native",
+  "main": "multiview-phase1",
+  "title": "MultiView Phase 1 Test",
+  "icon": "icon.png"
+}

@@ -89,6 +89,39 @@ made. This verifies script/style loading and the passive metadata request on the
 TV; it does not verify every aspect of visible rendering or app lifecycle.
 The SSH session and temporary inspector tunnel were closed after inspection.
 
-Next: check physical remote navigation, JSON export, cancellation and close/remove
-with normal viewing restored using the Phase 0C protocol. Phase 0C remains
-incomplete. All HDMI and other functional capability conclusions remain unknown.
+## Owner-observed Close result
+
+The owner reported that pressing Close exits the app and returns to the TV Home
+screen. This verifies the visible Close-to-Home behavior on the same test TV;
+it does not establish process termination, cancellation of an in-flight request,
+uninstall success or restoration of previous HDMI playback.
+
+## Export inspection
+
+At the owner's request, SSH and the existing Web Inspector were used to invoke
+the installed Export JSON button handler. The report contained 1252 characters;
+Blob, URL.createObjectURL and the anchor download attribute were available. The
+handler returned without a logged error, but the status remained unchanged and
+no Page.downloadWillBegin or Page.downloadProgress events were observed during
+the 3.5-second observation window. A bounded search for `multiview*.json` under
+/media/internal, /media/developer, /tmp, /home/root and /var/luna found no file.
+This is consistent with a silent download failure; it does not exclude a file
+outside the searched locations or delayed download behavior.
+
+The actual displayed report was retrieved through Runtime.evaluate and saved on
+the development PC as build/reports/c1-web.report.json (ignored by Git). JSON
+parsing succeeded; its origin was web-metadata, redactionApplied was true, and
+the query result was ok. Full schema validation was not run in this inspection.
+No TV download settings were changed. SSH and the temporary tunnel were closed.
+
+Direct TV download remains unverified; inspector retrieval is verified. The UI
+currently gives no confirmation when its download attempt is silently ignored.
+
+## Owner-observed navigation and uninstall
+
+The owner confirmed remote navigation works, their usual HDMI picture and sound
+were normal after closing the app, and Dev Manager uninstalled the probe. One
+physical HDMI source was connected. In-flight cancellation was not exercised on
+the TV. The earlier Inspector retrieval provides the redacted report. These
+results meet the Phase 0C gate for preparing the separate
+[Phase 1 protocol](lg-c1-phase-1.md). All HDMI capability conclusions remain unknown.
