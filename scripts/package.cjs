@@ -10,11 +10,11 @@ for (const name of ['appinfo.json', 'index.html', 'style.css', 'probe.js', 'ui.j
     fs.copyFileSync(path.join(root, 'apps', 'probe-ui', name), path.join(stage, name));
 }
 fs.mkdirSync(path.join(root, 'dist'), {recursive: true});
-const command = path.join(root, 'node_modules', '.bin', 'ares-package');
+const command = require.resolve('@webos-tools/cli/bin/ares-package.js');
 // Keep the CLI's default device/config files inside build, away from user profiles.
 const appData = path.join(root, 'build', 'cli-data');
 fs.mkdirSync(appData, {recursive: true});
-const result = cp.spawnSync(command, [stage, '--no-minify', '-o', path.join(root, 'dist')], {
+const result = cp.spawnSync(process.execPath, [command, stage, '--no-minify', '-o', path.join(root, 'dist')], {
     stdio: 'inherit', cwd: root, env: {...process.env, APPDATA: appData}
 });
 if (result.error) console.error(result.error.message);

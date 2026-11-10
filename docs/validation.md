@@ -1,5 +1,8 @@
 # Phase 0 validation record
 
+Follow-up: [2026-11-10 on-TV startup diagnosis and local repair](device-tests/2026-11-10-csp-startup.md).
+The original record below describes the earlier host validation only.
+
 Date: 2026-11-09 UTC. No TV connection, installation or measured C1 logs.
 Research claims and access limitations are recorded in
 [prior-art](research/prior-art.md); the [C1 protocol](device-tests/lg-c1-phase-0.md)
