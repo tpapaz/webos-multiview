@@ -5,3 +5,8 @@ node_modules/
 __pycache__/
 *.ipk
 *.report.json
+
+# Local IDE project files
+.idea/
+.vscode/
+*.iml
