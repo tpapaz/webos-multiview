@@ -1,0 +1,266 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "probeVersion",
+    "mode",
+    "origin",
+    "redactionApplied",
+    "device",
+    "capabilities",
+    "tests",
+    "observations"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "probeVersion": {
+      "const": "0.1.0"
+    },
+    "mode": {
+      "const": "passive"
+    },
+    "origin": {
+      "enum": [
+        "web-metadata",
+        "native-inventory"
+      ]
+    },
+    "redactionApplied": {
+      "const": true
+    },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "modelFamily",
+        "webosVersion",
+        "firmwareVersion",
+        "boardFamily"
+      ],
+      "properties": {
+        "modelFamily": {
+          "enum": [
+            "unknown",
+            "LG C1"
+          ]
+        },
+        "webosVersion": {
+          "type": "string",
+          "pattern": "^(unknown|[0-9]{1,3}(\\.[0-9]{1,3}){1,3})$"
+        },
+        "firmwareVersion": {
+          "type": "string",
+          "pattern": "^(unknown|[0-9]{1,3}(\\.[0-9]{1,3}){1,3})$"
+        },
+        "boardFamily": {
+          "const": "unknown"
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "smpPlayback",
+        "ndlPlayback",
+        "multiNativeSurfaces",
+        "activeHdmiCapture",
+        "simultaneousHdmiInputs",
+        "hdmiAndTunerCoexistence",
+        "appSurfaceComposition",
+        "audioFocusSwitching"
+      ],
+      "properties": {
+        "smpPlayback": {
+          "$ref": "#/$defs/capability"
+        },
+        "ndlPlayback": {
+          "$ref": "#/$defs/capability"
+        },
+        "multiNativeSurfaces": {
+          "$ref": "#/$defs/capability"
+        },
+        "activeHdmiCapture": {
+          "$ref": "#/$defs/capability"
+        },
+        "simultaneousHdmiInputs": {
+          "$ref": "#/$defs/capability"
+        },
+        "hdmiAndTunerCoexistence": {
+          "$ref": "#/$defs/capability"
+        },
+        "appSurfaceComposition": {
+          "$ref": "#/$defs/capability"
+        },
+        "audioFocusSwitching": {
+          "$ref": "#/$defs/capability"
+        }
+      }
+    },
+    "tests": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "observations": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "method",
+          "backend",
+          "result",
+          "limitations"
+        ],
+        "properties": {
+          "method": {
+            "enum": [
+              "luna-getSystemInfo",
+              "stat-fixed-path"
+            ]
+          },
+          "backend": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "result": {
+            "enum": [
+              "ok",
+              "present",
+              "not_found_in_scope",
+              "unavailable",
+              "timeout",
+              "cancelled",
+              "invalid_response"
+            ]
+          },
+          "limitations": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        }
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/tpapaz/webos-multiview/schemas/capability-v1.schema.json",
+  "title": "Phase 0 passive capability report",
+  "$defs": {
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "evidence"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "unknown",
+            "candidate",
+            "verified",
+            "unsupported",
+            "blocked",
+            "unsafe_to_test"
+          ]
+        },
+        "evidence": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/evidence"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "unknown"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "evidence": {
+                "$ref": "#/$defs/evidence"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "deviceFingerprint",
+        "firmware",
+        "backend",
+        "result",
+        "limitations",
+        "logs"
+      ],
+      "properties": {
+        "method": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "deviceFingerprint": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "firmware": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "backend": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "result": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "limitations": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "logs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "minItems": 1,
+          "maxItems": 20
+        }
+      }
+    }
+  }
+}

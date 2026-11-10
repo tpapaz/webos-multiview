@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'none'; img-src 'self'; object-src 'none'; base-uri 'none'">
+<title>MultiView Passive Probe</title><link rel="icon" href="icon.png"><link rel="stylesheet" href="style.css"></head>
+<body><h1>MultiView · passive capability probe</h1>
+<p>Two independent HDMI inputs on the LG C1: <strong>unknown</strong>.</p>
+<p>Read model family and software versions on request. No input switching, capture, media playback or system settings changes. No report is uploaded or saved automatically.</p>
+<nav><button id="run">Read device metadata</button><button id="cancel" disabled>Cancel</button><button id="export">Export JSON</button><button id="close">Close</button></nav>
+<p id="status" role="status" aria-live="polite">Ready. Library inventory is a separate native CLI; it is not run by this app.</p>
+<p>If downloading is unavailable on the TV, retrieve the redacted report through Web Inspector: <code>document.getElementById('report').textContent</code>. Inspect before sharing.</p>
+<pre id="report" tabindex="0" aria-label="Redacted capability report. Down enters report; up and down scroll; left returns to controls."></pre>
+<script src="probe.js"></script><script src="ui.js"></script></body></html>

@@ -1,0 +1,40 @@
+{
+  "auditDate": "2026-11-09",
+  "sources": [
+    {
+      "repository": "webosbrew/samples",
+      "commit": "e95eed3afa7896894f811b84d8e9e277e9e2b74c",
+      "scope": "static source audit; no device execution"
+    },
+    {
+      "repository": "webosbrew/hyperion-webos",
+      "commit": "00c932f092084b234b3f619b060a98fa134c12bd",
+      "scope": "static source audit; no device execution"
+    },
+    {
+      "repository": "sharktie/lg-iptv",
+      "commit": "37776484ebc340b7cc0b7a674254b60c2f2bd8c6",
+      "scope": "static source audit; no device execution"
+    },
+    {
+      "repository": "angelcode1/webos-HomeBack",
+      "commit": "27e5f4543a39a50484a3f184fe36a92cea565368",
+      "scope": "static source audit; no device execution"
+    },
+    {
+      "repository": "iDaddyCz/ha-lg-webos-pip",
+      "commit": "c9e22766b7e045810cda7aafe63f4f732d0f5f18",
+      "scope": "static source audit; no device execution"
+    },
+    {
+      "repository": "webosbrew/webosbrew.org",
+      "commit": "fc4b8aaa23cbb4784f8eabc540a778d44965b3ab",
+      "scope": "static source audit; no device execution"
+    },
+    {
+      "repository": "webosbrew/webos-userland",
+      "commit": "00a5f8721e15d5c10030b99b2f3e73e0c527bcce",
+      "scope": "static source audit; no device execution"
+    }
+  ]
+}

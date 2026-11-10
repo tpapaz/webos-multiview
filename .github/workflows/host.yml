@@ -1,0 +1,29 @@
+name: Phase 0 host and package
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci --no-audit --no-fund
+      - run: python -m pip install jsonschema==4.23.0
+      - run: npm run lint && npm test
+      - run: cmake -S . -B build/host -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build/host && ctest --test-dir build/host --output-on-failure
+      - run: build/host/multiview-probe > build/reports/native.report.json
+      - run: python tests/host/schema_test.py
+      - run: npm run package
+      - run: python scripts/verify-ipk.py dist/*.ipk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: passive-web-probe-not-TV-tested
+          path: dist/*.ipk
