@@ -2,8 +2,11 @@
 
 ## Passive probe and host checks
 
-Host prerequisites: C++11 compiler, CMake >=3.16, Ninja, Node >=20 (CI:
-22), npm, Python 3 and binutils `ar`. No webOS runtime libraries needed for host
+Builds and package artifacts are produced locally. This repository has no
+GitHub Actions workflows for pushes or pull requests.
+
+Host prerequisites: C++11 compiler, CMake >=3.16, Ninja, Node >=20,
+npm, Python 3 and binutils `ar`. No webOS runtime libraries needed for host
 tests. The following host checks use a Linux shell. Dependency versions are
 pinned in package-lock.json. CLI build tools stay on the development PC.
 
