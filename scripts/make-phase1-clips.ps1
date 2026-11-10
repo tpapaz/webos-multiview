@@ -5,7 +5,7 @@ $output = Join-Path (Split-Path -Parent $PSScriptRoot) 'build/phase-1/media'
 New-Item -ItemType Directory -Force -Path $output | Out-Null
 
 $clips = @(
-    @{ Name = 'clip-a'; Duration = 12; Tone = 440; Filter = 'format=yuv420p' }
+    @{ Name = 'clip-a'; Duration = 30; Tone = 440; Filter = 'format=yuv420p' }
     @{ Name = 'clip-b'; Duration = 15; Tone = 660; Filter = 'negate,format=yuv420p' }
 )
 

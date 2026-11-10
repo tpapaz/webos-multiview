@@ -9,4 +9,8 @@ __pycache__/
 # Local IDE project files
 .idea/
 .vscode/
+.vs/
 *.iml
+*.suo
+*.vcxproj.user
+CMakeUserPresets.json

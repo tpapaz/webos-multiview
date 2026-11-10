@@ -1,13 +1,36 @@
 # webOS MultiView — Engineering Roadmap
 
-**Status:** Proposed / feasibility research  
-**Version:** 0.1  
-**Updated:** 2026-11-10  
-**Reference device:** rooted LG OLED C1 (2021, webOS 6 generation)  
-**Deployment goal:** an installable, standalone Homebrew app for compatible rooted LG webOS TVs  
-**Hardware constraint:** **TV hardware only** — no HDMI capture boxes, splitters, external SBCs, or streaming proxies required for the core use case
+- **Status** — Phase 1 / local media feasibility
+- **Version** — 0.2
+- **Updated** — 2026-11-11
+- **Reference device** — rooted LG OLED C1 (2021, webOS 6 generation)
+- **Deployment goal** — standalone Homebrew app for compatible rooted LG webOS TVs
+- **Hardware constraint** — TV hardware only for the core use case
 
 > This is an evidence-driven R&D project. Two independent live HDMI inputs on an LG C1 are **not yet demonstrated**. Root access does not create additional HDMI pipelines, hardware video decoders, compositor planes, or app surfaces. Nothing in this roadmap should be described as supported until verified on hardware.
+
+## Current position
+
+Phase 0C passed on the C1 with firmware 03.53.45 (webOS SDK 6.5.3).
+Metadata, redacted Inspector retrieval, navigation, Close, normal HDMI viewing
+after exit, and uninstall are **verified**. The on-TV download result remains
+**unknown**. [Phase 0 device record](docs/device-tests/2026-11-10-csp-startup.md)
+
+Phase 1 has **verified** single-clip SMP playback and exported-window geometry.
+B's SMP Load stalled A's frame callbacks and release restored them. B's
+software decoder request returned zero frame callbacks in its solo run.
+Browser solo clocks advanced, and A paused after B was requested in the dual
+browser run. The exact media resource decision and software decoder selection
+remain **unknown**. [Phase 1 device record](docs/device-tests/lg-c1-phase-1.md)
+
+1. Run the ABI-checked one-clip NDL v2 package on the C1 and confirm that its
+   clock visibly advances and cleanup restores normal viewing.
+2. If the baseline passes, stage one NDL B session alongside SMP A and compare
+   against the existing SMP Load and release trace. Record the failing NDL
+   stage and stop the mixed comparison if the solo baseline fails.
+3. Continue read-only research for an independently addressable physical-input
+   path. The current setup can exercise selected-HDMI controls under a separate
+   opt-in protocol. The dual-input gate requires a second independent HDMI source.
 
 ## 1. Product vision and distinctive scope
 
@@ -141,9 +164,12 @@ webos-multiview/
 ├── README.md
 ├── apps/
 │   ├── probe-ui/
+│   ├── phase1-browser/
 │   └── multiview-ui/            # later
 ├── native/
 │   ├── probe/
+│   ├── phase1/
+│   ├── phase1-ndl/
 │   ├── core/                   # later
 │   ├── sources/                # later
 │   └── renderers/              # later
@@ -199,9 +225,12 @@ Suggested technologies: C/C++ native modules, CMake/Ninja and the appropriate op
 
 **Gate:** a genuine C1 report exists and the test protocol is safe; otherwise stop active experimentation.
 
-### Phase 1 — Native dual-surface proof of concept
+### Phase 1 — Native dual-surface proof of concept (current)
 
 **Experiment:** two **independent local video clips**, not duplicate renders of one feed, on simultaneous movable video surfaces.
+
+**Controls:** SMP staged Load and release, the solo software decoder request,
+and HTML5 clock telemetry are recorded. The one-clip NDL baseline is next.
 
 **Gate:** both independently advance in real time, geometry changes work, audio focus and cleanup behave predictably. If this fails, document where the limit lies and possible alternative graphics paths; do not declare multi-HDMI impossible solely because one decoder path failed.
 
@@ -238,7 +267,7 @@ Investigate >2 HDMI feeds, tuner + multiple video surfaces, independent webOS ap
 
 ## 6. Security, safety, privacy and recovery
 
-- **Passive by default.** A read-only capability query is allowed in the probe; active tests must be separately selected by the human on the TV.
+- **Passive by default.** The metadata probe is read-only. For Phase 1, the owner opens the specific diagnostic and opts in to a remote-button run or explicitly authorizes the app-scoped SSH test.
 - Do **not** flash firmware, patch kernels, load modules, modify persistent system services, change boot settings, or kill/restart critical compositor/input services in initial phases.
 - Do **not** attempt to circumvent HDCP, DRM, or content protection.
 - Do **not** use `ptrace`, memory writes, hooking, or privileged UI injection by default; any future invasive experiment needs a new reviewed plan.
@@ -295,7 +324,3 @@ Investigate >2 HDMI feeds, tuner + multiple video surfaces, independent webOS ap
 - `docs/decisions/` records scope changes and consequential architectural choices.
 - Keep PRs scoped to a single phase/experiment; report tests run vs not run; do not mark device tests complete without on-device logs.
 - Before copying external source, inspect license; prefer linking to code and designing compatible clean interfaces when uncertain.
-
-## 11. What Codex must do first
-
-**First task = Phase 0A, then only the buildable safe portion of Phase 0B.** Research the underlying platform first, commit documentation and scaffold, implement mockable passive probe logic, establish host CI, and package if environment permits. Do **not** attempt dual HDMI activation from Codex Cloud or claim an `.ipk` was tested on the LG C1. Report blockers and provide a human-operated validation plan.

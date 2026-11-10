@@ -1,13 +1,14 @@
 # Build, inspect and install
 
-For a prebuilt web-only probe, open a successful [GitHub Actions run](https://github.com/tpapaz/webos-multiview/actions) and download the
-`passive-web-probe-not-TV-tested` artifact. Extract its IPK; sign in to GitHub
-if prompted. Source is available from [PR #1](https://github.com/tpapaz/webos-multiview/pull/1).
+The passive web probe, HTML5 comparison and ARM playback diagnostics are
+separate packages. Current C1 outcomes are in the [device test records](device-tests/lg-c1-phase-1.md).
 
-Host prerequisites: Linux, C++11 compiler, CMake >=3.16, Ninja, Node >=20 (CI:
+## Passive probe and host checks
+
+Host prerequisites: C++11 compiler, CMake >=3.16, Ninja, Node >=20 (CI:
 22), npm, Python 3 and binutils `ar`. No webOS runtime libraries needed for host
-tests. Use an ordinary user account. Dependency versions are pinned in
-package-lock.json; CLI build tools are not bundled in the TV package.
+tests. The following host checks use a Linux shell. Dependency versions are
+pinned in package-lock.json. CLI build tools stay on the development PC.
 
 ```sh
 npm ci --no-audit --no-fund
@@ -43,7 +44,44 @@ for this **web-only** app; no native ELF or root service is embedded. No NDK is
 needed for this artifact. Do not package or transfer build/host/multiview-probe
 as a TV executable.
 
-## Optional native ARM inventory — toolchain currently unavailable here
+## Phase 1 local clip packages
+
+On Windows, use PowerShell with FFmpeg and FFprobe on PATH. For the ARM
+packages, install Ubuntu in WSL with CMake, Ninja, Python 3, binutils, Node 22
+and the [2026.08 Linux webOS SDK](https://github.com/openlgtv/buildroot-nc4/releases/tag/2026.08-webos).
+Extract the ARM SDK on the Linux filesystem and run its `relocate-sdk.sh`.
+Set `$sdk` to its absolute Linux path.
+
+```powershell
+npm ci --no-audit --no-fund
+./scripts/make-phase1-clips.ps1
+node scripts/package.cjs browser
+
+$repo = wsl -d Ubuntu --exec wslpath -a (Get-Location).Path
+$sdk = '/absolute/linux/path/to/arm-webos-linux-gnueabi_sdk-buildroot'
+wsl -d Ubuntu --exec cmake -S "$repo/native/phase1-ndl" -B "$repo/build/phase-1/ndl" -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_TOOLCHAIN_FILE=$sdk/share/buildroot/toolchainfile.cmake"
+wsl -d Ubuntu --exec cmake --build "$repo/build/phase-1/ndl"
+./scripts/package-phase1.ps1 -Target ndl
+wsl -d Ubuntu --exec python3 "$repo/scripts/verify-ipk.py" --ndl "$repo/dist/io.github.tpapaz.multiview.ndl_0.1.0_arm.ipk"
+```
+
+If Node 22 is outside the Linux PATH, pass `-LinuxNode /absolute/linux/path/to/node`
+to the packager. It stages the ARM executable on Linux with mode `0755`.
+The SMP build uses `native/phase1` with output `build/phase-1/arm` and
+`./scripts/package-phase1.ps1` without `-Target ndl`.
+
+| App | Output under `dist/` | Run after installing and opening in Dev Manager |
+|---|---|---|
+| HTML5 comparison | `io.github.tpapaz.multiview.browser_0.1.0_all.ipk` | `node scripts/run-phase1-browser-ssh.cjs` |
+| Native SMP stages | `io.github.tpapaz.multiview.phase1_0.1.4_arm.ipk` | `node scripts/run-phase1-ssh.cjs` |
+| Native NDL v2 solo | `io.github.tpapaz.multiview.ndl_0.1.0_arm.ipk` | `node scripts/run-phase1-ndl-ssh.cjs` |
+
+The SSH runners use the existing authorized local device profile. Pass
+its local alias as an argument if several root profiles are configured.
+The NDL build, package and C1 ABI check are recorded alongside the
+[test protocol](device-tests/lg-c1-phase-1.md#ndl-directmedia-v2-native-control).
+
+## Optional native ARM inventory
 
 Use the [openlgtv buildroot NDK](https://github.com/openlgtv/buildroot-nc4) path
 used by the pinned webosbrew samples, matching the reference TV's userspace:
@@ -60,17 +98,15 @@ readelf --version-info build/tv/multiview-probe
 
 Review ELF architecture (expected candidate: ARM 32 bit, verify against device),
 interpreter, DT_NEEDED and GLIBC/GLIBCXX symbol versions against the **exact C1
-firmware** before transfer. Do not run an unreviewed binary as root or copy host
-libc/libstdc++/SDL into the TV. Upstream `webosbrew-ipk-verify`/firmware-symbol
-checks may help if a native package is later added, but this PR does not create
-or ABI-validate a native IPK. Merely naming the NDK path is not a cross-build.
+firmware** before transfer. The portable inventory is a separate CLI. The
+two Phase 1 ARM packages use the TV's own shared libraries.
 
 ## Human-operated web package installation
 
 Only use an already authorized local device profile configured in LG's CLI or
 webOS Dev Manager. Do not put TV addresses/credentials in this repo or cloud chat.
-These commands are **not run by Codex**. See the [C1 protocol](device-tests/lg-c1-phase-0.md)
-for opt-in and expected evidence. Replace `c1` with your existing local alias.
+See the [C1 protocol](device-tests/lg-c1-phase-0.md) for opt-in and expected
+evidence. Replace `c1` with your existing local alias.
 
 ```sh
 npx --no-install ares-install -d c1 dist/io.github.tpapaz.multiview.probe_0.1.0_all.ipk
@@ -79,7 +115,6 @@ npx --no-install ares-launch -d c1 --close io.github.tpapaz.multiview.probe
 npx --no-install ares-install -d c1 --remove io.github.tpapaz.multiview.probe
 ```
 
-Installation is ordinary app deployment, without root requirements. Do not
-change bus permissions/jails or use Homebrew root-service impersonation if the
-query is denied. Device install, runtime bridge availability, on-TV download,
-remote close/focus and uninstall remain unverified until the human protocol runs.
+The C1 owner verified installation, remote navigation, Close and uninstall.
+The Inspector captured the redacted report. Direct on-TV download remains
+unknown. [Phase 0 device record](device-tests/2026-11-10-csp-startup.md)

@@ -1,0 +1,10 @@
+{
+  "id": "io.github.tpapaz.multiview.ndl",
+  "version": "0.1.0",
+  "vendor": "tpapaz",
+  "type": "native",
+  "main": "multiview-ndl",
+  "title": "MultiView NDL Clip Test",
+  "icon": "icon.png",
+  "requiredACG": []
+}

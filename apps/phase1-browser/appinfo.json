@@ -1,0 +1,12 @@
+{
+  "id": "io.github.tpapaz.multiview.browser",
+  "version": "0.1.0",
+  "vendor": "tpapaz",
+  "type": "web",
+  "main": "index.html",
+  "title": "MultiView Browser Playback Test",
+  "icon": "icon.png",
+  "resolution": "1920x1080",
+  "disableBackHistoryAPI": true,
+  "requiredACG": []
+}

@@ -1,7 +1,8 @@
-# Phase 0 validation record
+# Phase 0 host validation record
 
-Follow-up: [2026-11-10 on-TV startup diagnosis and local repair](device-tests/2026-11-10-csp-startup.md).
-The original record below describes the earlier host validation only.
+Subsequent validation is recorded in the [Phase 0 C1 results](device-tests/2026-11-10-csp-startup.md)
+and [Phase 1 C1 results](device-tests/lg-c1-phase-1.md). This page records the
+original host checks.
 
 Date: 2026-11-09 UTC. No TV connection, installation or measured C1 logs.
 Research claims and access limitations are recorded in
@@ -104,7 +105,4 @@ Unverified: a C1 per-HDMI session interface, concurrent receivers/planes/scalers
 tuner/app coexistence, audio ownership and all physical-input performance.
 Nothing in the bounded audit proves simultaneous HDMI impossible or supported.
 
-Next: follow the Phase 0C passive protocol on the actual C1, collect exact firmware
-and redacted outcomes, verify normal viewing after exit/remove, then review a
-separate Phase 1 two-local-clip experiment. Identify a credible independent HDMI
-session route before proposing any active Phase 2 dual-port test.
+The [roadmap](../ROADMAP.md#current-position) tracks the remaining device tests.

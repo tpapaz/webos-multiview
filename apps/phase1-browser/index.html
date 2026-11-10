@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file:; style-src 'self' file:; media-src 'self' file:; img-src 'self' file:; base-uri 'none'">
+  <title>MultiView Browser Playback Test</title>
+  <link rel="icon" href="icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Browser playback test</h1>
+  <nav aria-label="Playback tests">
+    <button id="run-a">Play A</button>
+    <button id="run-b">Play B</button>
+    <button id="run-both">Play both</button>
+    <button id="stop">Stop</button>
+    <button id="close">Close</button>
+  </nav>
+  <p id="status" role="status">Ready. Choose a test.</p>
+  <div class="clips">
+    <section><h2>Clip A</h2><video id="clip-a" muted preload="none" playsinline></video><p id="time-a">0.00 s</p></section>
+    <section><h2>Clip B</h2><video id="clip-b" muted preload="none" playsinline></video><p id="time-b">0.00 s</p></section>
+  </div>
+  <script src="playback.js"></script>
+</body>
+</html>

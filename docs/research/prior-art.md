@@ -97,6 +97,9 @@ that is not a proof of hardware impossibility.
   testing and says automatic PiP may interrupt video and transfer D-pad focus.
   Its declared webOS 6+ target is not a C1 PiP test. Root input hooks/injection
   and boot modifications elsewhere in that project are excluded from this work.
+  An open [installation report](https://github.com/angelcode1/webos-HomeBack/issues/75)
+  describes package verification failing before playback on a C1 with firmware
+  03.53.45. It provides no runtime PiP result for that firmware.
 - **verified/source:** ha-lg-webos-pip declares a transparent `overlay` window
   ([appinfo](https://github.com/iDaddyCz/ha-lg-webos-pip/blob/c9e22766b7e045810cda7aafe63f4f732d0f5f18/webos-app/app/appinfo.json#L1-L17)), draws camera/network video, and attributes testing to an
   **OLED G4 / webOS 24 / firmware 43.21.73** ([README](https://github.com/iDaddyCz/ha-lg-webos-pip/blob/c9e22766b7e045810cda7aafe63f4f732d0f5f18/README.md#L18-L33)). Focus stays
@@ -132,8 +135,9 @@ that is not a proof of hardware impossibility.
 - **verified/documented:** LG's [webOS.deviceInfo reference](https://webostv.developer.lge.com/develop/references/webostvjs-webos#deviceinfo)
   exposes model/version/SDK information, but this project uses the narrower
   one-shot service request rather than bundling a library that may query more.
-  A small original `PalmServiceBridge` adapter is used; its C1 runtime availability
-  and cancellation behavior still need testing. No third-party JS is bundled.
+  A small original `PalmServiceBridge` adapter performed the metadata query
+  on firmware 03.53.45. In-flight cancellation on the C1 remains **unknown**.
+  [Phase 0 C1 result](../device-tests/2026-11-10-csp-startup.md)
 - **verified/documented:** LG's [ACG guide](https://webostv.developer.lge.com/develop/guides/acg-guide)
   maps `getSystemInfo` to `systemconfig.query` on current ACG platforms. The
   manifest declares precisely that group. This contemporary declaration is not
@@ -147,8 +151,9 @@ that is not a proof of hardware impossibility.
 
 ## Gaps and next research questions
 
-Get a genuine C1 passive report and explicit human consent before any active
-work. Request public/vendor-authorized C1-specific documentation for EIM/input
+The [C1 passive report](../device-tests/2026-11-10-csp-startup.md) and
+[Phase 1 playback runs](../device-tests/lg-c1-phase-1.md) document the
+verified C1 behavior. Seek public/vendor-authorized C1-specific documentation for EIM/input
 ownership and media/video-sink resource policies. Prioritize evidence of **two
 simultaneously live physical receiver surfaces**, not more playback windows.
 Do not brute-force private Luna methods or numeric capture arguments. Exact

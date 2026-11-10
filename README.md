@@ -1,45 +1,38 @@
 # webOS MultiView
 
-Research toward **two independently live physical HDMI inputs**, displayed in PiP
-or split-screen using only the TV's hardware. Reference target: rooted LG C1.
-**Simultaneous HDMI on C1 is unproven.** Root, video windows, output capture and
-network multiview do not establish independent HDMI receiver pipelines.
+Research toward two independently live physical HDMI inputs in PiP or split
+screen using the TV's hardware. The reference device is a rooted LG OLED C1
+running firmware 03.53.45 (webOS SDK 6.5.3). Simultaneous HDMI remains
+**unknown**. The reference setup currently has one connected HDMI source.
 
-This first implementation covers roadmap **Phase 0A and safe portions of 0B**:
+| Experiment | C1 status |
+|---|---|
+| Phase 0 passive probe | **Verified** metadata query, redacted report retrieval over Web Inspector, remote navigation, Close and uninstall. HDMI picture and sound were normal after exit. On-TV JSON download remains **unknown**. |
+| Native SMP | **Verified** single-clip playback and window movement. In the staged dual test, A's callbacks stalled after B's Load and resumed after B's release. The software decoder request for B produced zero B frame callbacks in its solo timeout. Actual decoder selection remains **unknown**. |
+| Browser HTML5 | **Verified** both clocks advanced in solo runs. In the dual run, A paused after B was requested and B advanced. Visible presentation remains **unknown** for the automated run. |
+| NDL DirectMedia v2 | **Candidate** native path into the same media engine. The one-clip ARM IPK is built, packaged and checked against the C1 firmware ABI. Playback on the TV remains **unknown**. |
 
-- [Pinned source audit and licensing](docs/research/prior-art.md),
-  [C1 hypothesis matrix](docs/research/c1-hypotheses.md),
-  [probe-first decision](docs/decisions/0001-probe-first.md).
-- Installable **web-only passive probe**: explicit one-shot metadata query,
-  redacted JSON viewer/export, timeout/cancel and remote navigation. No root
-  service, source switching, capture or playback. All functional capabilities
-  remain unknown.
-- Separate C++11/CMake filesystem inventory CLI. Fixed library-path stat checks
-  only; host-built, **not ARM-built or ABI-checked**. Not embedded in the IPK.
-- Versioned [capability schema](schemas/capability-v1.schema.json), mocked host
-  tests and [CI](.github/workflows/host.yml).
+## Build and test
 
-See [build and package instructions](docs/build.md),
-[validation results and limits](docs/validation.md),
-[safety/privacy boundaries](docs/safety.md), and the
-[human-operated C1 protocol](docs/device-tests/lg-c1-phase-0.md).
+From PowerShell with the host dependencies installed:
 
-```sh
+```powershell
 npm ci --no-audit --no-fund
 npm run lint
 npm test
-cmake -S . -B build/host -G Ninja
-cmake --build build/host
-ctest --test-dir build/host --output-on-failure
 npm run package
-python3 scripts/verify-ipk.py dist/io.github.tpapaz.multiview.probe_0.1.0_all.ipk
 ```
 
-The web IPK has been packaged/inspected locally. It has **not been installed or
-tested on a TV**. There are no genuine C1 logs yet. The next gate is a consented
-passive C1 report and cleanup verification; active dual-surface/HDMI tests need
-later reviewed plans. SMP exported windows are a candidate presentation route;
-a safe second independent HDMI session remains the unanswered ingress question.
+See the [build guide](docs/build.md) for the browser IPK and the ARM SDK
+build, packaging, and verification commands. Device evidence is recorded in
+the [Phase 0 report](docs/device-tests/2026-11-10-csp-startup.md) and the
+[Phase 1 test record](docs/device-tests/lg-c1-phase-1.md).
 
-[ROADMAP.md](ROADMAP.md) defines all later phases; [AGENTS.md](AGENTS.md) and
-[CODEX_KICKOFF.md](CODEX_KICKOFF.md) retain the supplied contributor instructions.
+The next test is one video-only clip through NDL DirectMedia v2. Install the
+NDL IPK in Dev Manager, open **MultiView NDL Clip Test**, then run
+`node scripts/run-phase1-ndl-ssh.cjs` from the development PC. Watch for the
+clip's visible clock to advance and check normal viewing after the app exits.
+
+The [roadmap](ROADMAP.md) defines the playback and physical-input gates.
+See [prior art](docs/research/prior-art.md) for pinned references and
+[safety boundaries](docs/safety.md) for device work.

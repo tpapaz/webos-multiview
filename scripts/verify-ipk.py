@@ -1,21 +1,42 @@
 """Inspect, never extract/execute, an IPK built from this checkout."""
+import argparse
 import hashlib
 import io
 import json
 import pathlib
 import subprocess
-import sys
 import tarfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-APP = 'io.github.tpapaz.multiview.probe'
-FILES = {'appinfo.json', 'icon.png', 'index.html', 'probe.js', 'style.css', 'ui.js'}
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--ndl', action='store_true', help='verify the Phase 1 NDL test package')
+parser.add_argument('packages', nargs='+')
+args = parser.parse_args()
+
+if args.ndl:
+    source = ROOT / 'native/phase1-ndl'
+    stage = ROOT / 'build/phase-1/package-ndl'
+    executable = 'multiview-ndl'
+    files = {name: stage / name for name in ['guide.bmp', 'clip-b.h264', 'clip-b.frames']}
+    files.update({
+        'appinfo.json': source / 'appinfo.json',
+        'icon.png': ROOT / 'apps/probe-ui/icon.png',
+        executable: ROOT / 'build/phase-1/ndl' / executable,
+    })
+else:
+    source = ROOT / 'apps/probe-ui'
+    executable = None
+    files = {name: source / name for name in ['appinfo.json', 'icon.png', 'index.html', 'probe.js', 'style.css', 'ui.js']}
+
+manifest = json.loads((source / 'appinfo.json').read_bytes())
+app = manifest['id']
+architecture = 'arm' if args.ndl else 'all'
 
 def require(condition, message):
     if not condition:
         raise ValueError(message)
 
-for filename in sys.argv[1:]:
+for filename in args.packages:
     package = pathlib.Path(filename)
     members = subprocess.check_output(['ar', 't', str(package)], text=True).splitlines()
     require(members == ['debian-binary', 'control.tar.gz', 'data.tar.gz'], 'Unexpected IPK members')
@@ -29,16 +50,21 @@ for filename in sys.argv[1:]:
                 require(not p.is_absolute() and '..' not in p.parts, 'Unsafe archive path')
                 require(entry.isfile() or entry.isdir(), 'Unexpected link/device')
                 if entry.isfile():
-                    require(not entry.mode & 0o111, 'Unexpected executable file')
+                    if p.name == executable and member == 'data.tar.gz':
+                        require(entry.mode == 0o755, 'Invalid executable mode')
+                    else:
+                        require(not entry.mode & 0o111, 'Unexpected executable file')
+                    require(entry.name not in regular, 'Duplicate archive member')
                     regular.add(entry.name)
                     data = archive.extractfile(entry).read()
-                    if member == 'data.tar.gz' and p.name in FILES:
-                        require(data == (ROOT / 'apps/probe-ui' / p.name).read_bytes(), 'App content mismatch')
-                    if member == 'data.tar.gz' and p.name == 'appinfo.json':
-                        manifest = json.loads(data)
-                        require(manifest['id'] == APP and manifest['type'] == 'web', 'Unexpected app')
+                    if member == 'data.tar.gz' and p.name in files:
+                        require(data == files[p.name].read_bytes(), 'App content mismatch: ' + p.name)
+                    if member == 'control.tar.gz' and entry.name == 'control':
+                        fields = data.decode().splitlines()
+                        require(f'Package: {app}' in fields and f"Version: {manifest['version']}" in fields
+                                and f'Architecture: {architecture}' in fields, 'Unexpected package metadata')
             expected = {'control'} if member == 'control.tar.gz' else {
-                'usr/palm/applications/' + APP + '/' + name for name in FILES
-            } | {'usr/palm/packages/' + APP + '/packageinfo.json'}
+                'usr/palm/applications/' + app + '/' + name for name in files
+            } | {'usr/palm/packages/' + app + '/packageinfo.json'}
             require(regular == expected, 'Unexpected or missing package files/scripts')
     print('IPK structure/content verified; SHA256 ' + hashlib.sha256(package.read_bytes()).hexdigest())

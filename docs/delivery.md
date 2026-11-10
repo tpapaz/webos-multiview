@@ -1,4 +1,4 @@
-# Delivery and publication status
+# Phase 0 publication record
 
 Published on 2026-11-10 after the repository owner installed the GitHub connector.
 The earlier HTTP 403 publishing failures are resolved.
@@ -12,11 +12,11 @@ The earlier HTTP 403 publishing failures are resolved.
   **passive-web-probe-not-TV-tested** artifact from its Artifacts section.
   GitHub may require sign-in for artifact downloads. The ZIP contains the IPK.
 
-The web package is passive and web-only. It has not been tested on the LG C1.
-No native ARM artifact or release is supplied. The PR remains open for review;
-no merge, TV deployment or active hardware test is performed by publication.
+This publication supplied the passive web probe. Later C1 validation and
+local Phase 1 ARM packages are recorded in the [Phase 0 device record](device-tests/2026-11-10-csp-startup.md)
+and [Phase 1 device record](device-tests/lg-c1-phase-1.md).
 
 The original local delivery bundle, feature patch and source ZIP were prepared
 before publication because this chat's workspace downloads were unavailable.
-GitHub now provides the source and CI-generated package delivery path. Use the
-current PR/branch for subsequent changes, rather than the older local snapshot.
+GitHub provides the source and CI-generated Phase 0 package. Current local
+build instructions are in the [build guide](build.md).
