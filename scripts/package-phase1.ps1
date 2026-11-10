@@ -1,4 +1,4 @@
-param([string]$LinuxNode = 'node', [ValidateSet('smp', 'ndl')][string]$Target = 'smp')
+param([string]$LinuxNode = 'node', [ValidateSet('smp', 'ndl', 'mixed')][string]$Target = 'smp')
 
 $ErrorActionPreference = 'Stop'
 
@@ -15,6 +15,12 @@ if ($Target -eq 'ndl') {
     $executable = 'multiview-ndl'
     $stageName = 'package-ndl'
     $clips = @('clip-b')
+}
+if ($Target -eq 'mixed') {
+    $nativeDir = 'phase1-mixed'
+    $binaryDir = 'mixed'
+    $executable = 'multiview-mixed'
+    $stageName = 'package-mixed'
 }
 $binary = Join-Path $build "$binaryDir/$executable"
 $source = Join-Path $root "native/$nativeDir"
@@ -61,6 +67,11 @@ try {
     if ($Target -eq 'ndl') {
         $canvas.DrawString('Phase 1 / NDL DirectMedia v2', $heading, $white, 54, 46)
         $canvas.DrawString("OK       Play the single local clip`nBACK  Close", $body, $white, 54, 116)
+    } elseif ($Target -eq 'mixed') {
+        $canvas.DrawString('Phase 1 / SMP A + NDL B', $heading, $white, 54, 46)
+        $canvas.DrawString("OK         Start SMP A on the left`nRIGHT   Step NDL B: Init / foreground / Load`n               SetArea / Feed on the right`nDOWN   Release B; observe A for 3 seconds`nBACK     Cancel and close", $body, $white, 54, 116)
+        $canvas.DrawString('Watch both clocks. Packet acceptance does not prove visibility.', $small, $white, 54, 360)
+        $canvas.DrawString('SSH runner stages the test. Leave this menu open.', $small, $white, 54, 408)
     } else {
         $canvas.DrawString('Phase 1 / Software decoding for B', $heading, $white, 54, 46)
         $canvas.DrawString("OK                  Start A and the staged B test`nRIGHT x1       Empty B window`nRIGHT x2       Construct B's player`nRIGHT x3       Notify B foreground`nRIGHT x4       Load B`nRIGHT x5       Feed B     /     RIGHT x6   Play B`nDOWN            Release B     /     BACK   Close", $body, $white, 54, 116)
@@ -100,5 +111,5 @@ for file do
 done
 APPDATA="$PWD/build/cli-data" "$node" node_modules/@webos-tools/cli/bin/ares-package.js "$stage" --no-minify -o dist
 '@
-wsl -d Ubuntu --exec sh -c $packageInLinux sh $linuxRoot $LinuxNode $stageName $executable @assetFiles
+wsl -d Ubuntu --exec sh -c ($packageInLinux.Replace("`r", "")) sh $linuxRoot $LinuxNode $stageName $executable @assetFiles
 if ($LASTEXITCODE -ne 0) { throw 'Native IPK packaging failed' }

@@ -7,10 +7,10 @@ The current setup has one connected HDMI source.
 
 ## Current position
 
-Phase 0C is complete. Phase 1 is testing local media presentation. The
-next experiment is to record the NDL foreground return code and continue
-to Load in the solo diagnostic. A visibly advancing solo clip and clean
-exit would justify comparing SMP A with NDL B. [Phase 1 test record](docs/device-tests/lg-c1-phase-1.md)
+Phase 0C is complete. In Phase 1, NDL 0.1.1 passed Load, accepted the
+solo clip and exited cleanly. The owner confirmed its on-screen clock
+advances. The separate SMP A + NDL B staged package is built and ABI-checked;
+visible overlap awaits the owner-operated TV test. [Phase 1 test record](docs/device-tests/lg-c1-phase-1.md)
 
 ## Phases and acceptance gates
 

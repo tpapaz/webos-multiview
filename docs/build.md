@@ -44,7 +44,7 @@ $sdk = '/absolute/linux/path/to/arm-webos-linux-gnueabi_sdk-buildroot'
 wsl -d Ubuntu --exec cmake -S "$repo/native/phase1-ndl" -B "$repo/build/phase-1/ndl" -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_TOOLCHAIN_FILE=$sdk/share/buildroot/toolchainfile.cmake"
 wsl -d Ubuntu --exec cmake --build "$repo/build/phase-1/ndl"
 ./scripts/package-phase1.ps1 -Target ndl
-wsl -d Ubuntu --exec python3 "$repo/scripts/verify-ipk.py" --ndl "$repo/dist/io.github.tpapaz.multiview.ndl_0.1.0_arm.ipk"
+wsl -d Ubuntu --exec python3 "$repo/scripts/verify-ipk.py" --ndl "$repo/dist/io.github.tpapaz.multiview.ndl_0.1.1_arm.ipk"
 ```
 
 If Node 22 is outside the Linux PATH, pass `-LinuxNode /absolute/linux/path/to/node`
@@ -56,10 +56,70 @@ The SMP build uses `native/phase1` with output `build/phase-1/arm` and
 |---|---|---|
 | HTML5 comparison | `io.github.tpapaz.multiview.browser_0.1.0_all.ipk` | `node scripts/run-phase1-browser-ssh.cjs` |
 | Native SMP stages | `io.github.tpapaz.multiview.phase1_0.1.4_arm.ipk` | `node scripts/run-phase1-ssh.cjs` |
-| Native NDL v2 solo | `io.github.tpapaz.multiview.ndl_0.1.0_arm.ipk` | `node scripts/run-phase1-ndl-ssh.cjs` |
+| Mixed SMP A + NDL B | `io.github.tpapaz.multiview.mixed_0.1.0_arm.ipk` | `node scripts/run-phase1-mixed-ssh.cjs` |
+| Native NDL v2 solo | `io.github.tpapaz.multiview.ndl_0.1.1_arm.ipk` | `node scripts/run-phase1-ndl-ssh.cjs` |
 
 Use an authorized local SSH profile. Pass its alias to the runner if
 several root profiles are configured. [C1 playback record](device-tests/lg-c1-phase-1.md)
+
+### Mixed SMP + NDL build and test
+
+Reuse `build/phase-1/media/clip-a.h264` (30 s) and `clip-b.h264` (15 s).
+Do not regenerate the fixtures for this comparison. From the repository in
+PowerShell, using `$repo` and `$sdk` defined above:
+
+```powershell
+wsl -d Ubuntu --exec cmake -S "$repo/native/phase1-mixed" -B "$repo/build/phase-1/mixed" -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_TOOLCHAIN_FILE=$sdk/share/buildroot/toolchainfile.cmake"
+wsl -d Ubuntu --exec cmake --build "$repo/build/phase-1/mixed"
+./scripts/package-phase1.ps1 -Target mixed -LinuxNode /home/tasos/.cache/webos-multiview/node-v22.17.0-linux-x64/bin/node
+wsl -d Ubuntu --exec python3 "$repo/scripts/verify-ipk.py" --mixed "$repo/dist/io.github.tpapaz.multiview.mixed_0.1.0_arm.ipk"
+node scripts/verify-mixed-abi.cjs
+```
+
+The last command reads only fixed runtime-library paths over the existing
+root SSH profile and compares ARM imports and symbol versions in WSL. It saves
+library hashes and results to `build/phase-1/abi-mixed-0.1.0.json`. Pass a local
+profile alias as its first argument if needed. It does not start playback.
+
+1. Install `dist/io.github.tpapaz.multiview.mixed_0.1.0_arm.ipk` in Dev Manager.
+   Open **MultiView SMP + NDL Test** and leave it at its menu.
+2. Run `node scripts/run-phase1-mixed-ssh.cjs` in a PowerShell terminal
+   (append your local profile alias if needed). Do not press OK separately.
+3. Watch A's left clock. The runner requires increasing A callbacks **and**
+   PTS across at least one second before requesting NDL B.
+4. Watch the TV through Init, foreground, Load, SetArea, and feeding. Each
+   stage gets at least two seconds of samples. Feeding remains active for
+   at least 6.5 seconds in total; B is deliberately released before EOF.
+   Note whether A vanishes or freezes, and whether both clocks ever advance
+   **at the same time**. A Playing event or accepted packets cannot answer this.
+5. After B is released, watch whether A returns and its clock advances.
+   The app records three seconds of recovery, cleans up, and returns to its
+   menu. The runner reads completion, closes the app, and confirms exit.
+6. Answer the terminal's `yes/no/unknown` visible-overlap question. The
+   versioned report is saved before the question and updated afterward at
+   `build/reports/c1-phase1-mixed-0.1.0.json`. Without a terminal, observation
+   stays unknown. Copy the report before repeating a run (the path is reused).
+
+Back cancels and closes the app; Ctrl+C asks the runner to release B and
+collect cleanup before closing. Manual controls are OK to start A, Right
+five times for B's stages, and Down to release B. Wait for A to advance
+before the first Right. The native run has a 45 s deadline, an 8 s first-A-frame
+and NDL feed-stall timeout, and a 50 s process alarm if a vendor call hangs.
+The alarm is a last-resort process stop, not evidence of successful cleanup.
+
+The report includes `schemaVersion: 1`, app identity and ELF hash, raw rows,
+stage deltas, process exit confirmation, and a separately attributed owner
+observation. Ordinary rows contain A callback count/PTS in milliseconds and
+B accepted packets/frame callbacks. `ndl_events` rows contain cumulative
+Load-complete, Playing, error ID, and total event counts; vendor strings are
+never recorded. Every NDL startup and cleanup call has begin/end records.
+Status 0 is normal completion, 1 cancellation, 2 fixture error, 3 startup
+error, 4 pipeline error, 5 feed timeout, 6 deadline, and 7 cleanup failure.
+A clean diagnostic completion does not imply concurrent playback succeeded.
+
+The separate SMP 0.1.4 and NDL 0.1.1 packages remain available in `dist/` as
+controls, with their original hashes. This test does not establish audio
+focus, independent geometry changes, or HDMI concurrency.
 
 ## Optional native ARM inventory
 

@@ -1,0 +1,14 @@
+const assert = require('node:assert/strict');
+const {parseTrace, advancingBaseline, stageEvidence} = require('../../scripts/phase1-mixed-evidence.cjs');
+const rows = parseTrace('0,sample,0,4,100,0,0\n1000,sample,0,12,1100,0,0\n2000,step_end,3,20,2000,0,0\n4000,sample,3,20,2000,0,0\n5000,step_end,6,20,2000,200,0\n7000,sample,6,34,4000,200,0\n7000,ndl_events,6,1,1,0,2');
+assert.equal(advancingBaseline(rows), true);
+assert.equal(advancingBaseline(rows.map(r => ({...r, aMs: 100}))), false);
+assert.equal(advancingBaseline(rows.map(r => ({...r, aFrames: 4}))), false);
+assert.equal(stageEvidence(rows, 3).aCallbacks, 0);
+assert.equal(stageEvidence(rows, 3).aPtsAdvanceMs, 0);
+assert.equal(stageEvidence(rows, 6).aCallbacks, 14);
+assert.equal(stageEvidence(rows, 6).aPtsAdvanceMs, 2000);
+assert.equal(stageEvidence(rows, 5), null);
+assert.equal(rows.at(-1).loads, 1);
+assert.throws(() => parseTrace('1,unexpected,0,0,0,0,0'));
+console.log('Mixed baseline, stall, recovery and telemetry acceptance checks passed');

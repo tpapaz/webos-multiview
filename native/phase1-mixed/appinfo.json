@@ -1,0 +1,10 @@
+{
+  "id": "io.github.tpapaz.multiview.mixed",
+  "version": "0.1.0",
+  "vendor": "tpapaz",
+  "type": "native",
+  "main": "multiview-mixed",
+  "title": "MultiView SMP + NDL Test",
+  "icon": "icon.png",
+  "requiredACG": []
+}

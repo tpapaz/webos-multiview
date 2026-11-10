@@ -1,6 +1,6 @@
 {
   "id": "io.github.tpapaz.multiview.ndl",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "vendor": "tpapaz",
   "type": "native",
   "main": "multiview-ndl",

@@ -52,7 +52,8 @@ public:
         initialized_ = true;
         result = foregroundDirectMedia();
         record("foreground", result);
-        if (result != 0 || stopRequested) return false;
+        // The app already has focus. Record the NDL result and still test Load.
+        if (stopRequested) return false;
         result = loadDirectVideo(640, 360, onMediaEvent);
         record("load", result);
         if (result != 0) return false;

@@ -31,10 +31,12 @@ async function run() {
                 const end = rows.find(row => row.event === 'run_end');
                 if (end) {
                     const feed = rows.find(row => row.event === 'feed_end');
+                    const startup = rows.filter(row => ['init', 'foreground', 'load', 'area'].includes(row.event));
                     const cleanup = rows.filter(row => row.event === 'unload' || row.event === 'quit');
+                    console.log(startup.map(row => `${row.event}=${row.status}`).join(', '));
                     console.log(`Run result ${end.status}. Accepted packets ${feed.packets}, frame callbacks ${end.frames}, Load complete ${end.loads}, Playing ${end.playing}.`);
-                    console.log(cleanup.map(row => `${row.event}=${row.status}`).join(', '));
-                    console.log('Confirm on the TV whether the clip and its clock were visible.');
+                    if (cleanup.length) console.log(cleanup.map(row => `${row.event}=${row.status}`).join(', '));
+                    if (feed.packets > 0) console.log('Confirm on the TV whether the clip and its clock were visible.');
                     if (end.status !== 0 || cleanup.some(row => row.status !== 0)) process.exitCode = 1;
                     return;
                 }

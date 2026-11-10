@@ -9,19 +9,23 @@ import tarfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--mixed', action='store_true', help='verify the Phase 1 SMP + NDL package')
 parser.add_argument('--ndl', action='store_true', help='verify the Phase 1 NDL test package')
 parser.add_argument('packages', nargs='+')
 args = parser.parse_args()
 
-if args.ndl:
-    source = ROOT / 'native/phase1-ndl'
-    stage = ROOT / 'build/phase-1/package-ndl'
-    executable = 'multiview-ndl'
+if args.ndl or args.mixed:
+    target = 'mixed' if args.mixed else 'ndl'
+    source = ROOT / ('native/phase1-' + target)
+    stage = ROOT / ('build/phase-1/package-' + target)
+    executable = 'multiview-' + target
     files = {name: stage / name for name in ['guide.bmp', 'clip-b.h264', 'clip-b.frames']}
+    if args.mixed:
+        files.update({name: stage / name for name in ['clip-a.h264', 'clip-a.frames']})
     files.update({
         'appinfo.json': source / 'appinfo.json',
         'icon.png': ROOT / 'apps/probe-ui/icon.png',
-        executable: ROOT / 'build/phase-1/ndl' / executable,
+        executable: ROOT / 'build/phase-1' / target / executable,
     })
 else:
     source = ROOT / 'apps/probe-ui'
@@ -30,7 +34,7 @@ else:
 
 manifest = json.loads((source / 'appinfo.json').read_bytes())
 app = manifest['id']
-architecture = 'arm' if args.ndl else 'all'
+architecture = 'arm' if args.ndl or args.mixed else 'all'
 
 def require(condition, message):
     if not condition:

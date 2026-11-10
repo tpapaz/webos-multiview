@@ -91,8 +91,18 @@ reports single-clip playback on a 65UP7560 running webOS 6.5.2.
 verified the running ELF hash and started the run. Init returned `0`,
 SetAppState (foreground) returned `-1`, and Quit returned `0`. The run
 stopped after 184 ms with startup result `3`, zero submitted packets, and
-zero frame callbacks. The controller confirmed the app exited. Load and
-playback remain **unknown**. Report: `build/reports/c1-phase1-ndl-0.1.0.json`.
+zero frame callbacks. The controller confirmed the app exited.
+Report: `build/reports/c1-phase1-ndl-0.1.0.json`.
+
+**C1 result, 0.1.1 (2026-11-11):** after the owner installed and opened the
+build, the SSH run recorded Init `0`, foreground `-1`, Load `0` and
+SetArea `0`. NDL reported one Load-complete event and one Playing event
+and accepted all 450 access units. It reported zero frame callbacks. The
+owner subsequently confirmed seeing the clip and its clock advance on the TV
+during this same SSH run: solo visible playback is **verified** by that
+human observation, not inferred from packet acceptance or callbacks. Unload and Quit
+both returned `0`, and SSH confirmed process exit. Report:
+`build/reports/c1-phase1-ndl-0.1.1.json`.
 
 For a manual run, OK starts the solo clip and Back closes the app. The
 SSH runner sends SIGUSR1 to start and SIGTERM to close. It samples
@@ -102,6 +112,61 @@ a 25 s deadline and 30 s process alarm. A completed feed drains for 2 s.
 Run statuses: 0 complete, 1 cancelled, 2 fixture error, 3 startup error,
 4 pipeline error, 5 feed timeout, 6 deadline. A playback pass requires a
 visibly advancing clock and successful cleanup.
+
+## Mixed SMP A + NDL B — 0.1.0
+
+**Candidate experiment, built 2026-11-11; not TV-playback-tested.** Separate
+app ID `io.github.tpapaz.multiview.mixed`. The owner-confirmed NDL solo result
+above satisfies the prerequisite for this comparison. No open repository
+issues were returned by the connected GitHub issue search on this date.
+
+Implementation plan: share the existing SMP session and C1 NDL C adapter;
+start SMP A left and establish callback/PTS progress; stage NDL Init,
+foreground, Load, SetArea right, and feeding separately; release B and
+measure A recovery; preserve app-scoped control, bounded execution, cleanup,
+and human observation as separate evidence. The acceptance gate for this
+experiment is an attributable stage trace plus owner-observed clock overlap
+or its absence, not completion of the full Phase 1 gate.
+
+The package reuses the same video-only local clips. A's frame/PTS baseline
+and two-second measurements surround each stage; begin/end records also
+identify time spent inside native calls. Foreground `-1` is recorded but
+continues to Load, matching the verified solo control. B feeding is held
+for at least 6.5 s, then released before EOF so A's 30 s fixture still has
+room for the three-second recovery check. All NDL event counts and accepted
+packets are telemetry, not a visible-overlap verdict. The runner asks the
+owner whether both clocks visibly advanced together after saving the trace.
+[Build and SSH procedure](../build.md#mixed-smp--ndl-build-and-test).
+
+Validation on 2026-11-11:
+
+- `wsl -d Ubuntu --exec cmake --build /mnt/d/Development/webos-multiview/build/phase-1/mixed`
+  passed with `-Wall -Wextra -Wpedantic -Werror` using the existing 2026.08 ARM SDK.
+- `./scripts/package-phase1.ps1 -Target mixed -LinuxNode /home/tasos/.cache/webos-multiview/node-v22.17.0-linux-x64/bin/node`
+  built the IPK. The packaging helper now removes CR from its Linux shell body.
+- `wsl -d Ubuntu --exec python3 /mnt/d/Development/webos-multiview/scripts/verify-ipk.py --mixed /mnt/d/Development/webos-multiview/dist/io.github.tpapaz.multiview.mixed_0.1.0_arm.ipk`
+  passed exact file allowlist, payload bytes, metadata and executable mode 0755.
+  FFprobe validated both access-unit indexes during packaging.
+- `node scripts/verify-mixed-abi.cjs` passed a fresh read-only comparison with
+  C1 firmware exports: 88 required imports, seven DT_NEEDED libraries,
+  ARM32 soft-float, `/lib/ld-linux.so.3`, no RPATH, exact version providers.
+  The NDL and SMP library hashes match the 03.53.45 evidence below. Evidence:
+  `build/phase-1/abi-mixed-0.1.0.json`.
+- `npm run lint`, `npm test`, and `node --check scripts/run-phase1-mixed-ssh.cjs`
+  passed. New acceptance tests cover advancing baseline, stall and recovery
+  deltas, missing stages and unexpected telemetry.
+- `wsl -d Ubuntu --exec cmake --build /mnt/d/Development/webos-multiview/build/phase-1/smp-check`
+  passed the shared-session regression build without replacing the control ELF.
+- `wsl -d Ubuntu --exec cmake --build /mnt/d/Development/webos-multiview/build/host`
+  and `wsl -d Ubuntu --exec ctest --test-dir /mnt/d/Development/webos-multiview/build/host --output-on-failure`
+  passed (1/1). `wsl -d Ubuntu --exec python3 /mnt/d/Development/webos-multiview/tests/host/schema_test.py`
+  passed. Windows Python lacked `jsonschema`; the existing WSL installation was used.
+
+No simulator or mixed-backend playback run was performed. Native call hangs,
+resource contention, visibility, and recovery remain device-test risks.
+Next task: owner installs/opens the mixed app, runs the staged controller,
+and records the two visible clocks and A's recovery. Audio focus and
+simultaneous HDMI remain **unknown**.
 
 ## Firmware and build evidence
 
@@ -124,12 +189,18 @@ cancellation in desktop Chrome before the TV comparison.
 | SMP 0.1.4 | 83 | `223cf5a9d99e8e8553bb52a1f27e0cd780ab174d4c30af393fc0154c60760480` |
 | Browser 0.1.0 | — | `5220268353844cca09dcad25b315ae2ce0ccb98c904a62fd82420b02b3464d1c` |
 | NDL 0.1.0 | 69 | `9a1c47d56cb8efb4f9bf1ef2e9354e1887c6eac13fb3ae772af52185a9922cc2` |
+| Mixed 0.1.0 | 88 | `62bc00fddd7cec1cc811f39bc03dde06c1837ebef315173af990ac1f1b17b37a` |
+| NDL 0.1.1 | 69 | `bb04e2e5bdcbea23ef8b0c6ff7b9db25cf083008a3db877e1ec98bb82611517e` |
 
-Tested ELF SHA-256 values:
+TV-playback-tested ELF SHA-256 values:
 
 - SMP 0.1.3 `6ea50ba36069a911ea167eb0a07df75980834243ecafade1f32273e4907e1c2b`
 - SMP 0.1.4 `b997c8042ae9731ffadf99e75b3f4cbab8c4d06392bf01174e14f2f641475cec`
 - NDL 0.1.0 `8b5dc9a7e5c17a08244f1abae15c4f7bdea8ec250fd2e3fe01eca5bcbc564f7b`
+- NDL 0.1.1 `d25f62c3fdd1311718e1eaf9d635ea64f97ef065a636dd32da107cb46fdc9d29`
+
+Mixed 0.1.0 ELF (ABI-checked only):
+`a719fd64e879ef093bcde95b4e1639badbb2a83936287ff24e367b8aeb432a32`.
 
 Firmware references from 03.53.45:
 
