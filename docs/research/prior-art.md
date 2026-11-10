@@ -137,7 +137,7 @@ that is not a proof of hardware impossibility.
   one-shot service request rather than bundling a library that may query more.
   A small original `PalmServiceBridge` adapter performed the metadata query
   on firmware 03.53.45. In-flight cancellation on the C1 remains **unknown**.
-  [Phase 0 C1 result](../device-tests/2026-11-10-csp-startup.md)
+  [Phase 0 C1 result](../device-tests/lg-c1-phase-0.md)
 - **verified/documented:** LG's [ACG guide](https://webostv.developer.lge.com/develop/guides/acg-guide)
   maps `getSystemInfo` to `systemconfig.query` on current ACG platforms. The
   manifest declares precisely that group. This contemporary declaration is not
@@ -149,14 +149,16 @@ that is not a proof of hardware impossibility.
   frames or an exclusive-input bypass for C1. webOS OSE and commercial Signage
   APIs must not be treated as consumer C1 contracts.
 
-## Gaps and next research questions
+## Physical-input research gaps
 
-The [C1 passive report](../device-tests/2026-11-10-csp-startup.md) and
-[Phase 1 playback runs](../device-tests/lg-c1-phase-1.md) document the
-verified C1 behavior. Seek public/vendor-authorized C1-specific documentation for EIM/input
-ownership and media/video-sink resource policies. Prioritize evidence of **two
-simultaneously live physical receiver surfaces**, not more playback windows.
-Do not brute-force private Luna methods or numeric capture arguments. Exact
-receiver/scaler/plane counts, 4K120/HDR/VRR behavior, tuner coexistence, app
-lifecycle and audio routing remain unknown. Negative search results alone are
-not an `unsupported` determination.
+| C1 capability | Status | Evidence needed |
+|---|---|---|
+| Concurrent HDMI activation and per-port frames | **Unknown** | Evidence of an independently addressable receiver path, then two distinct live HDMI clocks advancing in the same view without switching. |
+| Selected HDMI viewport and overlay | **Unknown** | Verify ownership and placement of the selected HDMI surface while a separate overlay remains visible. |
+| Capture of active HDMI | **Unknown** | An authorized output-capture test with unprotected input would address only the selected output. Forced capture and `/dev/mem` are **unsafe to test**. |
+| HDMI plus tuner or app | **Unknown** | Verify each source stays live on the exact firmware, including foreground policy, input focus and cleanup. |
+| Decoder, scaler and plane counts, 4K120/HDR/VRR, audio focus | **Unknown** | Allocation and teardown evidence for each claimed combination. |
+| Built-in Multi-View on C1 | **Unknown** | Exact model and firmware evidence. The Homebrew guide covers some webOS 7+ models. |
+
+Seek C1-specific documentation for input ownership and video resource policy.
+Use observed interfaces and bounded probes. [C1 playback evidence](../device-tests/lg-c1-phase-1.md)

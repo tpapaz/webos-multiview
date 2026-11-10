@@ -1,121 +1,52 @@
-# LG C1 Phase 0C — human-operated passive verification
+# LG C1 Phase 0 — Passive probe
 
-Current result: **not run**. No measured device log is included in this PR.
-Expected examples are not observations. Run only after reviewing this build and
-explicitly choosing to install this diagnostic on a TV you own/control.
+## C1 results
 
-## Prerequisites and scope
+On 2026-11-10 the owner installed probe 0.1.0 through Dev Manager. The
+original build displayed a black screen and its buttons did nothing.
+Authorized SSH and Web Inspector showed that CSP blocked the packaged
+scripts, style and icon from the app's file URL. The replacement allows
+`file:` for these local assets. Replacement IPK SHA-256
+`4e2e8556ef461deb3fa0fa464857748818559032e6588727984d9a535d0a3bf0`.
 
-- Rooted C1 is the research reference; this package does not use root. Existing
-  authorized CLI/Dev Manager access, working physical remote and ordinary viewing
-  controls are required. Do not establish root or change developer/system
-  settings as part of this procedure.
-- Record locally: app commit, package SHA256, LG C1 family, exact firmware and
-  displayed webOS version. Do not record serial, complete region/model suffix,
-  IP/MAC, login/device ID or credentials in shared logs. Firmware/SDK versions
-  are relevant nonunique evidence. Leave board/SoC unknown unless separately
-  established without private identifiers.
-- Review [safety](../safety.md), [build/inspection steps](../build.md) and the
-  package verification result. Do not use a host binary on the TV.
-- No HDMI/tuner/compositor test is enabled. You do not need connected sources or
-  protected video. Launching a foreground app can cover/suspend existing content
-  normally; that does not measure source coexistence.
+After the owner reinstalled, Inspector verified the scripts and style
+loaded and the metadata query returned `ok`. The report records LG C1,
+firmware 03.53.45 and webOS SDK 6.5.3, with board and all eight functional
+capabilities unknown. The redacted report is
+`build/reports/c1-web.report.json`. The owner verified remote navigation,
+Close to Home, normal HDMI picture and sound after exit, and uninstall.
 
-## A — install, metadata and cleanup (about 5 minutes)
+**Unknown:** direct on-TV download and in-flight cancellation. The Export
+handler ran, but Inspector observed no download events over 3.5 s, and
+a bounded search found no matching file. Reading the report via Inspector
+worked. All physical-input capability conclusions remain unknown.
 
-1. On your local development computer, run the host/build/package checks in
-   build.md and note `sha256sum dist/io.github.tpapaz.multiview.probe_0.1.0_all.ipk`.
-   Confirm the archive is the **web-only** package with no helper/service/scripts.
-2. Install and launch using the four commands in build.md (run the close/remove
-   commands at the end). Installation is your explicit opt-in to add this app's
-   normal package files. Do not change permissions to force installation.
-3. Observe initial UI: all functional capabilities unknown, no query in progress.
-   Use arrows/OK and Magic Remote pointer if available. Record only the outcome
-   of initial rendering/focus, not a screen showing personal content.
-4. Press **Read device metadata** once. Expected within 3 seconds: `ok`,
-   `unavailable`, `timeout`, or `invalid_response`. `ok` may still have missing
-   fields if agreements/permissions differ. C1 family may remain unknown if its
-   model format differs from the conservative OLEDxxC1 allowlist.
-5. Confirm the output contains only C1/unknown family and numeric dotted
-   firmware/SDK versions. All eight capabilities must remain unknown, tests
-   empty; there must be no source activation or settings change. File/library
-   observations are absent in this web report by design.
-6. If possible, press Cancel during a query. It should settle as cancelled and
-   permit another manual query; completion may win the race. Hide/close the app
-   during a query; it must not continue querying/retrying. Reopen for one further
-   manual run to check cleanup; no background service is installed.
-7. Press Export JSON once. TV browsers may not download; if it fails silently,
-   use local Web Inspector: `npx --no-install ares-inspect -d c1 io.github.tpapaz.multiview.probe`.
-   In the inspector console evaluate
-   `document.getElementById('report').textContent` and copy **only the JSON**
-   into a local `c1-web.report.json`. Do not copy complete console/session logs,
-   inspector URLs or network/debug traces. Inspector is optional; if unavailable,
-   record the report fields manually and mark export unverified. Do not enable
-   new privileged debugging capabilities to force it.
-8. On the local computer validate (validation does not upload):
+## Repeat the test
 
-   ```sh
-   .venv/bin/python scripts/validate-report.py c1-web.report.json
-   ```
+1. Build or install the passive IPK using the [build guide](../build.md).
+   Open it in Dev Manager and verify that the initial UI responds to the
+   remote.
+2. Press **Read device metadata**. Expect a result within three seconds.
+   Check that device metadata is limited to the family and versions. If
+   time permits, cancel a fresh query while it is pending.
+3. Try **Export JSON**. If there is no download, use the authorized local
+   profile with `npx --no-install ares-inspect -d c1 io.github.tpapaz.multiview.probe`.
+   Copy only the result of `document.getElementById('report').textContent`
+   and validate it with `python3 scripts/validate-report.py c1-web.report.json`.
+4. Close the app, return to normal viewing and remove it through Dev
+   Manager. Record the package hash, firmware and observed results.
+   [Safety and privacy](../safety.md)
 
-9. Review the JSON before voluntarily sharing it. Report the commit/hash, C1
-   family, exact firmware, observed query outcome and whether normal viewing
-   returned. Never label this file synthetic if genuinely collected; never label
-   fixture-generated data a TV result.
-10. Close via UI/Back or the app-specific close command; return to your previous
-    viewing activity using the remote. Remove only this app with the remove
-    command in build.md. Verify it disappears from your app list and viewing
-    works normally. Keep/delete the local export at your discretion; it is not
-    automatically removed from a computer/download folder by TV uninstall.
+The separate native inventory CLI can be tested after an ARM build and ABI
+review against the exact firmware. Run it in the foreground from a
+temporary path and retrieve its JSON. A resolved library path is a file
+observation. Remove the temporary binary and report after the test.
 
-If any unexpected display/input behavior persists, stop and use normal remote
-controls. Do not restart system services, alter firmware or retry an invasive
-method. Record a redacted failure and keep all related hardware conclusions unknown.
+## Host and package checks
 
-## B — optional native filesystem inventory, separately gated
-
-This PR contains **no ARM binary and no native IPK**. Skip this section unless a
-local engineer has completed and recorded the cross-build/ABI review in build.md
-against your exact firmware. It is not required to validate the web package.
-
-Using your existing authorized local shell, transfer the reviewed helper to
-`/tmp/multiview-probe` (not a system directory). Do not paste credentials/hostnames
-or shell history into a report. Run in a foreground shell with the least
-available privilege; no root escalation is needed by the implementation:
-
-```sh
-/tmp/multiview-probe > /tmp/multiview-native.report.json
-```
-
-Expected runtime is under a second for seven local stat calls. If it has not
-returned in 5 seconds, interrupt with Ctrl-C and mark blocked; do not retry with
-more privilege. Retrieve only `/tmp/multiview-native.report.json` with your
-authorized local file tool, validate with validate-report.py, and review it.
-Do not dump libraries or their contents. The native device metadata stays
-unknown: associate its origin with the consented web report **in the local test
-record**, without inventing a unique fingerprint or blindly merging reports.
-
-Remove only these two files through the same local file tool or foreground shell:
-
-```sh
-rm /tmp/multiview-probe /tmp/multiview-native.report.json
-```
-
-`present` means a regular file resolved at one allowlisted path. Missing,
-denied or partial inventory proves no hardware limit. No library constructors,
-exported symbols, capture operations, device nodes or input APIs were exercised.
-
-## Record and next decision
-
-Use a small local record with: date, commit/package hash, family, firmware/SDK,
-web/native report origin, observed outcome, manual controls/export/exit/remove
-results, any normal lifecycle interruption, and limitations. No genuine test is
-complete until evidence exists. A host report or package build cannot close 0C.
-
-After a genuine passive report, review C1-specific SMP exported-window ABI and
-resource ownership for the separate Phase 1 two-local-clip experiment. Then seek
-a credible per-port HDMI session interface before proposing Phase 2 dual-input
-activation. Two unprotected independent HDMI clocks must later advance in the
-same view to prove the defining objective. This PR provides **no active test
-commands**; do not run upstream allowlist writes, private API guesses, forced
-capture or firmware/service changes from this protocol.
+The initial Phase 0 build passed seven Node tests, one CTest, ES5/JSON and
+schema validation, and exact IPK payload inspection. Mocked Chromium
+verified metadata, redaction, cancellation, export and keyboard navigation.
+The replacement passed lint, Node tests and package inspection before the
+C1 retest. The original source and CI package were published with
+[PR #1](https://github.com/tpapaz/webos-multiview/pull/1).

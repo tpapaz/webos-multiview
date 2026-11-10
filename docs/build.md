@@ -1,8 +1,5 @@
 # Build, inspect and install
 
-The passive web probe, HTML5 comparison and ARM playback diagnostics are
-separate packages. Current C1 outcomes are in the [device test records](device-tests/lg-c1-phase-1.md).
-
 ## Passive probe and host checks
 
 Host prerequisites: C++11 compiler, CMake >=3.16, Ninja, Node >=20 (CI:
@@ -25,24 +22,9 @@ npm run package
 python3 scripts/verify-ipk.py dist/io.github.tpapaz.multiview.probe_0.1.0_all.ipk
 ```
 
-`npm test` creates synthetic web/timeout reports in build/reports; run it before
-the native redirection and schema checks. These are host/synthetic evidence,
-not C1 results. `lint` checks ES5 syntax and JSON parseability, not a general
-style linter. C++ warnings are errors for the inventory core.
-
-The official `@webos-tools/cli` 3.2.6 packages only the six allowlisted app files.
-Packaging uses `--no-minify` to preserve auditable source bytes and a build-local
-APPDATA directory to avoid changing user CLI device profiles. `verify-ipk.py`
-checks the ar/tar structure, exact regular file allowlist, no links/device nodes/
-executable files/install scripts, and exact source payload bytes. It does not
-prove device install success. CLI-generated archive timestamps may differ;
-byte-for-byte reproducible IPK containers are **not claimed**. Report generation
-and source payload are deterministic for identical inputs.
-
-Output: `dist/io.github.tpapaz.multiview.probe_0.1.0_all.ipk`. `all` is correct
-for this **web-only** app; no native ELF or root service is embedded. No NDK is
-needed for this artifact. Do not package or transfer build/host/multiview-probe
-as a TV executable.
+`npm test` generates synthetic reports for the schema checks. The passive
+IPK is web-only. `verify-ipk.py` checks archive structure, file allowlist
+and payload bytes. Archive timestamps can change the package hash.
 
 ## Phase 1 local clip packages
 
@@ -76,10 +58,8 @@ The SMP build uses `native/phase1` with output `build/phase-1/arm` and
 | Native SMP stages | `io.github.tpapaz.multiview.phase1_0.1.4_arm.ipk` | `node scripts/run-phase1-ssh.cjs` |
 | Native NDL v2 solo | `io.github.tpapaz.multiview.ndl_0.1.0_arm.ipk` | `node scripts/run-phase1-ndl-ssh.cjs` |
 
-The SSH runners use the existing authorized local device profile. Pass
-its local alias as an argument if several root profiles are configured.
-The NDL build, package and C1 ABI check are recorded alongside the
-[test protocol](device-tests/lg-c1-phase-1.md#ndl-directmedia-v2-native-control).
+Use an authorized local SSH profile. Pass its alias to the runner if
+several root profiles are configured. [C1 playback record](device-tests/lg-c1-phase-1.md)
 
 ## Optional native ARM inventory
 
@@ -103,10 +83,8 @@ two Phase 1 ARM packages use the TV's own shared libraries.
 
 ## Human-operated web package installation
 
-Only use an already authorized local device profile configured in LG's CLI or
-webOS Dev Manager. Do not put TV addresses/credentials in this repo or cloud chat.
-See the [C1 protocol](device-tests/lg-c1-phase-0.md) for opt-in and expected
-evidence. Replace `c1` with your existing local alias.
+Use Dev Manager or the commands below with your authorized local alias
+in place of `c1`. [Passive test procedure](device-tests/lg-c1-phase-0.md#repeat-the-test)
 
 ```sh
 npx --no-install ares-install -d c1 dist/io.github.tpapaz.multiview.probe_0.1.0_all.ipk
@@ -114,7 +92,3 @@ npx --no-install ares-launch -d c1 io.github.tpapaz.multiview.probe
 npx --no-install ares-launch -d c1 --close io.github.tpapaz.multiview.probe
 npx --no-install ares-install -d c1 --remove io.github.tpapaz.multiview.probe
 ```
-
-The C1 owner verified installation, remote navigation, Close and uninstall.
-The Inspector captured the redacted report. Direct on-TV download remains
-unknown. [Phase 0 device record](device-tests/2026-11-10-csp-startup.md)

@@ -1,4 +1,4 @@
-# Codex Contributor Instructions — webOS MultiView
+# Contributor Instructions — webOS MultiView
 
 Read `ROADMAP.md` and the current research and decision records before making changes.
 
@@ -16,7 +16,7 @@ Build a standalone, root-assisted Homebrew MultiView application for supported L
 
 ## Change scope
 
-- Default to the current roadmap phase; for first Codex task, work only on Phase 0A and safe, passive Phase 0B scaffolding.
+- Stay within the active roadmap phase and the requested experiment.
 - No fully featured PiP compositor or mock video screenshot presented as a working physical-input implementation.
 - Keep patches small, focused and reviewable; log blockers and assumptions.
 - Prioritize portable host tests, mockable interfaces and deterministic builds.
