@@ -1,41 +1,22 @@
 # Delivery and publication status
 
-Implementation and validation are complete locally. **No pull request was created.**
-Git push to the supplied repository returned HTTP 403 (`Permission denied`), and
-the connected GitHub contents API returned HTTP 403 (`Resource not accessible by
-integration`). Repository metadata reported user push permission, but the
-integration's effective write access did not permit publishing. This is a
-GitHub authorization failure, not an automatic sandbox-approval rejection.
-No remote files, branches or settings were changed. CI is authored, not remotely
-executed. No release was published.
+Published on 2026-11-10 after the repository owner installed the GitHub connector.
+The earlier HTTP 403 publishing failures are resolved.
 
-The local repository contains main (the original supplied starter documents) and
-codex/phase-0-passive-probe (the implementation). Deliverables outside source are:
+- [Pull request #1](https://github.com/tpapaz/webos-multiview/pull/1)
+- Feature branch: `codex/phase-0-passive-probe`
+- Base branch: `main`, containing the original supplied starter documents
+- [Download feature-branch source ZIP](https://github.com/tpapaz/webos-multiview/archive/refs/heads/codex/phase-0-passive-probe.zip)
+- [GitHub Actions](https://github.com/tpapaz/webos-multiview/actions): select a
+  successful **Phase 0 host and package** run, then download the
+  **passive-web-probe-not-TV-tested** artifact from its Artifacts section.
+  GitHub may require sign-in for artifact downloads. The ZIP contains the IPK.
 
-- `webos-multiview-phase0.bundle`: both branches and complete Git history.
-- `phase0-feature.patch`: feature diff from the supplied main baseline.
-- `webos-multiview-phase0-source.zip`: tracked source only, including the PR body.
-- `io.github.tpapaz.multiview.probe_0.1.0_all.ipk`: web-only package, not TV-tested.
-- `SHA256SUMS`: transfer checksums.
+The web package is passive and web-only. It has not been tested on the LG C1.
+No native ARM artifact or release is supplied. The PR remains open for review;
+no merge, TV deployment or active hardware test is performed by publication.
 
-After enabling **Contents and Pull Requests write access** for the connected
-GitHub integration, Codex can retry publishing without reimplementing the work.
-Alternatively, an authorized maintainer can use their own local Git credentials:
-
-```sh
-git clone --branch codex/phase-0-passive-probe webos-multiview-phase0.bundle webos-multiview
-cd webos-multiview
-git branch main origin/main
-git remote set-url origin https://github.com/tpapaz/webos-multiview.git
-git push origin main codex/phase-0-passive-probe
-gh pr create --repo tpapaz/webos-multiview --base main \
-  --head codex/phase-0-passive-probe \
-  --title 'Phase 0: HDMI feasibility audit and passive capability probe' \
-  --body-file docs/pull-request.md
-```
-
-These commands expect the remote still to be empty. If another maintainer has
-initialized main meanwhile, fetch and reconcile the baseline; **do not force push**.
-The feature patch omits the baseline documents; use the bundle or source ZIP when
-starting from an empty repository. Source archives/bundles contain no build
-caches, node_modules, TV credentials or genuine device reports.
+The original local delivery bundle, feature patch and source ZIP were prepared
+before publication because this chat's workspace downloads were unavailable.
+GitHub now provides the source and CI-generated package delivery path. Use the
+current PR/branch for subsequent changes, rather than the older local snapshot.

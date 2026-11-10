@@ -1,5 +1,9 @@
 # Build, inspect and install
 
+For a prebuilt web-only probe, open a successful [GitHub Actions run](https://github.com/tpapaz/webos-multiview/actions) and download the
+`passive-web-probe-not-TV-tested` artifact. Extract its IPK; sign in to GitHub
+if prompted. Source is available from [PR #1](https://github.com/tpapaz/webos-multiview/pull/1).
+
 Host prerequisites: Linux, C++11 compiler, CMake >=3.16, Ninja, Node >=20 (CI:
 22), npm, Python 3 and binutils `ar`. No webOS runtime libraries needed for host
 tests. Use an ordinary user account. Dependency versions are pinned in
