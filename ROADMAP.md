@@ -47,6 +47,12 @@ and foreground takeover at that boundary. The **full diagnostic failed**;
 both clocks advancing at spot checks and spontaneous app disappearance,
 without Home/Back/input/app changes. Continuous visual coverage and normal
 viewing afterward remain unknown. [Long-run record](docs/device-tests/lg-c1-phase-1.md#endurance-011-30-minute-run--overlap-reached-recovery-interrupted)
+The read-only [idle-path review](docs/research/c1-app-idle-path.md) found a
+matching active request before B unload; the logged ACK is AirPlay's, not
+an Endurance response. C1 SDL's inspected Wayland factory/init do not install
+the generic screensaver callback. Next: establish an app-owned native idle
+interface and separate expiry from teardown before another IPK. The exact
+pending-request/teardown interaction remains unknown.
 Current gates:
 
 1. Completed: eight-second smoke cycle with owner-confirmed visible overlap and A continuity.

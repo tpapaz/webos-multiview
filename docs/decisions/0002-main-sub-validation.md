@@ -59,6 +59,12 @@ transition before another IPK or long-run retry; retain focus-loss safety.
 The owner confirmed both clocks advancing at spot checks and no intentional
 Home/Back/input/app action at disappearance. That supports observed playback
 and a spontaneous interruption; it does not change the failed recovery gate.
+The subsequent read-only [idle-path review](../research/c1-app-idle-path.md)
+found the request active before B unload and the C1 Wayland hook absent in
+the inspected SDL setup. Treat the local SDL flag as telemetry, not a
+verified TV inhibitor. The AirPlay ACK is not Endurance's. Establish an
+app-owned native interface and cleanup before another IPK; separate timer
+expiry from B teardown in the next bounded experiment.
 [Screensaver investigation](../research/c1-smp-ndl-resource-path.md#app-scoped-screensaver-review-and-011-retry)
 
 For this focused retry, require a fresh same-ELF smoke with owner confirmation

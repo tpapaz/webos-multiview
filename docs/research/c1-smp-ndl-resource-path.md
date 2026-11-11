@@ -443,3 +443,10 @@ The owner subsequently confirmed both clocks advancing together at spot
 checks and that the app disappeared by itself, without intentional input.
 Continuous visual coverage and visible A-only recovery remain unknown.
 [Long-run measurements and limits](../device-tests/lg-c1-phase-1.md#endurance-011-30-minute-run--overlap-reached-recovery-interrupted)
+
+The later [app-scoped idle trace](c1-app-idle-path.md) narrows that lead:
+the matched active request precedes B unload by about two seconds, its
+logged ACK is AirPlay's, and the inspected C1 SDL Wayland setup does not
+install the optional inhibition hook. B release is not the initiating event
+for that request; whether it unblocks a pending transition remains unknown.
+No new playback or IPK was used to reach this conclusion.

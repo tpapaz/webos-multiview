@@ -46,7 +46,12 @@ B release, failing the full recovery gate despite successful Unloads/exit.
 Retained logs show screensaver launch/foreground at that boundary. Investigate
 app-scoped idle handling before another long-run retry. The owner confirmed
 live clocks at spot checks and spontaneous disappearance without input;
-the full diagnostic remains failed. The earlier
+the full diagnostic remains failed. The
+read-only [idle-path review](research/c1-app-idle-path.md) now explains why
+the local SDL flag is insufficient: its inspected C1 Wayland backend does
+not install the screensaver hook. The active request also predates B release.
+No new IPK is prepared; native idle ownership/cleanup needs evidence first.
+The earlier
 host log-save error was fixed without an IPK change. Four repetition
 collectors flagged stderr; playback/cleanup passed, resource attribution is unknown.
 Keep all control IPKs. Installing 0.1.1 upgrades only the Endurance app;

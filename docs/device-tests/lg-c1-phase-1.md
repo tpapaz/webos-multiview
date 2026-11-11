@@ -879,6 +879,50 @@ focus-loss status and confirm both Unloads/exit. No source/IPK change,
 rebuild, TV configuration write or replay occurred. Next: inspect app-scoped
 idle inhibition and the B-release transition before another build/retry.
 
+### Read-only idle-path follow-up — request preceded B release
+
+On 2026-11-11 the owner authorized existing-log/firmware investigation before
+another IPK. After the owner restored TV reachability, read-only retrieval
+reconstructed the original snapshot from a rotated archive with its exact
+`2ed9462b...a23a3461` hash. The request timestamp was matched privately and
+replaced with `request_1`; raw tokens and process IDs were not retained.
+
+**Verified/log ordering:** EPL manager logged the active request at original
+line 4579, 13:15:04.408802 UTC; screen manager received the same request at
+4614, 13:15:04.411096 UTC. AirPlay's `_aw_adapter_responseScreenSaver` logged
+`ack: true` at 4636, 13:15:04.415198 UTC, with the same request timestamp.
+The registration callback at 4640 also matched it. This sequence is already
+underway roughly two seconds before the native B-unload region, rather than
+being initiated by that release. The AirPlay ACK is not an Endurance response.
+The subsequent launch/visibility/foreground sequence remains as recorded
+above. The archive later aged out of the observed retained messages files;
+the review preserves the redacted observations recovered before that happened.
+
+**Verified/static, candidate runtime implication:** the C1 SDL library's
+generic disable body (`0x72a10`) updates local state and optionally calls
+device callback `+0xec`. Its inspected Wayland factory (`0x830e8`) and init
+(`0x83b14`) do not install that hook. The local flag therefore cannot certify
+TV inhibition. Runtime patching was not exhaustively excluded. Inspected
+`libhelpers` app-state callbacks are local joystick-state dispatch, not an
+evidenced native idle inhibitor. REA export inventories and existing SDK
+binutils disassembly supplied static evidence; no native deep provider was
+available and no live attach/function call was made.
+
+The supported explanation is a pending timer-based screensaver request with
+no proven native inhibitor behind the app's SDL flag. Whether B teardown
+unblocks the pending transition or coincides with its launch delay remains
+**unknown**. A correct app-owned native hook, permission boundary and cleanup
+lifetime are not yet established. No new IPK or playback was performed,
+and the full 30-minute diagnostic remains failed. CPU/temp sampling and
+controls were not changed.
+
+[Complete idle-path review, hashes, addresses and limits](../research/c1-app-idle-path.md).
+Evidence: `build/reports/c1-phase1-idle-path-review-0.1.1.json`,
+`c1-phase1-idle-attribution-0.1.1.json` and
+`c1-phase1-sdl-idle-static-0.1.1.json`. Assertions checked request matching,
+ordering and ACK component; `git diff --check` and documentation-link checks
+validate this research-only change. No runtime tests/builds were run.
+
 Read-only inspection found an aarch64 kernel with ARM32 EABI5 soft-float
 userspace, glibc 2.28 and loader `/lib/ld-linux.so.3`. ARM binaries used
 CMake/Ninja under Ubuntu on WSL with the
