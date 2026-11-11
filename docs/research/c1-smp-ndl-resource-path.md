@@ -16,8 +16,14 @@ is made for this repetition run. The first five-minute attempt cancelled
 early while both players advanced and B crossed its first wrap. Retained
 screensaver launch/visibility is the leading lifecycle explanation, separate
 from the earlier MAIN_SCALER contention. Endurance 0.1.1 is prepared with
-app-scoped idle handling and distinct exit events, awaiting its own smoke
-and five-minute retry before the gated 30-minute run.
+app-scoped idle handling and distinct exit events. Its own smoke passed with
+owner-confirmed clocks; the five-minute retry completed with continuous
+callback/PTS progress, fixture loops and no recorded lifecycle exit.
+Owner in-run spot checks were positive; the visible ending was not observed.
+The 30-minute run subsequently reached its overlap target but lost focus
+731 ms after B release, before the A-only recovery completed. Screensaver
+launch/foreground is recorded at this boundary. The full diagnostic failed;
+effective app-scoped idle handling at this transition needs investigation.
 [Current decision](../decisions/0002-main-sub-validation.md),
 [device evidence](../device-tests/lg-c1-phase-1.md) and
 [run procedure](../build.md#repeatability-and-endurance).
@@ -383,7 +389,7 @@ imports, including `SDL_SetHintWithPriority`. C1 SDL library SHA-256 remains
 This verifies ABI availability, not backend policy effectiveness. SDL's own
 enabled flag is process state, not a compositor/power-service acknowledgement.
 
-**Candidate implementation, built but not TV-tested:** 0.1.1 adds Type 2
+**Implementation, now smoke- and five-minute-TV-tested with visual spot checks:** 0.1.1 adds Type 2
 metadata for this app, initializes SDL with saver allowed at the menu,
 then explicitly disables it after a playback request while the SDL window
 exists. A scoped guard restores the prior state after player teardown,
@@ -403,3 +409,37 @@ it cannot isolate which one prevented a saver. A 30-minute success must be
 measured separately, since Type 2 alone does not guarantee that duration
 after time spent at the menu. No global idle policy or protection service
 is changed. No upstream implementation code was copied.
+
+The 0.1.1 retry subsequently completed 300.044 s of overlap, 10 A / 20 B
+feed wraps with monotonically advancing sampled callback PTS, native A
+continuation and clean teardown/exit. No run exit event or progress error
+was recorded, and local SDL inhibition/restoration paired correctly. The
+owner reported two positive in-run spot checks but did not check the ending.
+This verifies the combined setup's bounded five-minute result, with those
+visual limits; it does not identify which control prevented the prior
+screensaver interruption or prove continuous resource ownership. The next
+30-minute run requires separate evidence.
+[Complete retry measurements](../device-tests/lg-c1-phase-1.md#endurance-011-five-minute-retry--telemetry-pass-with-owner-spot-checks)
+
+The later 30-minute run reached 1800.033 s of overlap and 60 A / 120 B
+feed loops, with zero bad sampled progress intervals. B unloaded at the
+planned endpoint; 731 ms later, the new native logging identified
+`focus_lost`, before the required three-second A recovery completed. Both
+players unloaded, SDL local state was restored and process exit was confirmed;
+native/controller status remained cancellation/failure. This is a reached
+duration target, not a full diagnostic pass.
+
+Retained final-window logs verify screensaver launching, visible=true and
+foreground at the same boundary (snapshot hash
+`2ed9462b2a13cc81e607b9fdb48cd8bb67e23a6d89fd3e6cd0a50243a23a3461`,
+source lines 4969/4981, 5038 and 5060/5063). A screensaver-driven focus change
+is therefore the concrete lead. The reason it occurred after B release,
+and whether idle expiration or changed video eligibility triggered it, remain
+unknown. Local SDL inhibition alone is not evidence that the TV service
+accepted or retained a matching inhibitor. Inspect that app-scoped backend
+and transition before another IPK; do not mask focus loss, fake user input
+or change TV screen-protection policy.
+The owner subsequently confirmed both clocks advancing together at spot
+checks and that the app disappeared by itself, without intentional input.
+Continuous visual coverage and visible A-only recovery remain unknown.
+[Long-run measurements and limits](../device-tests/lg-c1-phase-1.md#endurance-011-30-minute-run--overlap-reached-recovery-interrupted)

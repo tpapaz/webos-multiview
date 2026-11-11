@@ -18,8 +18,8 @@ and A stayed live after B release; cleanup and process exit passed. Logs
 attribute MAIN_SCALER to A and SUB_SCALER to B with distinct decoder
 allocations. This is a short video-only result, not physical-input evidence.
 
-Phase 1 remains active: continuous stability, fixture wraps, wider independent
-geometry and audio focus need validation. The separate endurance 0.1.0 IPK
+Phase 1 remains active: 30-minute recovery/idle handling, final-candidate repeatability,
+wider independent geometry and audio focus need validation. The endurance 0.1.0 IPK
 is built locally, packaged and C1 ABI-checked. Smoke and 20 distinct app
 start/exit cycles passed progress, A continuation, cleanup and exit. The
 owner confirmed both clocks and normal viewing afterward. Four cycle
@@ -31,14 +31,28 @@ launch/visibility in retained logs is the leading lifecycle explanation;
 the exact SDL event remains unknown. Endurance 0.1.1 now requests app-scoped
 SDL inhibition during bounded playback, restores it afterward, selects the
 LG app-specific Type 2 idle policy and logs distinct exits. It is locally
-built/packaged/C1 ABI-checked, **not TV-tested**. CPU samples were collected; standard temperature paths
+built/packaged/C1 ABI-checked and now smoke-TV-tested: native progress,
+SDL local inhibition/restoration, cleanup/exit and owner-observed clocks
+passed. Its five-minute retry then completed 300.044 s of overlap, 10 A / 20 B
+fixture loops, native A continuation, cleanup and exit, without a recorded
+lifecycle exit. The owner reported two positive in-run spot checks but did
+not observe the ending. CPU samples were collected; standard temperature paths
 exposed no readable sensors. [Attempt details](docs/device-tests/lg-c1-phase-1.md#five-minute-c1-attempt--interrupted-not-a-duration-pass)
+The 0.1.1 30-minute run reached 1800.033 s of concurrent progress, with
+60 A / 120 B loops and zero bad sampled intervals. Focus loss 731 ms after
+B release interrupted the required three-second A recovery. Both Unloads,
+SDL restoration and process exit succeeded. Logs show screensaver launch
+and foreground takeover at that boundary. The **full diagnostic failed**;
+30-minute overlap is established separately from recovery. The owner confirmed
+both clocks advancing at spot checks and spontaneous app disappearance,
+without Home/Back/input/app changes. Continuous visual coverage and normal
+viewing afterward remain unknown. [Long-run record](docs/device-tests/lg-c1-phase-1.md#endurance-011-30-minute-run--overlap-reached-recovery-interrupted)
 Current gates:
 
 1. Completed: eight-second smoke cycle with owner-confirmed visible overlap and A continuity.
 2. Completed: 20 distinct app start/exit cycles with owner-confirmed clocks and normal viewing.
-3. Pending: install 0.1.1, pass its own smoke test, then retry five minutes including wraps and owner spot checks.
-4. Pass 30 minutes, then review cleanup, logs and normal viewing after exit.
+3. Completed: 0.1.1 smoke and five-minute telemetry/cleanup with fixture wraps and owner spot checks; visible ending unknown.
+4. Pending: 30-minute overlap reached; resolve focus loss after B release and pass the full recovery gate.
 5. Prepare wider independent geometry and audio-focus experiments separately.
 
 The targeted 0.1.1 five-minute lifecycle retry requires its own same-build

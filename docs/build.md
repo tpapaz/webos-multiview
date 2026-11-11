@@ -37,8 +37,16 @@ main/sub 0.1.0 package passed short C1 playback; the separate endurance
 with owner-confirmed clocks, A continuation and normal viewing afterward.
 The first five-minute attempt cancelled early around a screensaver transition;
 it did not pass the duration gate. Endurance **0.1.1** is now locally built,
-packaged and C1 ABI-checked, **not TV-tested**, with app-scoped screensaver
-requests and distinct exit-event logs. The earlier
+packaged, C1 ABI-checked and **smoke-TV-tested**, with owner-confirmed clocks,
+app-scoped screensaver requests and distinct exit-event logs. Its five-minute
+retry completed 300.044 s of overlap and fixture loops without a recorded
+lifecycle exit; owner spot checks were positive, the ending unobserved.
+The 30-minute run then reached 1800.033 s overlap but lost focus 731 ms after
+B release, failing the full recovery gate despite successful Unloads/exit.
+Retained logs show screensaver launch/foreground at that boundary. Investigate
+app-scoped idle handling before another long-run retry. The owner confirmed
+live clocks at spot checks and spontaneous disappearance without input;
+the full diagnostic remains failed. The earlier
 host log-save error was fixed without an IPK change. Four repetition
 collectors flagged stderr; playback/cleanup passed, resource attribution is unknown.
 Keep all control IPKs. Installing 0.1.1 upgrades only the Endurance app;

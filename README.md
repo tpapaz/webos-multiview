@@ -16,10 +16,20 @@ passed native progress and cleanup. The owner confirmed both clocks advancing
 together, A continuing after B release and normal viewing after the final exit.
 The first five-minute attempt cancelled after about 21 seconds; logs point
 to a screensaver/lifecycle interruption while both players were advancing.
-Endurance **0.1.1** is now locally built, packaged and C1 ABI-checked, **not
-TV-tested**. It requests app-scoped screensaver handling and logs distinct
-exit events. Install it, pass a fresh smoke check, then retry five-minute
-continuous playback with CPU/temperature sampling before the gated 30-minute run.
+Endurance **0.1.1** is locally built, packaged, C1 ABI-checked and now
+**TV-tested through five-minute playback**, with owner-confirmed smoke clocks
+and two positive in-run spot checks. It
+requests app-scoped screensaver handling and logs distinct exit events.
+The retry completed 300.044 s of concurrent progress and 10/20 fixture loops,
+with native A continuation, cleanup/exit and no recorded lifecycle exit.
+The owner did not observe the ending. The subsequent 30-minute test reached
+**1800.033 s of overlap**, then lost focus 731 ms after B release, interrupting
+the required A-only recovery. Both Unloads and app exit succeeded; retained
+logs show the screensaver taking the foreground. The full diagnostic did
+**not pass**. The owner confirmed advancing clocks at spot checks and that
+the app disappeared without intentional input. Next: investigate app-scoped
+idle handling at this transition.
+Continuous visible coverage, final-candidate repeatability and audio remain separate.
 The 0.1.0 repeatability result does not certify the new binary.
 Audio focus and wider independent
 geometry remain untested. See the [current procedure](docs/build.md#repeatability-and-endurance).

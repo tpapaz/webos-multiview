@@ -43,7 +43,22 @@ readable sensors. Each later gate still requires its own evidence.
 The targeted 0.1.1 lifecycle retry uses documented LG
 `screenSaverProperties.preferredType: 2` plus a playback-scoped SDL inhibition
 request, restored after cleanup. It logs each exit cause separately, retaining
-focus-loss safety. These are candidate C1 controls, not a verified fix.
+focus-loss safety. A repeated 0.1.1 smoke run passed native progress, local
+SDL state restoration, cleanup/exit and owner-observed clocks. Its five-minute
+retry then passed 300.044 s overlap, repeated fixture wraps, native A
+continuation, cleanup/exit and zero recorded lifecycle exits. Two owner
+spot checks were positive; the visible ending and continuous picture coverage
+remain unknown. This verifies the combined policy for this bounded run,
+not either mechanism individually or 30-minute behavior.
+The subsequent 30-minute run reached its overlap target but recorded focus
+loss 731 ms after B release, before the required A-only recovery completed.
+Retained logs show screensaver launch/foreground at this transition, despite
+SDL's local inhibited flag. Cleanup/exit succeeded, but the full diagnostic
+failed. Investigate the effective app-scoped idle backend and B-release
+transition before another IPK or long-run retry; retain focus-loss safety.
+The owner confirmed both clocks advancing at spot checks and no intentional
+Home/Back/input/app action at disappearance. That supports observed playback
+and a spontaneous interruption; it does not change the failed recovery gate.
 [Screensaver investigation](../research/c1-smp-ndl-resource-path.md#app-scoped-screensaver-review-and-011-retry)
 
 For this focused retry, require a fresh same-ELF smoke with owner confirmation
