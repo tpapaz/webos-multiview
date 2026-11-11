@@ -5,6 +5,7 @@ const {setTimeout: delay} = require('node:timers/promises');
 
 const root = path.resolve(__dirname, '..');
 const targets = {
+    endurance: ['phase1-endurance', 'endurance', 'multiview-endurance'],
     sinks: ['phase1-sinks', 'sinks', 'multiview-sinks'],
     smp: ['phase1', 'arm', 'multiview-phase1'],
     ndl: ['phase1-ndl', 'ndl', 'multiview-ndl'],
@@ -36,7 +37,7 @@ function command(client, text) {
             let output = '';
             stream.on('data', data => {
                 output += data;
-                if (output.length > 256 * 1024) {
+                if (output.length > 512 * 1024) {
                     reject(new Error('App telemetry exceeded its read limit'));
                     stream.destroy();
                 }
@@ -57,7 +58,7 @@ function command(client, text) {
 
 async function openNativeApp(client, build) {
     const {id, executable, version, title, hash} = build;
-    if (!/^io\.github\.tpapaz\.multiview\.(phase1|ndl|mixed|sinks)$/.test(id))
+    if (!/^io\.github\.tpapaz\.multiview\.(phase1|ndl|mixed|sinks|endurance)$/.test(id))
         throw new Error('Unknown diagnostic app ID');
     const install = `/media/developer/apps/usr/palm/applications/${id}`;
     const jail = `/var/palm/jail/${id}`;
@@ -93,11 +94,12 @@ async function openNativeApp(client, build) {
         throw new Error('App telemetry descriptor unavailable');
     const [descriptor] = fds;
     const signal = name => {
-        const allowed = id.endsWith('.ndl') ? ['USR1', 'TERM'] : ['USR1', 'USR2', 'TERM'];
+        const allowed = id.endsWith('.endurance') ? ['USR1', 'USR2', 'HUP', 'TERM'] : id.endsWith('.ndl') ? ['USR1', 'TERM'] : ['USR1', 'USR2', 'TERM'];
         if (!allowed.includes(name)) throw new Error('Unsupported app control');
         return remote(`${identity} && ${hashCheck} && kill -${name} ${pid}`);
     };
     return {
+        identityToken: crypto.createHash('sha256').update(`${pid}:${started}:${hash}`).digest('hex'),
         trace: () => remote(`${identity} && case "$(readlink ${descriptor})" in ` +
             `${tracePath}) cat ${descriptor};; *) exit 1;; esac`),
         signal,
@@ -113,10 +115,24 @@ async function openNativeApp(client, build) {
     };
 }
 
+// Fixed app-only launch for explicitly requested repeatability runs.
+async function launchEnduranceApp(client, build) {
+    if (build.id !== 'io.github.tpapaz.multiview.endurance' || build.executable !== 'multiview-endurance' || !/^[a-f0-9]{64}$/.test(build.hash))
+        throw new Error('Unknown repeatability app');
+    const install = `/media/developer/apps/usr/palm/applications/${build.id}`;
+    const manifest = JSON.parse(await command(client, `cat '${install}/appinfo.json'`));
+    if (manifest.id !== build.id || manifest.version !== build.version || manifest.main !== build.executable)
+        throw new Error('Installed repeatability build mismatch');
+    await command(client, `test "$(sha256sum '${install}/${build.executable}' | cut -d' ' -f1)" = '${build.hash}'`);
+    const payload = '{"id":"io.github.tpapaz.multiview.endurance"}';
+    const reply = JSON.parse(await command(client, `luna-send -n 1 luna://com.webos.applicationManager/launch '${payload}'`));
+    if (reply.returnValue !== true) throw new Error('Repeatability app launch rejected');
+}
+
 function saveReport(name, build, rows, details = {}) {
     const report = path.join(root, 'build/reports', name + '.json');
     fs.mkdirSync(path.dirname(report), {recursive: true});
     fs.writeFileSync(report, JSON.stringify({schemaVersion: 1, appId: build.id, appVersion: build.version, binarySha256: build.hash, rows, ...details}, null, 2) + '\n');
 }
 
-module.exports = {nativeBuild, openNativeApp, saveReport, command};
+module.exports = {nativeBuild, openNativeApp, saveReport, command, launchEnduranceApp};

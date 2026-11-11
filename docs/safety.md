@@ -40,6 +40,25 @@ the test app. The browser controller checks the specific Inspector target over
 a temporary loopback tunnel. Both use the authorized local profile and save
 reports on the development PC. [Phase 1 protocol](device-tests/lg-c1-phase-1.md)
 
+The endurance app loops only those fixtures on SMP main/sub. The repetition
+runner confirms this app exits before a fixed application-manager launch
+of the exact app ID and installed ELF. It cannot select arbitrary launch
+targets. It checks process identity before signals and stops on failure.
+The owner opens the first menu; subsequent launches are part of the
+explicitly requested bounded repetition sequence.
+
+Profiles are eight seconds of dual overlap per cycle (at most 20 cycles),
+five minutes or 30 minutes, plus startup/recovery/cleanup. Longer profiles
+require same-build reports and human visual checks. Native progress/feed
+watchdogs and a hard alarm bound failures; an alarm or unconfirmed exit
+is not successful cleanup. Back, focus loss and Ctrl+C cancel. Fixture
+clocks reset at stream wraps; native PTS must keep advancing.
+
+Long playback collects resource logs in startup/final windows, not continuously.
+Retained logs are correlated privately for A/B ownership; arbitrary vendor
+strings, raw registration IDs and SSH identifiers stay out of shared reports.
+Human observations remain separate from telemetry. [Run procedure](build.md#repeatability-and-endurance)
+
 If the app or optional helper misbehaves, close **only this app** or interrupt
 the foreground CLI. Stop testing on any unexpected input/mode/service behavior.
 Use the physical remote's normal Home/Back/Input controls to restore viewing.

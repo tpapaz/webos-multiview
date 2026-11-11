@@ -1,0 +1,10 @@
+{
+  "id": "io.github.tpapaz.multiview.endurance",
+  "version": "0.1.0",
+  "vendor": "tpapaz",
+  "type": "native",
+  "main": "multiview-endurance",
+  "title": "MultiView Main + Sub Endurance",
+  "icon": "icon.png",
+  "requiredACG": []
+}

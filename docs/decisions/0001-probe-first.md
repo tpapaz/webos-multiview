@@ -2,6 +2,10 @@
 
 Status: accepted for Phase 0. Date: 2026-11-09.
 
+Historical scope: this decision describes the completed passive Phase 0.
+The active Phase 1 direction is [SMP main/sub validation](0002-main-sub-validation.md);
+its owner-authorized local playback probes are recorded separately.
+
 The defining outcome is independent live HDMI 1 + HDMI 2 on the TV's own hardware.
 Root, a decoder, an overlay window and output capture establish different things;
 none of the audited sources establishes this outcome on C1.

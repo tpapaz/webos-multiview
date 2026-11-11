@@ -31,6 +31,12 @@ and payload bytes. Archive timestamps can change the package hash.
 
 ## Phase 1 local clip packages
 
+Current direction: native SMP A `main_video` + B `sub_video`. The staged
+main/sub 0.1.0 package passed short C1 playback; the separate endurance
+0.1.0 package below is built/packaged/ABI-checked and **not yet TV-tested**.
+Keep all installed control apps/IPKs. Installation of the endurance app
+does not replace them. [Evidence](device-tests/lg-c1-phase-1.md)
+
 On Windows, use PowerShell with FFmpeg and FFprobe on PATH. For the ARM
 packages, install Ubuntu in WSL with CMake, Ninja, Python 3, binutils, Node 22
 and the [2026.08 Linux webOS SDK](https://github.com/openlgtv/buildroot-nc4/releases/tag/2026.08-webos).
@@ -59,6 +65,7 @@ The SMP build uses `native/phase1` with output `build/phase-1/arm` and
 |---|---|---|
 | HTML5 comparison | `io.github.tpapaz.multiview.browser_0.1.0_all.ipk` | `node scripts/run-phase1-browser-ssh.cjs` |
 | Native SMP stages | `io.github.tpapaz.multiview.phase1_0.1.4_arm.ipk` | `node scripts/run-phase1-ssh.cjs` |
+| Main/sub endurance (next) | `io.github.tpapaz.multiview.endurance_0.1.0_arm.ipk` | `node scripts/run-phase1-endurance-ssh.cjs --repeat --cycles 1` |
 | SMP main/sub sinks | `io.github.tpapaz.multiview.sinks_0.1.0_arm.ipk` | `node scripts/run-phase1-sinks-ssh.cjs --solo-b` |
 | Mixed SMP A + NDL B | `io.github.tpapaz.multiview.mixed_0.1.0_arm.ipk` | `node scripts/run-phase1-mixed-ssh.cjs` |
 | Native NDL v2 solo | `io.github.tpapaz.multiview.ndl_0.1.1_arm.ipk` | `node scripts/run-phase1-ndl-ssh.cjs` |
@@ -66,7 +73,100 @@ The SMP build uses `native/phase1` with output `build/phase-1/arm` and
 Use an authorized local SSH profile. Pass its alias to the runner if
 several root profiles are configured. [C1 playback record](device-tests/lg-c1-phase-1.md)
 
+### Repeatability and endurance
+
+Install `dist/io.github.tpapaz.multiview.endurance_0.1.0_arm.ipk` through
+Dev Manager. Open **MultiView Main + Sub Endurance** to its menu and leave
+the remote buttons alone. This is separate from the staged control app.
+Start with one smoke cycle:
+
+```powershell
+node scripts/run-phase1-endurance-ssh.cjs --repeat --cycles 1
+```
+
+Watch A start left, then B right. Both clocks should advance together for
+eight seconds; B should disappear and A should continue for three seconds.
+The controller closes the app and confirms exit. After a passing smoke
+result and visual check, reopen its menu and run:
+
+```powershell
+node scripts/run-phase1-endurance-ssh.cjs --repeat
+```
+
+This runs 20 cycles, closing the app after each and launching a new process
+of **only this verified app** for subsequent cycles. Every process is checked
+against the installed manifest and local ELF hash. Spot-check both clocks
+across the sequence and normal viewing afterward. A failure stops the
+sequence. Append an optional local SSH profile alias to any command.
+
+Attach the owner's actual observations to the report's `ownerObservation`
+(`spotChecksPassed: true`, plus a factual note) only after confirmation.
+The runner never infers visible playback from telemetry. The five-minute
+command requires the same ELF's passing 20-cycle report, clean exits and
+this observation. Reopen the menu before each longer run:
+
+```powershell
+node scripts/run-phase1-endurance-ssh.cjs --minutes 5
+# After a passing five-minute report and owner-confirmed clocks:
+node scripts/run-phase1-endurance-ssh.cjs --minutes 30
+```
+
+The 30-minute prerequisite is the five-minute report with
+`ownerObservation.bothClocksAdvancedTogether: true` (or confirmed spot checks).
+Durations measure **concurrent overlap** after both players establish
+progress, followed by B release and three seconds of A recovery. The same
+30 s A / 15 s B fixtures loop without player reloads. Burned-in clocks reset
+at fixture boundaries; native feed/callback PTS must stay monotonic. Watch
+for black output or freezes at wraps. This package holds the left/right
+layout; wider geometry and audio-focus tests remain separate.
+
+Back, loss of focus or Ctrl+C cancels and requests normal teardown. Limits:
+eight seconds without first frames, five seconds without callback/PTS
+progress, eight seconds without accepted feed packets, native deadline
+requested seconds +30, hard process alarm +35. An alarm is **not clean
+cleanup evidence**. Host control and SSH reads also have bounded waits.
+Manual menu keys: Left eight seconds, Right five minutes, OK 30 minutes;
+use SSH for report collection and prerequisite enforcement.
+
+Versioned JSON (`schemaVersion: 1`) is saved under `build/reports/`:
+
+- `c1-phase1-endurance-repeat-1-0.1.0.json` (smoke).
+- `c1-phase1-endurance-repeat-20-0.1.0.json`.
+- `c1-phase1-endurance-minutes-5-0.1.0.json`.
+- `c1-phase1-endurance-minutes-30-0.1.0.json`.
+
+Copy reports before repeating a profile; filenames are reused. Reports
+contain per-cycle frame/PTS/packet/loop rows, duration/continuity assessment,
+Unload results, process exit, build identity, errors and separate unknown
+visual/audio/HDMI fields. Long runs save checkpoints each minute. Short
+cycles capture resource categories throughout; long runs capture startup
+and final windows only. Each collector is capped at 4 MiB/2000 projected
+entries. Separate A/B attribution is required; these windows do not prove
+continuous resource ownership during the unsampled middle of a long run.
+
+Build locally in PowerShell using the existing WSL SDK and fixtures. With
+`$repo` and `$sdk` set as above:
+
+```powershell
+wsl -d Ubuntu --exec cmake -S "$repo/native/phase1-endurance" -B "$repo/build/phase-1/endurance" -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_TOOLCHAIN_FILE=$sdk/share/buildroot/toolchainfile.cmake"
+wsl -d Ubuntu --exec cmake --build "$repo/build/phase-1/endurance"
+./scripts/package-phase1.ps1 -Target endurance -LinuxNode /home/tasos/.cache/webos-multiview/node-v22.17.0-linux-x64/bin/node
+wsl -d Ubuntu --exec python3 "$repo/scripts/verify-ipk.py" --endurance "$repo/dist/io.github.tpapaz.multiview.endurance_0.1.0_arm.ipk"
+node scripts/verify-mixed-abi.cjs --endurance
+```
+
+The ABI check reads fixed firmware libraries without starting playback.
+Host checks: `npm test`, `npm run lint` and the standalone watchdog test:
+
+```powershell
+wsl -d Ubuntu --exec g++ -std=c++14 -Wall -Wextra -Wpedantic -Werror "$repo/tests/host/progress_watch_test.cpp" -o "$repo/build/phase-1/progress-watch-test"
+wsl -d Ubuntu --exec "$repo/build/phase-1/progress-watch-test"
+```
+
 ### Mixed SMP + NDL build and test
+
+Historical comparison/control: its default route did not show visible overlap.
+Use the main/sub endurance sequence for current validation.
 
 Reuse `build/phase-1/media/clip-a.h264` (30 s) and `clip-b.h264` (15 s).
 Do not regenerate the fixtures for this comparison. From the repository in
@@ -254,7 +354,7 @@ readelf --version-info build/tv/multiview-probe
 Review ELF architecture (expected candidate: ARM 32 bit, verify against device),
 interpreter, DT_NEEDED and GLIBC/GLIBCXX symbol versions against the **exact C1
 firmware** before transfer. The portable inventory is a separate CLI. The
-two Phase 1 ARM packages use the TV's own shared libraries.
+Phase 1 ARM packages use the TV's own shared libraries.
 
 ## Human-operated web package installation
 

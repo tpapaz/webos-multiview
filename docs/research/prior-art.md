@@ -1,5 +1,10 @@
 # Prior-art audit
 
+Historical upstream audit, retained for provenance and licensing boundaries.
+Current C1 results and direction are in the [Phase 1 device record](../device-tests/lg-c1-phase-1.md),
+[firmware/resource investigation](c1-smp-ndl-resource-path.md) and
+[main/sub decision](../decisions/0002-main-sub-validation.md).
+
 Audit date: 2026-11-09 UTC. Default branches were downloaded as shallow trees and
 pinned below. This is static source/documentation research, **not TV testing**.
 No source, proprietary headers, binaries or artwork from these projects is copied
@@ -7,7 +12,8 @@ into this repository. Repository guidance was supplied by the user in the ZIP.
 
 `verified` below means the narrow fact is directly visible in the cited source;
 upstream hardware reports are attributed reports, not our verification. C1
-model, firmware, backend and logs are **unknown** until a consented physical test.
+model, firmware, backend and logs were **unknown at this initial audit**;
+later consented device results are recorded in the linked Phase 1 record.
 No public dual-HDMI demonstration was found in this bounded set of sources;
 that is not a proof of hardware impossibility.
 

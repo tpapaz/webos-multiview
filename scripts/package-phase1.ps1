@@ -1,4 +1,4 @@
-param([string]$LinuxNode = 'node', [ValidateSet('smp', 'ndl', 'mixed', 'sinks')][string]$Target = 'smp')
+param([string]$LinuxNode = 'node', [ValidateSet('smp', 'ndl', 'mixed', 'sinks', 'endurance')][string]$Target = 'smp')
 
 $ErrorActionPreference = 'Stop'
 
@@ -27,6 +27,12 @@ if ($Target -eq 'sinks') {
     $binaryDir = 'sinks'
     $executable = 'multiview-sinks'
     $stageName = 'package-sinks'
+}
+if ($Target -eq 'endurance') {
+    $nativeDir = 'phase1-endurance'
+    $binaryDir = 'endurance'
+    $executable = 'multiview-endurance'
+    $stageName = 'package-endurance'
 }
 $binary = Join-Path $build "$binaryDir/$executable"
 $source = Join-Path $root "native/$nativeDir"
@@ -73,6 +79,12 @@ try {
     if ($Target -eq 'ndl') {
         $canvas.DrawString('Phase 1 / NDL DirectMedia v2', $heading, $white, 54, 46)
         $canvas.DrawString("OK       Play the single local clip`nBACK  Close", $body, $white, 54, 116)
+    } elseif ($Target -eq 'endurance') {
+        $canvas.DrawString('Phase 1 / Main + Sub Endurance', $heading, $white, 54, 46)
+        $canvas.DrawString("LEFT     Short dual-playback cycle`nRIGHT   Five-minute dual playback`nOK         Thirty-minute dual playback`nBACK     Cancel, clean up and close", $body, $white, 54, 116)
+        $canvas.DrawString('SSH runner checks cycles and closes/reopens this app.', $small, $white, 54, 320)
+        $canvas.DrawString('Clip clocks wrap every 30 s / 15 s; PTS stays monotonic.', $small, $white, 54, 365)
+        $canvas.DrawString('Use the one-cycle smoke test before repeated/long tests.', $small, $white, 54, 410)
     } elseif ($Target -eq 'sinks') {
         $canvas.DrawString('Phase 1 / Main + Sub SMP', $heading, $white, 54, 46)
         $canvas.DrawString("LEFT     B-only sub_video control`nOK         Start A main_video on the left`nRIGHT   Step B: window / construct / foreground`n               Load / Feed / Play / smaller geometry`nDOWN   Release B; observe A recovery`nBACK     Cancel and close", $body, $white, 54, 116)

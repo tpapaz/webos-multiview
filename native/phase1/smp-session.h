@@ -90,7 +90,7 @@ public:
 
     void enableFeed() {
         feeding_ = true;
-        feedClock_ = Clock::now();
+        feedClock_ = lastAccepted_ = Clock::now();
     }
 
     bool requestPlay() {
@@ -117,6 +117,8 @@ public:
     }
 
     const char* windowId() const { return window_; }
+    void loopFixture() { looping_ = true; }
+    unsigned loops() const { return loops_; }
     unsigned packets() const { return static_cast<unsigned>(fed_); }
     unsigned frames() const { return frames_.load(); }
     unsigned positionMs() const { return positionMs_.load(); }
@@ -133,13 +135,21 @@ public:
         }
 
         if (!feeding_) return State::running;
+        if (looping_ && now - lastAccepted_ > 8s) return stopped("feed acceptance timeout");
         const auto pts = std::chrono::nanoseconds(1000000000LL * fed_ / fps);
         if (eosSent_ || now - feedClock_ < pts) return State::running;
         if (packet_.empty()) {
             size_t size;
             if (!(index_ >> size)) {
-                if (!index_.eof() || media_.peek() != std::char_traits<char>::eof() || !fed_)
+                if (!index_.eof() || media_.peek() != std::char_traits<char>::eof() || fed_ == loopStartFed_)
                     return stopped("fixture index mismatch");
+                if (looping_) {
+                    media_.clear(); index_.clear();
+                    media_.seekg(0); index_.seekg(0);
+                    if (!media_ || !index_) return stopped("fixture rewind failed");
+                    loopStartFed_ = fed_; ++loops_;
+                    return State::running;
+                }
                 if (!player_->pushEOS()) return stopped("EOS rejected");
                 eosSent_ = true;
                 return State::running;
@@ -159,6 +169,7 @@ public:
             return State::running;
         if (reply.find("Ok") == std::string::npos) return stopped("Feed rejected");
         packet_.clear();
+        lastAccepted_ = now;
         if (++fed_ == 1 && !manualPlay_ && !requestPlay()) return State::failed;
         return State::running;
     }
@@ -171,7 +182,7 @@ private:
         switch (type) {
             case PF_EVENT_TYPE_STR_STATE_UPDATE__LOADCOMPLETED: session.loaded_ = true; break;
             case PF_EVENT_TYPE_FRAMEREADY:
-                if (value >= 0 && value <= 60000000000LL) session.positionMs_ = static_cast<unsigned>(value / 1000000);
+                if (value >= 0 && value <= 3600000000000LL) session.positionMs_ = static_cast<unsigned>(value / 1000000);
                 ++session.frames_;
                 break;
             case PF_EVENT_TYPE_STR_STATE_UPDATE__ENDOFSTREAM: session.ended_ = true; break;
@@ -198,8 +209,10 @@ private:
     std::unique_ptr<StarfishMediaAPIs> player_;
     std::atomic<bool> loaded_{false}, error_{false}, ended_{false};
     std::atomic<unsigned> frames_{0}, positionMs_{0};
-    Clock::time_point feedClock_, playClock_;
-    int fed_ = 0;
+    Clock::time_point feedClock_, playClock_, lastAccepted_;
+    int fed_ = 0, loopStartFed_ = 0;
+    unsigned loops_ = 0;
+    bool looping_ = false;
     bool positioned_ = false, loadAttempted_ = false, eosSent_ = false;
     bool feeding_ = false, automaticPlay_ = false, manualPlay_ = false;
 };

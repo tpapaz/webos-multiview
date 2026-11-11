@@ -7,7 +7,31 @@ with visible clocks. A originally ran 12 s and was extended to 30 s for
 staging. B runs 15 s. The packaged tests are video-only. Audio focus and
 simultaneous physical HDMI remain **unknown**.
 
-## Native SMP
+## Current conclusion and next gate
+
+**Verified on this device:** staged SMP A `main_video` + B `sub_video`
+showed both clocks advancing together, independent B movement/scaling and
+A continuity after B release. B-only and Load-only controls passed first.
+The owner saw only A during Load-only, as expected with no B packets.
+
+Earlier default-main SMP and mixed SMP/NDL paths failed visible overlap.
+Retained logs established that B's presentation registration took A's
+MAIN_SCALER, even though B's media registration already held SUB_SCALER.
+Explicit Load-time sink selection resolved that measured short-run failure.
+[Exact firmware path and ownership evidence](../research/c1-smp-ndl-resource-path.md)
+
+The current task is repeatability and endurance, using a separate package.
+Endurance 0.1.0 is **built, packaged and C1 ABI-checked, not yet TV-tested**.
+Run one smoke cycle, then 20 fresh-process cycles, then gated five-minute
+and 30-minute overlap tests. [Install/run instructions](../build.md#repeatability-and-endurance)
+and [decision](../decisions/0002-main-sub-validation.md).
+
+The history below consolidates the owner observations and recorded traces;
+its initial unknowns are resolved only where later evidence explicitly says so.
+Phase 1 is still active: long stability, repeated cleanup, wider independent
+geometry and audio focus remain unverified. Physical HDMI concurrency is unknown.
+
+## Native SMP — historical default-main comparison
 
 One SMP player and SDL exported window per clip. The
 [upstream sample](https://github.com/webosbrew/samples/blob/e95eed3afa7896894f811b84d8e9e277e9e2b74c/media/smp/webos5/exported_window.c#L11-L109)
@@ -47,8 +71,9 @@ option change in 0.1.4. The separate B-only run (Right) ended after 8.024 s
 with zero frame callbacks across seven samples, consistent with the
 eight-second first-frame timeout. Both staged runs exited cleanly.
 
-**Unknown:** actual decoder selection, resource or policy decision, and
-visible clock overlap during the SSH runs. Load and Feed can start native
+**Unknown for these historical runs:** actual decoder selection, resource
+decision and visible overlap. Later mixed-run logs establish a presentation
+handover for that separate comparison. Load and Feed can start native
 work before explicit Play. The
 [uMediaServer acquisition queue](https://github.com/webosose/umediaserver/blob/af89f8ac3355027a90d7b299a78fb6fab9b6ffca/src/resource_manager/AcquireQueue.cpp#L114-L146)
 documents resource reclamation as a **candidate** explanation. The C1
@@ -120,47 +145,11 @@ app ID `io.github.tpapaz.multiview.mixed`. The owner-confirmed NDL solo result
 above satisfies the prerequisite for this comparison. No open repository
 issues were returned by the connected GitHub issue search on this date.
 
-Implementation plan: share the existing SMP session and C1 NDL C adapter;
-start SMP A left and establish callback/PTS progress; stage NDL Init,
-foreground, Load, SetArea right, and feeding separately; release B and
-measure A recovery; preserve app-scoped control, bounded execution, cleanup,
-and human observation as separate evidence. The acceptance gate for this
-experiment is an attributable stage trace plus owner-observed clock overlap
-or its absence, not completion of the full Phase 1 gate.
-
-The package reuses the same video-only local clips. A's frame/PTS baseline
-and two-second measurements surround each stage; begin/end records also
-identify time spent inside native calls. Foreground `-1` is recorded but
-continues to Load, matching the verified solo control. B feeding is held
-for at least 6.5 s, then released before EOF so A's 30 s fixture still has
-room for the three-second recovery check. All NDL event counts and accepted
-packets are telemetry, not a visible-overlap verdict. The runner asks the
-owner whether both clocks visibly advanced together after saving the trace.
-[Build and SSH procedure](../build.md#mixed-smp--ndl-build-and-test).
-
-Validation on 2026-11-11:
-
-- `wsl -d Ubuntu --exec cmake --build /mnt/d/Development/webos-multiview/build/phase-1/mixed`
-  passed with `-Wall -Wextra -Wpedantic -Werror` using the existing 2026.08 ARM SDK.
-- `./scripts/package-phase1.ps1 -Target mixed -LinuxNode /home/tasos/.cache/webos-multiview/node-v22.17.0-linux-x64/bin/node`
-  built the IPK. The packaging helper now removes CR from its Linux shell body.
-- `wsl -d Ubuntu --exec python3 /mnt/d/Development/webos-multiview/scripts/verify-ipk.py --mixed /mnt/d/Development/webos-multiview/dist/io.github.tpapaz.multiview.mixed_0.1.0_arm.ipk`
-  passed exact file allowlist, payload bytes, metadata and executable mode 0755.
-  FFprobe validated both access-unit indexes during packaging.
-- `node scripts/verify-mixed-abi.cjs` passed a fresh read-only comparison with
-  C1 firmware exports: 88 required imports, seven DT_NEEDED libraries,
-  ARM32 soft-float, `/lib/ld-linux.so.3`, no RPATH, exact version providers.
-  The NDL and SMP library hashes match the 03.53.45 evidence below. Evidence:
-  `build/phase-1/abi-mixed-0.1.0.json`.
-- `npm run lint`, `npm test`, and `node --check scripts/run-phase1-mixed-ssh.cjs`
-  passed. New acceptance tests cover advancing baseline, stall and recovery
-  deltas, missing stages and unexpected telemetry.
-- `wsl -d Ubuntu --exec cmake --build /mnt/d/Development/webos-multiview/build/phase-1/smp-check`
-  passed the shared-session regression build without replacing the control ELF.
-- `wsl -d Ubuntu --exec cmake --build /mnt/d/Development/webos-multiview/build/host`
-  and `wsl -d Ubuntu --exec ctest --test-dir /mnt/d/Development/webos-multiview/build/host --output-on-failure`
-  passed (1/1). `wsl -d Ubuntu --exec python3 /mnt/d/Development/webos-multiview/tests/host/schema_test.py`
-  passed. Windows Python lacked `jsonschema`; the existing WSL installation was used.
+The mixed package starts A, separately stages NDL Init, foreground, Load,
+SetArea and feeding, then releases B and measures A recovery. The same
+video-only fixtures and bounded app-scoped controller are used. Foreground
+`-1` is recorded but Load continues, as in the solo control. Build and
+protocol details live in the [build guide](../build.md#mixed-smp--ndl-build-and-test).
 
 ### C1 staged run, 2026-11-11
 
@@ -260,14 +249,9 @@ Near B release it captured another MAIN_SCALER release/acquire sequence
 by themselves establish successful grants or identify which player held a
 resource. Syslog delivery is buffered, so timing is approximate.
 
-**Candidate:** MAIN_SCALER/display-route contention is now a concrete lead.
-**Unknown:** A/B ownership, the policy decision/reason, decoder retention
-and the exact release/grant sequence. Unattributed entries must not be
-reported as proof that A released MAIN_SCALER. No new IPK was built and no
-logging settings or TV services were changed. Next: correlate the existing
-resource/display identifiers in memory into redacted A/B labels, or use
-ABI-validated app policy instrumentation if ownership cannot be recovered,
-before testing another sink. No additional playback run is implied.
+At collection time these were unattributed resource categories. The later
+retained-log correlation below resolved A/B ownership without another run.
+No logging configuration or TV service was changed.
 
 ### Retained-log ownership attribution, 2026-11-11
 
@@ -292,65 +276,24 @@ The redacted 33-record evidence report is
 `build/reports/c1-phase1-load-only-attribution-0.1.0.json` (schema 1).
 No playback repeat, IPK build or TV configuration change was performed.
 The [sink-selection review](../research/c1-smp-ndl-resource-path.md#why-main_scaler-was-selected-and-the-independent-sink-candidate)
-found empty sinkInfo/MainVideo for both setup paths and a firmware-recognized
-SMP `sub_video` Load option that selects SUB_SCALER/SUB0. That alternate
-path is not yet TV-tested. Next: B-only SMP sub_video, then a gated
-main/sub test; no new IPK has been built for this option. HDMI concurrency
-remains unknown.
+then identified the SMP Load-time selector tested below.
 
-## Two-SMP main/sub 0.1.0 — build and controls
+## Two-SMP main/sub 0.1.0 — TV-tested control
 
-Implementation plan: reuse the shared SMP session with a closed sink enum;
-request A main_video and B sub_video at Load, keep hardware-default decoding
-and fixtures unchanged; provide an eight-second B-only control and staged
-window/constructor/foreground/Load/Feed/Play/geometry/release experiment.
-Gate staged runs on this ELF's solo telemetry, clean exit and an explicit
-owner visual confirmation. Stop progression when measured A callbacks or PTS
-stall. Collect redacted resource evidence, cancellation and cleanup. The
-package is separate (`io.github.tpapaz.multiview.sinks`) so existing controls
-remain available.
-
-**Built, packaged and C1 ABI-checked on 2026-11-11.** The initial build
-was not TV-tested; the later B-only device result appears below. No simulator
-test was performed. Independent coexistence remains unknown.
-[Build and gated SSH procedure](../build.md#two-smp-mainsub-package).
-
-Validation commands and outcomes:
-
-- `wsl -d Ubuntu --exec cmake -S /mnt/d/Development/webos-multiview/native/phase1-sinks -B /mnt/d/Development/webos-multiview/build/phase-1/sinks -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=/home/tasos/.cache/webos-multiview/202608/arm-webos-linux-gnueabi_sdk-buildroot/share/buildroot/toolchainfile.cmake`
-  and `wsl -d Ubuntu --exec cmake --build /mnt/d/Development/webos-multiview/build/phase-1/sinks`
-  passed with warning-as-error flags under the existing local ARM SDK.
-- `./scripts/package-phase1.ps1 -Target sinks -LinuxNode /home/tasos/.cache/webos-multiview/node-v22.17.0-linux-x64/bin/node`
-  built `dist/io.github.tpapaz.multiview.sinks_0.1.0_arm.ipk`.
-- `wsl -d Ubuntu --exec python3 /mnt/d/Development/webos-multiview/scripts/verify-ipk.py --sinks /mnt/d/Development/webos-multiview/dist/io.github.tpapaz.multiview.sinks_0.1.0_arm.ipk`
-  passed metadata, exact payload allowlist/bytes, no extra scripts/links and
-  native mode 0755. FFprobe validated both fixture indexes in packaging.
-- `node scripts/verify-mixed-abi.cjs --sinks` passed a fresh read-only firmware
-  export check: 81 required imports, six DT_NEEDED libraries, ARM32
-  soft-float and `/lib/ld-linux.so.3`, with versioned provider matches.
-  Evidence: `build/phase-1/abi-sinks-0.1.0.json`.
-- `wsl -d Ubuntu --exec cmake --build /mnt/d/Development/webos-multiview/build/phase-1/smp-check`
-  passed the shared-session regression compile; control binaries/IPKs were
-  not replaced.
-- `npm test`, `npm run lint`, `node --check scripts/run-phase1-sinks-ssh.cjs`,
-  `node --check scripts/verify-mixed-abi.cjs`, and `git diff --check` passed.
-  New acceptance tests cover B progress in frames and PTS, rejection when
-  A stalls, recovery measurements and missing/unexpected telemetry.
+Separate app `io.github.tpapaz.multiview.sinks`, explicit A main_video and
+B sub_video, hardware-default decoding and unchanged fixtures. Built with
+local WSL CMake/Ninja and the 2026.08 ARM SDK. Package verification passed
+exact payload/bytes, metadata, mode 0755 and absence of extra scripts/links.
+The fresh firmware ABI check matched 81 imports and six DT_NEEDED libraries.
+Host acceptance tests, lint and shared-session regression compilation passed.
+No simulator test was performed. [Reproduction](../build.md#two-smp-mainsub-package)
 
 IPK SHA-256:
 `c96c41242715c4ea8b1c3786de0d9ff36074c966e6ef1d7dd75ec81158cce0ad`.
-ELF SHA-256:
+TV-tested ELF SHA-256:
 `e15189df254827e2569a8cb17d64dfaedeab18f913ded0845bf33ca685b6251b`.
-Existing SMP 0.1.4, NDL 0.1.1 and mixed 0.1.0 IPK hashes still match their
-recorded values. No GitHub Actions build or TV playback was invoked.
-
-Outstanding device gates: B sub_video visible clock, SubVideo/SUB0 and its
-presentation grant, clean solo teardown; then A retaining MAIN_SCALER
-through B Load; finally both visible clocks, independent geometry and clean
-release. Reject any transient B MAIN_SCALER reclamation, even if aggregate
-callback progress later resumes. This report's telemetry does not yet
-automatically attribute resource IDs. Audio and simultaneous HDMI remain
-unknown. Next task: owner installs/opens the new app, then runs B-only.
+ABI evidence: `build/phase-1/abi-sinks-0.1.0.json`.
+Existing SMP, NDL and mixed control artifacts were preserved.
 
 ### Main/sub 0.1.0 B-only control — TV-tested, 2026-11-11
 
@@ -378,13 +321,8 @@ registration/snapshot/cleanup chain:
 These three granted sub-scaler indices must not be interpreted as three
 independently usable sub-video outputs.
 
-**Verified:** solo B visible playback through the selected sub-video route
-and clean control completion. **Unknown:** A main-video continuity while B
-loads, concurrent visible clocks, geometry changes and dual teardown.
-Next task: owner reopens the app to its menu, then run
-`node scripts/run-phase1-sinks-ssh.cjs --staged --load-only --confirm-solo-b-visible`.
-The confirmation is backed by this owner's explicit observation. No full
-concurrency run was started, and HDMI/audio capabilities remain unknown.
+This passed the solo visibility, sub-route and teardown gate. It authorized
+the subsequent Load-only test, not an inference of concurrent playback.
 
 ### Main/sub 0.1.0 Load-only A-main/B-sub — passed, 2026-11-11
 
@@ -424,12 +362,8 @@ B logged initial MainVideo enum 2 before the requested SubVideo enum 4 was
 applied (line 2201); this initial state did not result in an observed
 MAIN_SCALER grant to B and must not be confused with resource reclamation.
 
-This passes the bounded Load-only continuity and separate-grant gate.
-Concurrent decoding/rendering after feeding B, both visible clocks,
-geometry changes and dual teardown remain unknown. Next: owner reopens
-the app, then authorize/run
-`node scripts/run-phase1-sinks-ssh.cjs --staged --confirm-solo-b-visible`.
-No new IPK is needed, and HDMI/audio capabilities remain unknown.
+This passed Load-only continuity and separate grants. Feed/Play and visible
+overlap were tested afterward, as recorded below.
 
 ### Main/sub 0.1.0 full staged Feed/Play — visible overlap verified
 
@@ -485,8 +419,49 @@ or collector error, and closed cleanly. Report assertions and
 Phase 1 is **not complete**: audio focus is untested, independent movement
 of A and wider layout bounds remain untested, and there is no extended
 stability or repeated-cycle evidence. Simultaneous physical HDMI remains
-unknown. Recommended next task: repeat the start/exit sequence, then prepare
-a bounded longer local-video run before expanding to audio-focus tests.
+unknown. The next gates and prepared artifact are recorded below.
+
+## Endurance 0.1.0 — prepared, awaiting first TV playback
+
+Date: 2026-11-11. Separate app `io.github.tpapaz.multiview.endurance`, title
+**MultiView Main + Sub Endurance**. Existing staged and solo packages remain
+controls. Same video-only clips, explicit main/sub selection and left/right
+geometry; opt-in looping avoids reloading players. Visual fixture clocks
+restart every 30/15 seconds; native feed/callback PTS must remain monotonic.
+
+Implementation plan: establish A progress, then B progress; measure fixed
+8/300/1800-second overlap, release B and measure three seconds of A recovery;
+check progress, accepted packets, fixture wraps, cleanup and process exit.
+Twenty-cycle mode closes/reopens this exact app and checks distinct process
+identities. Longer profiles require the preceding same-ELF passing report
+and owner observations. Cancellation, bounded waits and hard alarms remain.
+
+**Built and packaged locally in WSL; C1 ABI-checked; not TV-playback-tested
+or simulator-tested.** No endurance app launch or playback has occurred.
+The read-only ABI check matched 82 imports, six DT_NEEDED libraries, exact
+versioned providers, ARM32 soft-float and `/lib/ld-linux.so.3`.
+Evidence: `build/phase-1/abi-endurance-0.1.0.json`.
+
+- IPK: `dist/io.github.tpapaz.multiview.endurance_0.1.0_arm.ipk`.
+- IPK SHA-256: `943a4477567b9368641152761f03cabb9a0b78f7a282f51dc95cc4291844129d`.
+- ELF SHA-256: `5712ec33ccb7155d9fdf9cc27337f6f1ee134419df86bb70e08bb2c9dd3d8a4d`.
+
+Validation: local CMake/Ninja ARM build and shared-session regression compile;
+exact package payload/metadata/executable checks; host JS acceptance tests,
+lint, and C++ progress-watch tests. FFmpeg decoded two concatenated copies
+of each fixture without errors; FFprobe counted 1800 A and 900 B frames.
+That proves host bitstream wrap validity, not TV loop playback.
+[Exact build, host checks and gated SSH commands](../build.md#repeatability-and-endurance)
+
+Reports use `schemaVersion: 1` with per-cycle traces, progress/loop/duration
+assessment, cleanup and process-exit confirmation, separately unknown visual
+observations, audio focus and HDMI. Short cycles collect resource categories
+throughout; long runs collect startup/final windows only. Continuous resource
+ownership across long playback is not established by those windows.
+
+Next owner action: install the separate IPK, open its menu, then authorize
+the one-cycle smoke test while watching both clocks. No further build is
+needed before that test. Keep the control apps/IPKs available.
 
 ## Firmware and build evidence
 
@@ -511,6 +486,8 @@ cancellation in desktop Chrome before the TV comparison.
 | NDL 0.1.0 | 69 | `9a1c47d56cb8efb4f9bf1ef2e9354e1887c6eac13fb3ae772af52185a9922cc2` |
 | Mixed 0.1.0 | 88 | `62bc00fddd7cec1cc811f39bc03dde06c1837ebef315173af990ac1f1b17b37a` |
 | NDL 0.1.1 | 69 | `bb04e2e5bdcbea23ef8b0c6ff7b9db25cf083008a3db877e1ec98bb82611517e` |
+| Main/sub 0.1.0 | 81 | `c96c41242715c4ea8b1c3786de0d9ff36074c966e6ef1d7dd75ec81158cce0ad` |
+| Endurance 0.1.0 (not playback-tested) | 82 | `943a4477567b9368641152761f03cabb9a0b78f7a282f51dc95cc4291844129d` |
 
 TV-playback-tested ELF SHA-256 values:
 

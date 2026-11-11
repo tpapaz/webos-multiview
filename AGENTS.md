@@ -2,6 +2,13 @@
 
 Read `ROADMAP.md` and the current research and decision records before making changes.
 
+Current Phase 1 direction: validate repeatability and endurance of the
+owner-observed SMP main_video/sub_video local-clip combination. Read
+`docs/decisions/0002-main-sub-validation.md`, the Phase 1 device record and
+the build guide before preparing another experiment. Keep historical controls.
+Build artifacts locally in the existing Linux SDK under WSL; do not add or
+invoke GitHub Actions, including push-triggered workflows. Never commit or push.
+
 ## Mission
 
 Build a standalone, root-assisted Homebrew MultiView application for supported LG webOS televisions. The **defining research objective** is simultaneous, independently live **HDMI 1 + HDMI 2**, displayed in movable/scalable PiP or split-screen windows using the TV's own hardware. HDMI+tuner, apps and IP streams are additional goals, not replacements for the primary one.
@@ -41,7 +48,7 @@ Audit relevant upstream projects, including `webosbrew/samples`, `webosbrew/hype
 2. Write an implementation plan within the PR/task before coding.
 3. Implement, keeping hardware adapters stubbed/disabled until evidence exists.
 4. Run host unit tests, linting and builds; record exact commands and outcomes.
-5. If packaging toolchain unavailable, document the missing dependency and give exact local/CI steps. Do not invent an `.ipk` artifact.
+5. If packaging toolchain unavailable, document the missing dependency and give exact local steps. Do not invent an `.ipk` artifact.
 6. End with summary, changed files, tests run/not run, risks, outstanding device tests, and recommended next task.
 
 Prefer CMake/Ninja and the relevant openlgtv toolchain for native code where upstream samples support them; use TypeScript/vanilla JS for a small, compatible webOS diagnostic UI. Avoid assuming the development host has the TV NDK or proprietary runtime libraries. Choose a package/application identifier owned by the repository's GitHub owner; do not appropriate the `org.webosbrew.*` namespace without authorization.

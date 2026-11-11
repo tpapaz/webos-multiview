@@ -6,10 +6,11 @@ const path = require('node:path');
 const fs = require('node:fs');
 const {nativeBuild} = require('./phase1-native-ssh.cjs');
 const args = process.argv.slice(2);
-const sinks = args.includes('--sinks');
-const aliases = args.filter(arg => arg !== '--sinks');
-if (aliases.length > 1 || aliases.some(arg => arg.startsWith('--'))) throw new Error('Use [SSH profile] [--sinks]');
-const target = sinks ? 'sinks' : 'mixed';
+const endurance = args.includes('--endurance');
+const sinks = args.includes('--sinks') || endurance;
+const aliases = args.filter(arg => !['--sinks','--endurance'].includes(arg));
+if (aliases.length > 1 || aliases.some(arg => arg.startsWith('--'))) throw new Error('Use [SSH profile] [--sinks|--endurance]');
+const target = endurance ? 'endurance' : sinks ? 'sinks' : 'mixed';
 const build = nativeBuild(target);
 const libraries = ['ld-linux.so.3', ...(sinks ? [] : ['libNDL_directmedia.so.1']), 'libplayerAPIs.so.1',
     'libSDL2-2.0.so.0', 'libstdc++.so.6', 'libm.so.6', 'libgcc_s.so.1', 'libc.so.6'];

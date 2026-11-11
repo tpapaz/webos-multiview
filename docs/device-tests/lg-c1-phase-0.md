@@ -1,5 +1,9 @@
 # LG C1 Phase 0 — Passive probe
 
+Completed historical phase. Continue with the [Phase 1 record](lg-c1-phase-1.md)
+and [main/sub validation decision](../decisions/0002-main-sub-validation.md).
+The passive results below retain their original scope.
+
 ## C1 results
 
 On 2026-11-10 the owner installed probe 0.1.0 through Dev Manager. The

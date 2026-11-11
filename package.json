@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test": "node tests/host/probe.test.cjs && node tests/host/mixed-evidence.test.cjs && node tests/host/resource-log.test.cjs && node tests/host/sinks-evidence.test.cjs",
+    "test": "node tests/host/probe.test.cjs && node tests/host/mixed-evidence.test.cjs && node tests/host/resource-log.test.cjs && node tests/host/sinks-evidence.test.cjs && node tests/host/endurance-evidence.test.cjs",
     "lint": "node scripts/check-js.cjs",
     "package": "node scripts/package.cjs"
   },

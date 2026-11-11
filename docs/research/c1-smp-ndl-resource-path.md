@@ -1,9 +1,18 @@
-# C1 SMP / NDL Load takeover review
+# C1 SMP / NDL resource path and main/sub selection
 
 Date: 2026-11-11. Device: rooted LG OLED C1, firmware 03.53.45,
 webOS SDK 6.5.3. This review uses the owner-operated Phase 1 runs,
 read-only SSH copies of firmware libraries/configuration, ARM disassembly,
-and attributed upstream source. No new IPK or active playback run was made.
+and attributed upstream source. Static/retrospective reviews made no new
+playback runs; subsequent owner-authorized main/sub tests are recorded below.
+
+**Current conclusion:** default-main presentation reclaimed A's MAIN_SCALER.
+Explicit SMP A main_video / B sub_video passed short visible overlap, B
+geometry and clean release on this firmware. Next is bounded repeatability
+and endurance; its separate build is not yet TV-playback-tested.
+[Current decision](../decisions/0002-main-sub-validation.md),
+[device evidence](../device-tests/lg-c1-phase-1.md) and
+[run procedure](../build.md#repeatability-and-endurance).
 
 Review plan: trace NDL Load into SMP, inspect firmware resource acquisition
 and presentation choices, compare with the stage traces, then choose a
@@ -11,7 +20,7 @@ bounded experiment with a discriminating result before changing playback.
 
 ## What the evidence establishes
 
-**Verified/device:** two-SMP hardware, SMP software-request B, and mixed
+**Verified/device, historical default-main path:** two-SMP hardware, SMP software-request B, and mixed
 SMP/NDL runs all first show sustained A callback/PTS starvation at B Load.
 In the mixed run, A holds at 6.866 s before B feeding starts. Init and the
 explicit foreground stage leave A progressing. SetArea occurs after the
@@ -66,21 +75,12 @@ foreground/subtype policy levels. An exported window or destination rectangle
 does not select a unique decoder, scaler, or resource-manager entitlement.
 
 Starfish acquisition functions build resource lists and call
-`ResourceManagerClient::acquire`; the misc-resource calculator dispatch is
-indirect at `0x78308`. The complete sink-to-resource mapping was not recovered.
-The firmware exposes sink-type parsing and app-type conversion
-(`convertAppTypeToVideoSinkType` at `0x39dec`), but the actual sink/resource
-assigned to either session was not observed. Neither a guessed numeric sink
-value nor a configuration quantity is enough to select a safe working second
-plane. Read-only retrieval of the calculator library did not succeed in this
-session; no conclusion is drawn about its absence on the TV.
-
-**Candidate explanation:** B Load reserves/reassigns a scarce media or video
-presentation resource, leaving A without render progress until B releases it.
-The unchanged A player and later PTS jump fit temporary starvation or
-presentation disconnection. They do not establish that A's decoder stopped
-or that it was destroyed. A display route switch could also suppress
-frame-ready callbacks; these callbacks are not an independent decode counter.
+`ResourceManagerClient::acquire`; misc-resource dispatch is indirect at
+`0x78308`. The initial review could not attribute the actual sink/grants.
+The retained-log and connector review below subsequently resolved the main
+presentation handover. Neither exported-window placement nor a resource
+quantity selects a separate presentation path. A callback stall/PTS jump
+also does not reveal whether disconnected A continued decoding internally.
 
 [Upstream AcquireQueue.cpp, commit af89f8ac3355027a90d7b299a78fb6fab9b6ffca,
 lines 99–133 and 154–171](https://github.com/webosose/umediaserver/blob/af89f8ac3355027a90d7b299a78fb6fab9b6ffca/src/resource_manager/AcquireQueue.cpp#L99-L171)
@@ -92,45 +92,19 @@ read and the GitHub commit API confirmed that exact SHA. The
 [pinned NDL sample, lines 30–45](https://github.com/webosbrew/samples/blob/e95eed3afa7896894f811b84d8e9e277e9e2b74c/media/ndl/directmedia/directmedia_v2.c#L30-L45)
 also describes its Starfish event lineage. No upstream code was copied.
 
-## Recommended next experiment
+## Investigation sequence — completed
 
-First capture the resource decision for an unchanged staged Load, rather
-than try another backend or change sink/decoder options simultaneously.
+The unchanged mixed Load-only run isolated presentation/resource setup from
+packet consumption. Retained logs then established A/B resource ownership,
+and connector inspection identified the Load-time sink selector. B-only,
+Load-only and full main/sub tests subsequently passed their bounded gates.
+The evidence follows in that order. Reproducing failed backends or adding
+policy instrumentation is no longer the next experiment.
 
-1. Prepare bounded, redacted collection of resource acquisition/release and
-   display connection messages available at current logging levels. Limit it
-   to our app/session during the native stage timestamps. Keep only resource
-   enum names, quantities, action codes and A/B labels. Drop connection IDs,
-   app/window tokens, network/serial identifiers and arbitrary vendor strings.
-   Do not change logging configuration, restart services, or issue privileged
-   media-control Luna calls. No new IPK is needed for this passive observer;
-   a replay requires the owner to reopen the installed mixed app.
-2. Replay A baseline, B Init/foreground/Load, hold without feeding, release B,
-   and A recovery. The Load-only interval separates resource/output setup
-   from compressed-video consumption. Use the existing bounded controller
-   pattern and verify the installed ELF before any signals.
-3. If existing logs do not expose the decision, the next **local** IPK should
-   be a diagnostic two-SMP build with A/B policy callbacks, numeric lifecycle
-   events, Feed acceptance/backpressure, callback/PTS samples and exact
-   generated Load parameters. Validate the C1 policy-callback ABI before
-   using it. The callback observes and returns normally; it must not deny,
-   delay or override resource reclamation. Raw strings remain unexported.
-
-Required outcome is a resource name or display-disconnect reason correlated
-with A's stall, not merely another reproduction of the stall.
-
-| Observation | Follow-up experiment justified by it |
-|---|---|
-| A releases VDEC or codec/bandwidth tokens | Compare explicit small 640x360/30 reservations; then revisit software decoding only after a solo run actually renders with that request. |
-| A releases MAIN_SCALER/OVERLAY_VIDEO or loses its display route while retaining decode resources | Trace and validate an alternate sink/sub-scaler path; first solo, then A plus B. Software decode alone would not remove a shared presentation requirement. |
-| No policy event; a display disconnect occurs | Investigate display routing, same-app ownership and internal NDL visibility setup. A separate process test is justified only after an ownership collision is evidenced. |
-| Neither policy nor display reason is observable | Report the instrumentation gap and inspect calculator/AV-proxy implementations before another playback variant. |
-
-Avoid opaque resource-policy options, forced acquisition, config edits,
-`acquireSubScalerResource` calls without a matched ownership/release design,
-and treating the failed software-request run as a software decoder control.
-These tests remain Phase 1 local-clip research. Simultaneous HDMI, audio
-focus and any generally unsupported combination remain unknown.
+Avoid forced acquisition, resource-policy/configuration edits and unmatched
+`acquireSubScalerResource` calls. The failed software-request run never
+established a rendering software-decoder control. Current tests remain
+Phase 1 local playback; HDMI and audio focus remain unknown.
 
 ## Reproduction and limits of this review
 
@@ -152,9 +126,9 @@ Load-stage disappearance with zero B packets and no explicit SetArea.
 The owner confirmed A returned with its clock advancing after release.
 The bounded syslog collector captured MAIN_SCALER release/acquire categories
 near both boundaries, plus policy and disconnect categories. This makes
-presentation-resource contention a more specific candidate; per-player
-ownership and the actual policy decision remain unknown because those
-entries were not app/session attributed. See the
+presentation-resource contention a more specific candidate at collection
+time. The later retained-log correlation below resolved per-player ownership
+and the policy handover. See the
 [Load-only device record](../device-tests/lg-c1-phase-1.md#load-only-resource-experiment--c1-run-2026-11-11)
 and `build/reports/c1-phase1-mixed-load-only-0.1.0.json` for the trace,
 redacted log projections, acceptance checks and owner observation.
@@ -210,11 +184,9 @@ not a measurement of frames decoded during the invisible interval.
 
 B's media pipeline already held SUB_SCALER while its separate presentation
 registration still acquired MAIN_SCALER. Therefore simply acquiring another
-SUB_SCALER token is not an evidenced fix. The next research task is to trace
-how AV-proxy/sink selection creates that presentation registration, and
-whether a supported alternate sink can retain an independent scaler path.
-Validate any selector and ownership/cleanup semantics before a solo test,
-then concurrency. Do not alter resource policy or force a grant.
+SUB_SCALER token is not an evidenced fix. The subsequent AV-proxy/sink review below traced that separate registration
+and identified an alternate path. No resource-policy change or forced grant
+was needed.
 
 Validation: the attribution script asserted four distinct in-memory
 identities, both media-to-scaler links, the explicit A-release/B-acquire
@@ -226,8 +198,8 @@ was required for this retrospective analysis.
 
 ## Why MAIN_SCALER was selected, and the independent-sink candidate
 
-Review date: 2026-11-11. **Verified/static and retained logs; alternate sink
-not TV-tested.** No new IPK or playback run. Plan: follow empty sinkInfo,
+Review date: 2026-11-11. This section records the static/retained-log
+selection review before the successful device tests below. Plan: follow empty sinkInfo,
 Load-option parsing, AV-proxy forwarding, connector resource/output mapping,
 and teardown; then specify a bounded acceptance experiment.
 
@@ -299,16 +271,15 @@ Newly read-only copied libraries:
    `disconnect()` calls resource-client `release` at `0x1c314`;
    AV-proxy's destructor destroys the connector (`0x5cfc`) and then its
    resource-manager client (`0x5d14` diagnostic before client deletion).
-   Existing MAIN cleanup was TV-tested; alternate-sink cleanup still
-   requires its own device check.
+   Both MAIN and alternate-sink cleanup subsequently passed the staged device test.
 
 **Conclusion:** there is an evidenced, app-selectable alternate presentation
 request in this C1 firmware. It is a reverse-engineered firmware option,
-not an LG public API guarantee or a demonstrated concurrent-playback pass.
+not an LG public API guarantee. The subsequent short concurrent-playback pass is recorded below.
 The machine-readable static review is
 `build/reports/c1-phase1-independent-sink-review.json`.
 
-### Selector and next experiment, without building yet
+### Selected Load option and completed experiment gates
 
 Use SMP's existing Load options; the B fragment is:
 
@@ -326,26 +297,23 @@ observation: reject a run with transient MAIN_SCALER reclamation by B.
 The inspected NDL v2 data interface, its firmware wrapper exports and its
 Load-parameter builder offer no corresponding sink field/entry point.
 SetWindowId and SetArea are presentation identity/geometry controls, not
-this selector. Therefore the next controlled package should use the
-already implemented SMP adapter for **both** A and B, not modify the NDL
-implementation or reach into its private Starfish object. The adapter needs
+this selector. Therefore the controlled main/sub package uses the
+already implemented SMP adapter for **both** A and B. It does not modify NDL
+or reach into its private Starfish object. The adapter needs
 only a validated Load JSON option; no new proprietary ABI import is needed.
 
-Proposed bounded sequence and gates:
+The following bounded sequence was implemented and passed (details in the device record):
 
-1. B alone on sub_video: verify the clock advances and the presentation
-   registration receives SUB_SCALER/SubVideo/SUB0, with no MAIN_SCALER
-   request. Verify geometry and Unload/process cleanup. A recognizable
-   selector that produces black video does not pass this control.
-2. A main_video baseline, then staged B sub_video Load-only hold: require
-   A callback/PTS progress and its visibly advancing clock throughout.
-   Confirm A retains MAIN_SCALER and B's presentation gets a distinct
-   SUB_SCALER allocation. Record the media and presentation registrations
-   separately; B may hold more than one SUB_SCALER reservation.
-3. Only after those gates, feed/play B and require both on-screen clocks
-   advancing together; measure callbacks, geometry, B release and A
-   continuity. Preserve cancellation, deadlines, identity checks, redacted
-   A/B resource attribution and full cleanup verification.
+1. B alone: its right-hand clock visibly advanced; the presentation
+   registration received SUB_SCALER/SubVideo/SUB0 with no observed MAIN_SCALER
+   grant. Unload and process exit succeeded.
+2. A baseline plus B Load-only: A's callbacks/PTS and visible clock kept
+   advancing. A retained MAIN_SCALER; B's separate presentation registration
+   received SUB_SCALER. No B packets were sent, and only A was visible.
+3. Feed/Play: both visible clocks advanced together; B moved/shrank and A
+   stayed live after B release. Callback/PTS progress, separate grants,
+   both Unloads and process exit passed. This was about 4.8 seconds of
+   overlap, not extended stability evidence.
 
 Do not combine this with software decoding, a graphic-buffer compositor,
 window-type changes or policy edits. Graphic type 8 is a separate rendering
@@ -357,8 +325,8 @@ Validation: fixed-path read-only firmware copies, hashes and existing SDK
 `objdump -TC/-dC` and `strings -tx`; assertions require empty sinkInfo for
 both setup labels and MainVideo enum 2 in B's setup projection. No decompiler
 result is claimed (the previously reported REA provider limitation remains).
-No upstream code was copied. Runtime tests/builds were not run because this
-change records research only; `git diff --check` passed.
+No upstream code was copied. This static review itself made no build or
+playback run; the subsequent device tests are attributed separately below.
 
 ## Device outcome of explicit main/sub selection, 2026-11-11
 
@@ -372,6 +340,6 @@ handover. Both players had separate decoder allocations and clean teardown.
 This verifies the short local-video main/sub combination on the specified
 C1/firmware. It does not establish long-run stability, audio ownership or
 physical HDMI concurrency. Detailed measurements and owner observation:
-[full staged device result](../device-tests/lg-c1-phase-1.md#main-sub-010-full-staged-feedplay--visible-overlap-verified),
+[full staged device result](../device-tests/lg-c1-phase-1.md#mainsub-010-full-staged-feedplay--visible-overlap-verified),
 `build/reports/c1-phase1-sinks-stages-0.1.0.json` and its redacted resource
 attribution companion. No new IPK was needed after the 0.1.0 build.

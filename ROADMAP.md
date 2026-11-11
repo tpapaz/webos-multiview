@@ -7,11 +7,10 @@ The current setup has one connected HDMI source.
 
 ## Current position
 
-Phase 0C is complete. In Phase 1, NDL 0.1.1 passed Load, accepted the
-solo clip and exited cleanly. The owner confirmed its on-screen clock
-advances. The SMP A + NDL B SSH test also stalled A during B Load; A
-callbacks and PTS resumed after B was released. The owner observed A, black
-screen, B, then A, with no two clocks visible together. [Phase 1 test record](docs/device-tests/lg-c1-phase-1.md)
+Phase 0C is complete. Earlier default-main SMP/NDL comparisons failed visible
+overlap: B Load reclaimed A's MAIN_SCALER. Retained logs established the
+ownership handover, and firmware inspection identified explicit sink selection.
+[Phase 1 test record](docs/device-tests/lg-c1-phase-1.md)
 
 **Verified on this C1:** explicit SMP A main_video + B sub_video showed both
 local clip clocks advancing together in the full staged run. B moved/shrank
@@ -20,8 +19,19 @@ attribute MAIN_SCALER to A and SUB_SCALER to B with distinct decoder
 allocations. This is a short video-only result, not physical-input evidence.
 
 Phase 1 remains active: repeatability, extended stability, wider independent
-geometry and audio focus need validation. Next: repeated clean start/exit
-cycles, then a bounded longer local-video run. [Sink investigation and exact
+geometry and audio focus need validation. The separate endurance 0.1.0 IPK
+is built locally, packaged and C1 ABI-checked, **not TV-tested**. Next gates:
+
+1. Install/open the endurance app and pass one eight-second overlap smoke cycle.
+2. Pass 20 distinct app start/exit cycles, with both clocks spot-checked by the owner.
+3. Pass five minutes, including fixture wraps and owner-observed clocks.
+4. Pass 30 minutes, then review cleanup, logs and normal viewing after exit.
+5. Prepare wider independent geometry and audio-focus experiments separately.
+
+Each longer run requires the preceding same-build report and human visual
+confirmation. This sequence validates local playback before returning to
+physical-input research. [Run instructions](docs/build.md#repeatability-and-endurance)
+and [decision](docs/decisions/0002-main-sub-validation.md). [Sink investigation and exact
 C1 evidence](docs/research/c1-smp-ndl-resource-path.md).
 
 ## Phases and acceptance gates
@@ -54,6 +64,8 @@ requires a separate product decision.
 Tie claims to exact hardware, firmware, backend and logs. Before release,
 target 30 minutes of stable playback and 20 clean start/exit cycles for
 each supported combination. Reports use the
-[capability schema](schemas/capability-v1.schema.json) and preserve unknowns.
+[capability schema](schemas/capability-v1.schema.json) for capability summaries;
+native experiment traces have their own `schemaVersion: 1` report format.
+Preserve unknowns in both.
 Active probes require explicit owner opt-in, bounded execution and recovery.
 [Safety and privacy](docs/safety.md)
