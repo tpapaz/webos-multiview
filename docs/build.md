@@ -50,7 +50,10 @@ the full diagnostic remains failed. The
 read-only [idle-path review](research/c1-app-idle-path.md) now explains why
 the local SDL flag is insufficient: its inspected C1 Wayland backend does
 not install the screensaver hook. The active request also predates B release.
-No new IPK is prepared; native idle ownership/cleanup needs evidence first.
+No new IPK is prepared. The [native contract trace](research/c1-native-screensaver-interface.md)
+identifies public request/NACK handlers and cancellation/disconnect cleanup
+in the exact C1 firmware. A bounded app-owned probe must still verify permission,
+effective veto and restored idle eligibility before another endurance run.
 The earlier
 host log-save error was fixed without an IPK change. Four repetition
 collectors flagged stderr; playback/cleanup passed, resource attribution is unknown.

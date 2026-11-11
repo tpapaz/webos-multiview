@@ -17,7 +17,7 @@ clocks at spot checks and spontaneous disappearance.
 | Did the recorded ACK come from Endurance? | **Verified/log component:** `_aw_adapter_responseScreenSaver` belongs to the AirPlay log component. It is not evidence of an Endurance idle-policy response. |
 | Does SDL's disabled flag prove a TV inhibitor? | **Verified/static:** generic SDL changes a local flag and calls an optional device hook; the inspected C1 Wayland factory/init do not install that hook. Effective TV inhibition is not established by the flag. |
 | Why did focus change just after release? | **Partially answered:** launch followed an already-active request near the Type 2 duration boundary. Pending-request unblocking versus ordinary launch delay remains **unknown**. |
-| Is a correct replacement native hook established? | **Unknown:** an app-owned native veto/inhibitor, permissions and cleanup lifetime still need evidence. Another IPK is not justified merely by changing SDL hints. |
+| Is a replacement native hook identified? | **Verified/static:** C1 tvpower has a public-bus request/NACK interface and subscription cancellation cleanup. Endurance's permission and effective runtime veto remain **unknown**. [Native contract](c1-native-screensaver-interface.md). |
 
 ## Existing log sequence
 
@@ -114,11 +114,12 @@ than repeating a 30-minute boundary where both occur together. Preserve
 focus-loss cleanup; global screen-protection changes and fake key input are
 outside this experiment.
 
-The recorded `registerScreenSaverRequest` / `responseScreenSaverRequest`
-family is a research lead, not a validated Endurance API. A fixed-name probe
-of the usual LS2 role/API/service directories returned no matching tvpower
-or screenmanager files; this bounded negative result does not prove that
-the interfaces or permissions are absent elsewhere on retail firmware.
+The later [native-interface trace](c1-native-screensaver-interface.md) resolves
+the method contract and service-side registration cleanup. The initial
+fixed-name policy probe missed legacy roles referenced by
+`/usr/share/luna-service2/manifests.d/tvpowerd.manifest.json`; both public and
+private roles exist under `/usr/share/ls2/roles/`. Endurance has not called
+the interface, so permission and effective runtime inhibition remain unknown.
 
 Machine-readable evidence under ignored `build/reports/`:
 

@@ -923,6 +923,34 @@ Evidence: `build/reports/c1-phase1-idle-path-review-0.1.1.json`,
 ordering and ACK component; `git diff --check` and documentation-link checks
 validate this research-only change. No runtime tests/builds were run.
 
+### Native screensaver contract follow-up — static trace, no new run
+
+On 2026-11-11, fixed-path read-only copies of C1 `tvpowerd` and LS2 established
+the public `/power/registerScreenSaverRequest` / `responseScreenSaverRequest`
+contract: subscribe with a client name, answer the exact string timestamp,
+and use `ack:false` for the NACK decision. Actual C1 subscription cancellation
+and disconnect paths notify tvpower, which removes the original registration's
+screensaver entry. Explicit `subscribe:false` can be busy-rejected, so token
+cancellation and owned-handle teardown remain required. Pending-state cleanup
+timing is not runtime-verified.
+
+The public connection needs explicit legacy `LSRegisterPubPriv` selection;
+the current SDK's application-registration wrapper defaults private and its
+headers omit the legacy declaration. Exact C1 wrapper/caller analysis confirms
+the argument order. This is an isolated firmware interface, not a portable
+SDK guarantee. SDL's vendor idle timer was also traced to joystick activity;
+it is not a playback inhibitor.
+
+**Verified/static**, not an Endurance API test: app caller permission,
+accepted NACKs, focus retention and normal idle behavior after release remain
+**unknown**. No app launch, active IPC, playback, TV write, new IPK or build
+occurred. The failed 30-minute recovery gate is unchanged. Next is a bounded
+app-owned permission/veto/cleanup probe, keeping the registration through
+B release and A recovery and separating expiry from teardown.
+[Contract, exact hashes/addresses and next experiment](../research/c1-native-screensaver-interface.md).
+Evidence: `build/reports/c1-native-screensaver-interface.json`, including
+references to copied firmware, native-client and cleanup ledgers.
+
 Read-only inspection found an aarch64 kernel with ARM32 EABI5 soft-float
 userspace, glibc 2.28 and loader `/lib/ld-linux.so.3`. ARM binaries used
 CMake/Ninja under Ubuntu on WSL with the

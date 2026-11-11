@@ -32,7 +32,10 @@ idle handling at this transition.
 The [idle-path review](docs/research/c1-app-idle-path.md) found the request
 already active before B release and no inhibition hook installed by the
 inspected C1 SDL Wayland setup. SDL's local disabled flag does not prove a
-TV inhibitor. An app-owned native hook still needs evidence before another IPK.
+TV inhibitor. The [native interface trace](docs/research/c1-native-screensaver-interface.md)
+now identifies a public app-owned request/NACK hook and cancellation/disconnect
+cleanup in the C1 firmware. App permission and effective veto remain untested;
+the next experiment is a bounded native client probe, before another endurance run.
 Continuous visible coverage, final-candidate repeatability and audio remain separate.
 The 0.1.0 repeatability result does not certify the new binary.
 Audio focus and wider independent

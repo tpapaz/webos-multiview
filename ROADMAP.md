@@ -50,9 +50,12 @@ viewing afterward remain unknown. [Long-run record](docs/device-tests/lg-c1-phas
 The read-only [idle-path review](docs/research/c1-app-idle-path.md) found a
 matching active request before B unload; the logged ACK is AirPlay's, not
 an Endurance response. C1 SDL's inspected Wayland factory/init do not install
-the generic screensaver callback. Next: establish an app-owned native idle
-interface and separate expiry from teardown before another IPK. The exact
-pending-request/teardown interaction remains unknown.
+the generic screensaver callback. The [native contract trace](docs/research/c1-native-screensaver-interface.md)
+now establishes public request/NACK handlers and cancellation/disconnect
+registration cleanup statically. Next: a bounded app-owned probe must verify
+caller permission, effective veto and restored idle eligibility, separating
+expiry from B teardown. No new IPK is built; the exact pending-request/teardown
+interaction remains unknown.
 Current gates:
 
 1. Completed: eight-second smoke cycle with owner-confirmed visible overlap and A continuity.

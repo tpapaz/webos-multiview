@@ -450,3 +450,8 @@ logged ACK is AirPlay's, and the inspected C1 SDL Wayland setup does not
 install the optional inhibition hook. B release is not the initiating event
 for that request; whether it unblocks a pending transition remains unknown.
 No new playback or IPK was used to reach this conclusion.
+The [native contract follow-up](c1-native-screensaver-interface.md) identifies
+public tvpower request/NACK handlers, sender/timestamp checks and actual C1
+cancellation/disconnect cleanup. A bounded native app probe must still verify
+permission, effective veto across B release/A recovery and normal idle behavior
+after cleanup. No new IPK or active IPC was used for that static trace.
