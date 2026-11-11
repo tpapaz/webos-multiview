@@ -8,8 +8,16 @@ playback runs; subsequent owner-authorized main/sub tests are recorded below.
 
 **Current conclusion:** default-main presentation reclaimed A's MAIN_SCALER.
 Explicit SMP A main_video / B sub_video passed short visible overlap, B
-geometry and clean release on this firmware. Next is bounded repeatability
-and endurance; its separate build is not yet TV-playback-tested.
+geometry and clean release on this firmware. Its separate endurance build
+then passed smoke and 20 distinct app start/exit cycles, with owner-confirmed
+clocks, A continuation and normal viewing afterward. Resource categories were
+collected; four cycle collectors flagged stderr, and no A/B ownership claim
+is made for this repetition run. The first five-minute attempt cancelled
+early while both players advanced and B crossed its first wrap. Retained
+screensaver launch/visibility is the leading lifecycle explanation, separate
+from the earlier MAIN_SCALER contention. Endurance 0.1.1 is prepared with
+app-scoped idle handling and distinct exit events, awaiting its own smoke
+and five-minute retry before the gated 30-minute run.
 [Current decision](../decisions/0002-main-sub-validation.md),
 [device evidence](../device-tests/lg-c1-phase-1.md) and
 [run procedure](../build.md#repeatability-and-endurance).
@@ -343,3 +351,55 @@ physical HDMI concurrency. Detailed measurements and owner observation:
 [full staged device result](../device-tests/lg-c1-phase-1.md#mainsub-010-full-staged-feedplay--visible-overlap-verified),
 `build/reports/c1-phase1-sinks-stages-0.1.0.json` and its redacted resource
 attribution companion. No new IPK was needed after the 0.1.0 build.
+
+## App-scoped screensaver review and 0.1.1 retry
+
+Review date: 2026-11-11; reference remains C1 03.53.45 / SDK 6.5.3.
+The first five-minute 0.1.0 attempt had progressing A/B callbacks and PTS,
+one B fixture wrap and then native cancellation. Retained logs show screensaver
+launching/visibility near that boundary; exact SDL cancellation cause was
+not recorded. This is a separate lifecycle lead, not another measured
+MAIN_SCALER takeover. [Attempt evidence](../device-tests/lg-c1-phase-1.md#five-minute-c1-attempt--interrupted-not-a-duration-pass)
+
+**Verified/documentation:** LG offers app-specific
+`screenSaverProperties: {"preferredType": 2}`, extending idle time to
+30 minutes while gradually dimming the OSD. It is not an indefinite disable.
+The separate `enablePigScreenSaver: false` changes PIG-versus-full-screen
+screensaver behavior; it does not promise to suppress every screensaver.
+Neither option establishes a working native C1 policy by itself.
+[LG app metadata, screenSaverProperties/enablePigScreenSaver](https://webostv.developer.lge.com/develop/references/appinfo-json),
+[LG screensaver types and policy](https://webostv.developer.lge.com/develop/guides/screensaver).
+
+**Verified/API declarations:** SDL2 provides `SDL_DisableScreenSaver`,
+`SDL_EnableScreenSaver` and `SDL_IsScreenSaverEnabled`, with
+`SDL_HINT_VIDEO_ALLOW_SCREENSAVER` controlling the initial state.
+[SDL2 API](https://wiki.libsdl.org/SDL2/SDL_DisableScreenSaver).
+The existing local 2026.08 SDK declares the functions in
+`usr/include/SDL2/SDL_video.h:1856–1897` and the hint at
+`usr/include/SDL2/SDL_hints.h:2198–2207`, relative to its ARM sysroot.
+Fresh C1 export verification confirms the new binary's four additional SDL
+imports, including `SDL_SetHintWithPriority`. C1 SDL library SHA-256 remains
+`d3358bab5342c947b5e1f32373b5929b65030628ff8b88e054488dabb3629c58`.
+This verifies ABI availability, not backend policy effectiveness. SDL's own
+enabled flag is process state, not a compositor/power-service acknowledgement.
+
+**Candidate implementation, built but not TV-tested:** 0.1.1 adds Type 2
+metadata for this app, initializes SDL with saver allowed at the menu,
+then explicitly disables it after a playback request while the SDL window
+exists. A scoped guard restores the prior state after player teardown,
+before run_end. No player, clip, sink, geometry, feed or progress rule changed.
+Focus-loss/visibility cancellation remains enabled. Trace events distinguish
+Back, Exit, Escape, SDL quit, window close, focus loss, hidden, minimized,
+SIGTERM, SIGINT and deadline; no raw event strings or IDs are exported.
+New acceptance checks require ordered inhibit/restore records and reject any
+exit event in a claimed successful run. Signals/hard process termination can
+still remove the telemetry fd before the host reads final rows; unobserved
+native events stay unknown and controller cancellation is recorded separately.
+
+The two controls are intentionally reported separately: the LG metadata
+extends app idle policy, while SDL requests a playback-scoped inhibitor.
+The five-minute retry tests their combined effectiveness on this firmware;
+it cannot isolate which one prevented a saver. A 30-minute success must be
+measured separately, since Type 2 alone does not guarantee that duration
+after time spent at the menu. No global idle policy or protection service
+is changed. No upstream implementation code was copied.

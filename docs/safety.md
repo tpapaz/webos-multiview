@@ -59,6 +59,20 @@ Retained logs are correlated privately for A/B ownership; arbitrary vendor
 strings, raw registration IDs and SSH identifiers stay out of shared reports.
 Human observations remain separate from telemetry. [Run procedure](build.md#repeatability-and-endurance)
 
+CPU telemetry reads numeric `/proc/stat` and identity-checked app stat/status
+counters only. Temperature checks read fixed thermal/hwmon temperature paths;
+no sensor role, safe limit or hardware-engine utilization is inferred. No
+thermal, cooling or TV idle-policy settings are changed. Missing readable
+sensor paths remain unknown; post-exit readings are not playback measurements.
+
+Endurance 0.1.1 selects LG's app-specific Type 2 screensaver metadata and
+requests SDL inhibition only while the bounded diagnostic owns playback.
+The prior SDL state is restored after player cleanup, before run_end; the
+menu follows its app idle policy. Local SDL flags are not TV acknowledgements.
+Focus loss, hiding, minimization, Back/Exit, quit/close, signals and deadlines
+still stop the run and release players. No system-wide screensaver setting,
+fake keypress, idle-timer reset loop or screen-protection service is used.
+
 If the app or optional helper misbehaves, close **only this app** or interrupt
 the foreground CLI. Stop testing on any unexpected input/mode/service behavior.
 Use the physical remote's normal Home/Back/Input controls to restore viewing.

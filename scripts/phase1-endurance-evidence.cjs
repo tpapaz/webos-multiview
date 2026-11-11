@@ -1,9 +1,11 @@
-const events=new Set(['ready','run_start','b_start','overlap_start','sample','packets','loops','released','progress_error','b_unload_begin','b_unload','a_unload','run_end']);
+const exitCauses={1:'back',2:'exit_key',3:'escape',4:'sdl_quit',5:'window_close',6:'focus_lost',7:'hidden',8:'minimized',9:'sigterm',10:'sigint',11:'deadline'};
+const events=new Set(['ready','screensaver_policy','screensaver_inhibit','screensaver_restore','exit_event','app_exit','run_start','b_start','overlap_start','sample','packets','loops','released','progress_error','b_unload_begin','b_unload','a_unload','run_end']);
 function parseTrace(text) {
     return text.split('\n').filter(Boolean).map(line=>{
         if(!/^\d+,[a-z_]+,\d+,\d+,\d+,\d+,\d+$/.test(line)) throw new Error('Unexpected endurance telemetry');
         const [ms,event,status,a,b,aMs,bMs]=line.split(',');
         if(!events.has(event)) throw new Error('Unknown endurance event');
+        if(['exit_event','app_exit'].includes(event)&&!exitCauses[status])throw new Error('Unknown exit cause');
         return {ms:+ms,event,status:+status,a:+a,b:+b,aMs:+aMs,bMs:+bMs};
     });
 }
@@ -17,12 +19,16 @@ function assess(rows,seconds) {
     const loops=rows.findLast(r=>r.event==='loops');
     const recovery=rows.filter(r=>r.event==='sample'&&r.status===3);
     const aRecovered=recovery.length>=2&&recovery.at(-1).a>recovery[0].a&&recovery.at(-1).aMs>recovery[0].aMs;
+    const inhibit=rows.find(r=>r.event==='screensaver_inhibit'),restore=rows.find(r=>r.event==='screensaver_restore');
+    const runStart=rows.find(r=>r.event==='run_start'),aUnload=rows.find(r=>r.event==='a_unload');
+    const screensaverRequested=!!(inhibit?.status===0&&restore?.status===1&&runStart&&aUnload&&inhibit.ms<=runStart.ms&&restore.ms>=aUnload.ms);
+    const exits=rows.filter(r=>r.event==='exit_event').map(r=>({ms:r.ms,cause:exitCauses[r.status]}));
     const passed=!!(start&&released&&end&&end.status===0&&cleanup.length===2&&cleanup.every(r=>r.status===0)&&
         released.ms-start.ms>=seconds*1000&&samples.length>=Math.floor(seconds*0.9)&&gaps.length===0&&
-        aRecovered&&!rows.some(r=>r.event==='progress_error')&&(seconds<300||(loops?.a>=1&&loops?.b>=1)));
+        aRecovered&&screensaverRequested&&!exits.length&&!rows.some(r=>r.event==='progress_error')&&(seconds<300||(loops?.a>=1&&loops?.b>=1)));
     return {passed,requestedOverlapSeconds:seconds,measuredOverlapMs:start&&released?released.ms-start.ms:null,
         dualSamples:samples.length,badSampleIntervals:gaps.length,loopsA:loops?.a||0,loopsB:loops?.b||0,
-        aRecovered,result:end?.status??null};
+        aRecovered,screensaverRequested,exitEvents:exits,result:end?.status??null};
 }
 function options(args) {
     const repeat=args.includes('--repeat'),minutesAt=args.indexOf('--minutes'),cyclesAt=args.indexOf('--cycles');

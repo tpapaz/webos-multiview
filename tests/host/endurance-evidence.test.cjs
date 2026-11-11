@@ -4,9 +4,9 @@ assert.deepEqual(options(['profile','--repeat']),{repeat:true,minutes:0,cycles:2
 assert.equal(options(['--minutes','30']).minutes,30);
 for(const args of [[],['--minutes','31'],['--repeat','--cycles','21'],['--repeat','--minutes','5'],['--repeat','--cycles','0']])assert.throws(()=>options(args));
 const row=(ms,event,status,a=0,b=0,aMs=0,bMs=0)=>({ms,event,status,a,b,aMs,bMs});
-const rows=[row(0,'overlap_start',300)];
+const rows=[row(0,'screensaver_inhibit',0),row(0,'run_start',300),row(0,'overlap_start',300)];
 for(let sec=0;sec<=300;sec++)rows.push(row(sec*1000,'sample',2,sec*5+5,sec*5+5,sec*1000+100,sec*1000+100));
-rows.push(row(300001,'released',3),row(300002,'b_unload',0),row(301000,'sample',3,1510,1505,301100,300100),row(302000,'sample',3,1515,1505,302100,300100),row(303000,'a_unload',0),row(303001,'loops',3,10,20),row(303002,'run_end',0));
+rows.push(row(300001,'released',3),row(300002,'b_unload',0),row(301000,'sample',3,1510,1505,301100,300100),row(302000,'sample',3,1515,1505,302100,300100),row(303000,'a_unload',0),row(303001,'screensaver_restore',1),row(303001,'loops',3,10,20),row(303002,'run_end',0));
 assert(assess(rows,300).passed);
 assert(!assess(rows,1800).passed);
 assert(!assess(rows.filter(r=>r.event!=='loops'),300).passed);
@@ -16,6 +16,36 @@ assert(!assess(rows.map(r=>r.event==='sample'&&r.status===3?{...r,aMs:301100}:r)
 assert(!assess(rows.map(r=>r.event==='sample'&&r.ms===120000?{...r,bMs:119100}:r),300).passed);
 assert(!assess(rows.filter(r=>r.event!=='sample'||r.ms<100000||r.ms>110000),300).passed);
 assert(!assess(rows.map(r=>r.event==='run_end'?{...r,status:1}:r),300).passed);
+assert(!assess(rows.filter(r=>r.event!=='screensaver_restore'),300).passed);
+assert(!assess(rows.map(r=>r.event==='screensaver_restore'?{...r,ms:299000}:r),300).passed);
+assert(!assess(rows.map(r=>r.event==='screensaver_inhibit'?{...r,status:1}:r),300).passed);
+for(const [code,cause] of [[1,'back'],[2,'exit_key'],[3,'escape'],[4,'sdl_quit'],[5,'window_close'],[6,'focus_lost'],[7,'hidden'],[8,'minimized'],[9,'sigterm'],[10,'sigint'],[11,'deadline']]) {
+    const exited=assess([...rows,row(1000,'exit_event',code)],300);
+    assert(!exited.passed);assert.equal(exited.exitEvents[0].cause,cause);
+}
+assert.throws(()=>parseTrace('1000,exit_event,99,0,0,0,0'));
+const {installedBuildMatches}=require('../../scripts/phase1-native-ssh.cjs');
+const expected={id:'io.github.tpapaz.multiview.endurance',version:'0.1.1',executable:'multiview-endurance'};
+const installed={id:expected.id,version:expected.version,main:expected.executable,screenSaverProperties:{preferredType:2}};
+assert(installedBuildMatches(installed,expected));
+assert(!installedBuildMatches({...installed,screenSaverProperties:undefined},expected));
+assert(!installedBuildMatches({...installed,screenSaverProperties:{preferredType:3}},expected));
+assert(!installedBuildMatches({...installed,version:'0.1.0'},expected));
 assert.equal(parseTrace('61000,sample,2,300,300,61000,61000')[0].aMs,61000);
 assert.throws(()=>parseTrace('0,unknown,0,0,0,0,0'));
 console.log('Endurance duration, looping, stall, cleanup and bounded-profile gates passed');
+const cpu=require('../../scripts/phase1-cpu-evidence.cjs');
+const baseline=cpu.counters('1000 700\n4\n100 8\n4096');
+const busy=cpu.counters('1800 1300\n4\n125 8\n8192');
+assert.deepEqual(cpu.interval(baseline,busy),{systemBusyPct:25,appOneCorePct:12.5,cores:4,appRssKiB:8192,appThreads:8});
+assert.throws(()=>cpu.counters('100 200 4 0 8 1'));
+assert.throws(()=>cpu.counters('raw process text'));
+assert.throws(()=>cpu.interval(baseline,{...busy,appTicks:99}));
+assert.throws(()=>cpu.interval(baseline,baseline));
+console.log('CPU counter redaction, normalization and invalid-interval checks passed');
+const thermal=require('../../scripts/phase1-thermal-evidence.cjs');
+assert.equal(thermal.parseTemperatures('/sys/class/thermal/thermal_zone0/temp 55000').samples[0].celsius,55);
+assert.equal(thermal.parseTemperatures('').status,'unknown');
+assert.throws(()=>thermal.parseTemperatures('/arbitrary/path 55000'));
+assert.throws(()=>thermal.parseTemperatures('/sys/class/thermal/thermal_zone0/temp 9999999'));
+console.log('Temperature path allowlist, units and unavailable-sensor checks passed');

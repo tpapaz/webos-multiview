@@ -21,14 +21,20 @@ Explicit Load-time sink selection resolved that measured short-run failure.
 [Exact firmware path and ownership evidence](../research/c1-smp-ndl-resource-path.md)
 
 The current task is repeatability and endurance, using a separate package.
-Endurance 0.1.0 is **built, packaged and C1 ABI-checked, not yet TV-tested**.
-Run one smoke cycle, then 20 fresh-process cycles, then gated five-minute
-and 30-minute overlap tests. [Install/run instructions](../build.md#repeatability-and-endurance)
+Endurance 0.1.0 is **built, packaged, C1 ABI-checked and TV-tested through
+smoke plus 20 distinct app processes**. The owner confirmed both clocks,
+A continuity and normal viewing after the final exit. The first five-minute
+attempt cancelled early, with screensaver activity as the leading lifecycle
+explanation. Endurance 0.1.1 is now locally built, packaged and C1 ABI-checked,
+**not TV-tested**, with app-specific idle metadata, scoped SDL inhibition
+requests and distinct exit logs. Next: install it, pass its own smoke check
+and retry five minutes before the gated 30-minute test. The 0.1.0 repeatability
+result does not certify this new binary. [Install/run instructions](../build.md#repeatability-and-endurance)
 and [decision](../decisions/0002-main-sub-validation.md).
 
 The history below consolidates the owner observations and recorded traces;
 its initial unknowns are resolved only where later evidence explicitly says so.
-Phase 1 is still active: long stability, repeated cleanup, wider independent
+Phase 1 is still active: continuous stability, fixture wraps, wider independent
 geometry and audio focus remain unverified. Physical HDMI concurrency is unknown.
 
 ## Native SMP — historical default-main comparison
@@ -421,7 +427,7 @@ of A and wider layout bounds remain untested, and there is no extended
 stability or repeated-cycle evidence. Simultaneous physical HDMI remains
 unknown. The next gates and prepared artifact are recorded below.
 
-## Endurance 0.1.0 — prepared, awaiting first TV playback
+## Endurance 0.1.0 — build and first smoke run
 
 Date: 2026-11-11. Separate app `io.github.tpapaz.multiview.endurance`, title
 **MultiView Main + Sub Endurance**. Existing staged and solo packages remain
@@ -436,8 +442,9 @@ Twenty-cycle mode closes/reopens this exact app and checks distinct process
 identities. Longer profiles require the preceding same-ELF passing report
 and owner observations. Cancellation, bounded waits and hard alarms remain.
 
-**Built and packaged locally in WSL; C1 ABI-checked; not TV-playback-tested
-or simulator-tested.** No endurance app launch or playback has occurred.
+Initially built and packaged locally in WSL and C1 ABI-checked before any
+endurance playback. The first authorized device smoke run is recorded below.
+No simulator test was performed.
 The read-only ABI check matched 82 imports, six DT_NEEDED libraries, exact
 versioned providers, ARM32 soft-float and `/lib/ld-linux.so.3`.
 Evidence: `build/phase-1/abi-endurance-0.1.0.json`.
@@ -459,11 +466,228 @@ observations, audio focus and HDMI. Short cycles collect resource categories
 throughout; long runs collect startup/final windows only. Continuous resource
 ownership across long playback is not established by those windows.
 
-Next owner action: install the separate IPK, open its menu, then authorize
-the one-cycle smoke test while watching both clocks. No further build is
-needed before that test. Keep the control apps/IPKs available.
+### One-cycle C1 smoke — native telemetry and visible playback passed
+
+On 2026-11-11 the owner installed/opened the endurance menu and authorized
+`node scripts/run-phase1-endurance-ssh.cjs --repeat --cycles 1` while watching.
+The controller verified the manifest and running ELF
+`5712ec33ccb7155d9fdf9cc27337f6f1ee134419df86bb70e08bb2c9dd3d8a4d`.
+Report: `build/reports/c1-phase1-endurance-repeat-1-0.1.0.json`, schema 1.
+
+**Verified/native trace:** 8.031 seconds of overlap, eight dual samples,
+zero bad sample intervals and no progress-watchdog error. Both callback
+counts and PTS increased in every measured dual interval. A finished with
+63 callbacks, PTS 12.566 s and 394 accepted packets; B with 42 callbacks,
+PTS 8.333 s and 271 packets. A continued after B release: recovery samples
+advanced from 52 callbacks/10.366 s to 62/12.366 s. Both Unloads and run_end
+reported status 0; SSH confirmed the app exited. Total diagnostic: 13.935 s.
+Neither fixture reached a wrap, so loop playback remains untested.
+
+**Verified owner observation:** asked whether both clocks visibly advanced
+together and A kept advancing after B disappeared, the owner answered
+“Yes to both”. This confirms visible overlap and A continuity for this
+same smoke run. The observation is attached separately in the JSON report;
+it does not remove the controller limitation below.
+
+**Controller limitation and correction:** after app exit, `finally` referenced
+`finalStarted` outside its block scope, so the command exited 1 and did not
+save its live resource collector result. Saved native rows and the confirmed
+process exit survived. The scope was corrected in the host runner without
+changing the IPK or replaying playback. `npm test`, `npm run lint` and
+`node --check scripts/run-phase1-endurance-ssh.cjs` passed. The original
+controller error remains in the JSON with a separate post-run review;
+this was not a fully successful controller invocation.
+
+Read-only recovery examined retained `/var/log/messages`, privately matching
+the test window after measuring the TV clock about 58.5 seconds behind the
+host (no clock settings changed). It retained 76 redacted category entries
+from 3240 window lines: acquire, policy, display/connect/disconnect, release,
+Load and generic error categories, including MAIN_SCALER, SUB_SCALER, VDEC
+and G1_H264 tokens. These are categories, **not A/B ownership or a grant
+verdict**; generic error entries do not identify an app pipeline failure.
+The returned snapshot SHA-256 is
+`35e922ae4a3631748c9ba9b7af15997a1772e5ece096df890474d75e6e72cc39`.
+Source lines, UTC timestamps, clock correlation and read bounds are saved
+in the report. Original live-collector closure was not recorded; its fixed
+50-second remote timeout applied. No raw log text/identifiers were persisted.
+
+**Unknown:** resource ownership for this run, fixture wraps, repeatability,
+longer stability, audio focus and physical HDMI. The smoke gate is complete.
+The subsequent 20-cycle result is below. No IPK reinstall was required.
+Keep the controls available.
+
+### Twenty-cycle C1 repetition — passed, 2026-11-11
+
+The owner reopened the same endurance 0.1.0 menu and authorized
+`node scripts/run-phase1-endurance-ssh.cjs --repeat`. The controller verified
+the installed manifest and ELF
+`5712ec33ccb7155d9fdf9cc27337f6f1ee134419df86bb70e08bb2c9dd3d8a4d`.
+It closed each app process and launched only this verified app for subsequent
+cycles. Distinct process identities were checked in memory, not persisted.
+
+**Verified/native and controller:** all 20 cycles passed, with overlap
+8.028–8.056 seconds per cycle, 152 dual samples in total and zero bad sample
+intervals. Both callback counts and PTS advanced during measured overlap;
+A's post-B-release recovery checks passed in every cycle. All 40 Unloads
+and 20 run_end statuses were successful, and all 20 process exits were
+confirmed. The command exited 0, without a controller error. Total elapsed
+time from first signal preparation to final cycle completion was 358.786 s;
+that includes startup/teardown/relaunch gaps, not continuous dual playback.
+
+**Verified owner observation:** asked about both clocks advancing together
+across the cycles watched, A continuing after B disappeared, and normal
+TV viewing returning after final exit, the owner answered “Yes to all three”.
+This separately attributed observation is saved in `ownerObservation`, with
+`spotChecksPassed`, `bothClocksAdvancedTogether`, `aContinuedAfterBRelease`
+and `normalViewingReturnedAfterFinalExit` true.
+
+Resource collectors examined 36173 lines and retained 1217 redacted category
+entries. All 20 collector closures were confirmed; none reported truncation.
+Cycles **2, 6, 13 and 17** flagged `collector stderr present`. The raw stderr
+was intentionally not retained, so its cause and impact on log completeness
+are unknown. This limits the resource evidence; it does not negate the
+independent native trace, cleanup, exits and owner observations. No A/B
+resource ownership or continuous grant conclusion is claimed for this run.
+
+Report: `build/reports/c1-phase1-endurance-repeat-20-0.1.0.json`, schema 1.
+Post-run assertions checked exact ELF identity, cycle count, all progress/
+recovery assessments, distinct-process checks and all exits. No source or
+IPK change, rebuild, service/configuration change or additional playback
+experiment was needed. `git diff --check` passed for the record update.
+
+The repeatability gate is complete for this video-only main/sub build on
+C1 03.53.45. Both loop counters stayed zero in every cycle: fixture wraps
+and sustained playback are still untested. Next: reopen **MultiView Main +
+Sub Endurance** to the menu for a separately authorized five-minute continuous
+test (`node scripts/run-phase1-endurance-ssh.cjs --minutes 5`). The same-ELF
+20-cycle report and owner observations now satisfy its prerequisites.
+Audio focus, wider geometry and simultaneous physical HDMI remain unknown.
+
+### Five-minute C1 attempt — interrupted, not a duration pass
+
+On 2026-11-11 the owner opened the endurance 0.1.0 menu and authorized
+`node scripts/run-phase1-endurance-ssh.cjs --minutes 5`, asking for CPU and
+then temperature checks. Host-only numeric sampling was added; the IPK/ELF
+remained unchanged. The passing same-ELF 20-cycle report satisfied the start
+prerequisite. CPU/temperature reads are passive, bounded and do not change
+TV settings.
+
+**Verified/native:** the run ended after 21.343 s, with run_end status **1**
+(cancellation/focus/visibility paths share this code). There were 18 dual
+samples, zero bad sample intervals and no progress_error. A finished with
+103 callbacks, PTS 20.566 s and 633 accepted packets; B with 97 callbacks,
+PTS 19.366 s and 601 packets. B's feed loop counter reached one and callback
+PTS advanced beyond the 15-second fixture boundary. A had not wrapped.
+This is evidence of one successful B feed/PTS wrap, not a five-minute or
+owner-visible wrap pass. Both Unloads returned success; SSH confirmed exit.
+The controller correctly rejected the duration/recovery gate and exited 1.
+
+The owner reported **“It disappeared by itself”**, with no intentional
+Home/Back/input/app change. At the last samples both players still advanced;
+no playback-progress stall was observed. The five-minute report remains
+`telemetryPassed: false`, with `processExitConfirmed: true` based on the
+per-cycle exit evidence. The runner was corrected to preserve that aggregate
+exit confirmation even when duration acceptance fails.
+
+**CPU observations, limited sample:** two valid approximately 6.25-second
+overlap intervals measured total CPU busy 9.60% and 8.96%, and app CPU 5.76%
+of one core in both. Three online CPU counters were observed for those
+intervals; this is not a physical core-count claim. App RSS was 36880–36896
+KiB with 33 threads. One earlier sample/interval was unavailable, so there
+is no valid menu baseline. App CPU excludes media-service processes and
+hardware engines. These two intervals do not establish sustained CPU load,
+thermal headroom or absence of throttling.
+
+**Temperature:** a read after exit found no readable temperature values
+through the fixed thermal-zone/hwmon paths. Status is unknown, not zero
+degrees or absence of a sensor. No in-playback temperature sample exists
+for this attempt; subsequent continuous runs can sample those same read-only
+paths alongside CPU counters.
+
+The startup resource collector closed cleanly, without truncation or error:
+4311 examined lines and 125 projected entries. A later read-only lifecycle
+review recovered 465 redacted records from 4993 window lines in
+`/var/log/messages.0.gz`, decompressed snapshot SHA-256
+`353696b7d27744b7a4a479909162ae190df2bf9e18eb9519044af2ba36f49cfb`.
+Screensaver launching appears at source lines 6694/6718/6732 around
+12:14:36.915–.925 UTC; screensaver visible=true at line 6787, 12:14:37.245 UTC;
+app-matched visibility/foreground terms occur at lines 6789 and 6815 onward.
+The report includes source lines, hashes and measured host/TV clock offset;
+raw identifiers/text were discarded. **Candidate:** screensaver-driven
+focus/visibility loss triggered the app's safety cancellation. **Unknown:**
+the precise SDL event and why idle inhibition was ineffective; token/timing
+correlation does not itself prove which native return branch executed.
+
+Archived attempt report:
+`build/reports/c1-phase1-endurance-minutes-5-attempt-1-0.1.0.json`, schema 1;
+the normal minutes-5 path also retains this failed result until a later run.
+Host CPU normalization/redaction and thermal-path/unit acceptance tests,
+syntax checks, `npm test`, `npm run lint` and `git diff --check` passed.
+No new IPK, service restart or configuration write occurred. Next: inspect
+app-scoped screensaver/lifecycle handling and add distinct native exit-event
+telemetry before retrying; do not bypass focus-loss cleanup or change TV
+screen protection settings. The 30-minute prerequisite remains unsatisfied.
 
 ## Firmware and build evidence
+
+### Endurance 0.1.1 — screensaver/lifecycle retry build, not TV-tested
+
+Prepared on 2026-11-11 after owner authorization to investigate screensaver
+handling, add exit logging and build locally. Same app ID, clips, players,
+main/sub sinks and geometry as 0.1.0; the new package upgrades only Endurance.
+Old IPKs and the 0.1.0 ELF were retained as controls.
+
+Implementation plan and result: request LG's app-specific Type 2 idle policy
+in appinfo.json; allow SDL saver state at the menu, request inhibition only
+during a bounded run, restore the prior state after player cleanup; log each
+exit cause separately; retain CPU/temperature sampling, identity checks,
+watchdogs, cancellation and normal teardown. Do not change global TV policy.
+[API investigation and caveats](../research/c1-smp-ndl-resource-path.md#app-scoped-screensaver-review-and-011-retry)
+
+New CSV events are `screensaver_policy`, `screensaver_inhibit`,
+`screensaver_restore`, `exit_event` and `app_exit`. Closed exit codes identify
+Back, Exit key, Escape, SDL quit, window close, focus lost, hidden, minimized,
+SIGTERM, SIGINT and deadline. Successful reports require ordered local
+inhibit/restore records and reject any run exit event. These SDL flag checks
+do not prove the C1 compositor/power service honored the request. Type 2
+extends app idle time to 30 minutes with OSD dimming; it is not an indefinite
+disable. The precise 0.1.0 SDL cancellation branch remains unknown.
+
+The installed manifest must match ID/version/main and Type 2 metadata;
+the running ELF hash must match this build before control. The focused
+five-minute retry now requires a passing **same-ELF smoke** and owner visual
+check. Thirty minutes still requires a same-ELF five-minute pass. This
+explicit diagnostic gate change does not transfer the 0.1.0 20-cycle pass;
+repeat 20 cycles on the final candidate before claiming its repeatability.
+
+**Built, packaged and C1 ABI-checked; not TV-playback-tested or simulator-tested.**
+No playback or application launch occurred while preparing this revision.
+
+- IPK: `dist/io.github.tpapaz.multiview.endurance_0.1.1_arm.ipk`.
+- IPK SHA-256: `5649a3f2cd85dd99a9edfe32f32073a77236a7c42c280781fec4d5b91be50ee0`.
+- ELF SHA-256: `08ae821489b6f69b1ada468cc69557bd996d9d91c8eab9cc2d284f4117118122`.
+- ABI evidence: `build/phase-1/abi-endurance-0.1.1.json`; 86 imports and six
+  DT_NEEDED libraries, ARM32 soft-float, `/lib/ld-linux.so.3`, exact versioned
+  providers and the same C1 SDL library hash as 0.1.0.
+
+Validation passed:
+
+- `wsl -d Ubuntu --exec cmake --build /mnt/d/Development/webos-multiview/build/phase-1/endurance`
+  with the existing 2026.08 SDK and warning-as-error flags.
+- `./scripts/package-phase1.ps1 -Target endurance -LinuxNode /home/tasos/.cache/webos-multiview/node-v22.17.0-linux-x64/bin/node`.
+- `wsl -d Ubuntu --exec python3 /mnt/d/Development/webos-multiview/scripts/verify-ipk.py --endurance /mnt/d/Development/webos-multiview/dist/io.github.tpapaz.multiview.endurance_0.1.1_arm.ipk`
+  for exact payload/bytes, metadata, executable mode 0755 and no extra scripts/links.
+- `node scripts/verify-mixed-abi.cjs --endurance`, using fresh read-only C1 exports.
+- `npm test`, `npm run lint`, native-runner/helper syntax checks, the existing
+  C++ progress watchdog acceptance binary and `git diff --check`.
+  New host cases reject missing/incorrect installed idle policy, missing or
+  incorrectly ordered inhibit restoration, and every distinct run exit cause.
+
+Next owner action: install 0.1.1 through Dev Manager and open
+**MultiView Main + Sub Endurance** to the menu for a fresh one-cycle SSH smoke check. After
+its owner-confirmed pass, reopen for the five-minute retry. Spot checks are
+sufficient to record observed visibility; unobserved intervals remain unknown.
+No GitHub Actions, commit or push was used.
 
 Read-only inspection found an aarch64 kernel with ARM32 EABI5 soft-float
 userspace, glibc 2.28 and loader `/lib/ld-linux.so.3`. ARM binaries used
@@ -487,7 +711,8 @@ cancellation in desktop Chrome before the TV comparison.
 | Mixed 0.1.0 | 88 | `62bc00fddd7cec1cc811f39bc03dde06c1837ebef315173af990ac1f1b17b37a` |
 | NDL 0.1.1 | 69 | `bb04e2e5bdcbea23ef8b0c6ff7b9db25cf083008a3db877e1ec98bb82611517e` |
 | Main/sub 0.1.0 | 81 | `c96c41242715c4ea8b1c3786de0d9ff36074c966e6ef1d7dd75ec81158cce0ad` |
-| Endurance 0.1.0 (not playback-tested) | 82 | `943a4477567b9368641152761f03cabb9a0b78f7a282f51dc95cc4291844129d` |
+| Endurance 0.1.0 (smoke TV-tested) | 82 | `943a4477567b9368641152761f03cabb9a0b78f7a282f51dc95cc4291844129d` |
+| Endurance 0.1.1 (not TV-tested) | 86 | `5649a3f2cd85dd99a9edfe32f32073a77236a7c42c280781fec4d5b91be50ee0` |
 
 TV-playback-tested ELF SHA-256 values:
 

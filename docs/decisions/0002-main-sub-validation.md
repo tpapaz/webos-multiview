@@ -22,9 +22,37 @@ feed PTS. Require native progress, bounded execution, cancellation, cleanup,
 identity checks and human clock observations. Resource startup/final windows
 do not prove continuous resource ownership over a long run.
 
-The endurance package is built, packaged and C1 ABI-checked, awaiting its
-first TV playback. A passing short staged package does not pre-approve a
-new binary. [Build and run procedure](../build.md#repeatability-and-endurance)
+The endurance package is built, packaged and C1 ABI-checked. Its first C1
+smoke trace passed duration, callback/PTS continuity, A recovery and cleanup;
+the owner confirmed both clocks advancing together and A continuity after
+B release. This completes the smoke gate. A host post-run saving
+error was fixed and retained log categories recovered; no IPK change was
+needed. The subsequent 20-cycle run passed in distinct app processes with
+native progress, A continuation, cleanup and exit, plus owner-confirmed
+clocks and normal viewing afterward. Four collectors flagged stderr, so
+resource-log completeness/ownership must not be inferred. Next is five
+minutes of continuous overlap with fixture wraps, then 30 minutes.
+The first five-minute attempt subsequently cancelled after 21.343 seconds,
+while both players still advanced; B crossed one fixture wrap. Screensaver
+launch/visibility near cancellation is the leading lifecycle explanation,
+not yet an exact native event attribution. Review app-scoped screensaver
+handling before retrying; no TV idle-policy or firmware changes. CPU sampling
+is now available in the host runner; standard temperature paths exposed no
+readable sensors. Each later gate still requires its own evidence.
+
+The targeted 0.1.1 lifecycle retry uses documented LG
+`screenSaverProperties.preferredType: 2` plus a playback-scoped SDL inhibition
+request, restored after cleanup. It logs each exit cause separately, retaining
+focus-loss safety. These are candidate C1 controls, not a verified fix.
+[Screensaver investigation](../research/c1-smp-ndl-resource-path.md#app-scoped-screensaver-review-and-011-retry)
+
+For this focused retry, require a fresh same-ELF smoke with owner confirmation
+before five minutes, then a same-ELF five-minute pass before 30 minutes.
+This deliberately advances the lifecycle investigation without transferring
+the old build's 20-cycle result. Repeat 20 cycles on the final candidate
+before claiming repeatability for that binary. The host report records the
+actual prerequisite; it contains no old-version compatibility path or override.
+[Build and run procedure](../build.md#repeatability-and-endurance)
 
 Phase 1 remains active until stability, wider independent geometry and audio
 focus are validated. Simultaneous HDMI 1 + HDMI 2 remains the defining

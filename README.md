@@ -11,9 +11,17 @@ release. Earlier default-main SMP/NDL runs contended for MAIN_SCALER.
 
 The current work is **Phase 1 repeatability and bounded endurance**, using
 a separate Main + Sub Endurance app. Its 0.1.0 ARM IPK is locally built,
-packaged and C1 ABI-checked; playback of this new build is **not yet
-TV-tested**. Next: one short smoke cycle, 20 clean app start/exit cycles,
-then gated 5-minute and 30-minute runs. Audio focus and wider independent
+packaged and C1 ABI-checked. C1 smoke and 20 distinct app start/exit cycles
+passed native progress and cleanup. The owner confirmed both clocks advancing
+together, A continuing after B release and normal viewing after the final exit.
+The first five-minute attempt cancelled after about 21 seconds; logs point
+to a screensaver/lifecycle interruption while both players were advancing.
+Endurance **0.1.1** is now locally built, packaged and C1 ABI-checked, **not
+TV-tested**. It requests app-scoped screensaver handling and logs distinct
+exit events. Install it, pass a fresh smoke check, then retry five-minute
+continuous playback with CPU/temperature sampling before the gated 30-minute run.
+The 0.1.0 repeatability result does not certify the new binary.
+Audio focus and wider independent
 geometry remain untested. See the [current procedure](docs/build.md#repeatability-and-endurance).
 
 - [Build and install](docs/build.md) covers the passive probe, browser comparison and ARM diagnostics.

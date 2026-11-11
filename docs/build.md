@@ -33,9 +33,17 @@ and payload bytes. Archive timestamps can change the package hash.
 
 Current direction: native SMP A `main_video` + B `sub_video`. The staged
 main/sub 0.1.0 package passed short C1 playback; the separate endurance
-0.1.0 package below is built/packaged/ABI-checked and **not yet TV-tested**.
-Keep all installed control apps/IPKs. Installation of the endurance app
-does not replace them. [Evidence](device-tests/lg-c1-phase-1.md)
+0.1.0 package passed smoke and 20 distinct app start/exit cycles on the C1,
+with owner-confirmed clocks, A continuation and normal viewing afterward.
+The first five-minute attempt cancelled early around a screensaver transition;
+it did not pass the duration gate. Endurance **0.1.1** is now locally built,
+packaged and C1 ABI-checked, **not TV-tested**, with app-scoped screensaver
+requests and distinct exit-event logs. The earlier
+host log-save error was fixed without an IPK change. Four repetition
+collectors flagged stderr; playback/cleanup passed, resource attribution is unknown.
+Keep all control IPKs. Installing 0.1.1 upgrades only the Endurance app;
+the staged main/sub, SMP, NDL and mixed apps remain separate. The original
+Endurance 0.1.0 IPK is retained for rollback. [Evidence](device-tests/lg-c1-phase-1.md)
 
 On Windows, use PowerShell with FFmpeg and FFprobe on PATH. For the ARM
 packages, install Ubuntu in WSL with CMake, Ninja, Python 3, binutils, Node 22
@@ -65,7 +73,7 @@ The SMP build uses `native/phase1` with output `build/phase-1/arm` and
 |---|---|---|
 | HTML5 comparison | `io.github.tpapaz.multiview.browser_0.1.0_all.ipk` | `node scripts/run-phase1-browser-ssh.cjs` |
 | Native SMP stages | `io.github.tpapaz.multiview.phase1_0.1.4_arm.ipk` | `node scripts/run-phase1-ssh.cjs` |
-| Main/sub endurance (next) | `io.github.tpapaz.multiview.endurance_0.1.0_arm.ipk` | `node scripts/run-phase1-endurance-ssh.cjs --repeat --cycles 1` |
+| Main/sub endurance (next) | `io.github.tpapaz.multiview.endurance_0.1.1_arm.ipk` | `node scripts/run-phase1-endurance-ssh.cjs --repeat --cycles 1` |
 | SMP main/sub sinks | `io.github.tpapaz.multiview.sinks_0.1.0_arm.ipk` | `node scripts/run-phase1-sinks-ssh.cjs --solo-b` |
 | Mixed SMP A + NDL B | `io.github.tpapaz.multiview.mixed_0.1.0_arm.ipk` | `node scripts/run-phase1-mixed-ssh.cjs` |
 | Native NDL v2 solo | `io.github.tpapaz.multiview.ndl_0.1.1_arm.ipk` | `node scripts/run-phase1-ndl-ssh.cjs` |
@@ -75,7 +83,7 @@ several root profiles are configured. [C1 playback record](device-tests/lg-c1-ph
 
 ### Repeatability and endurance
 
-Install `dist/io.github.tpapaz.multiview.endurance_0.1.0_arm.ipk` through
+Install `dist/io.github.tpapaz.multiview.endurance_0.1.1_arm.ipk` through
 Dev Manager. Open **MultiView Main + Sub Endurance** to its menu and leave
 the remote buttons alone. This is separate from the staged control app.
 Start with one smoke cycle:
@@ -86,8 +94,10 @@ node scripts/run-phase1-endurance-ssh.cjs --repeat --cycles 1
 
 Watch A start left, then B right. Both clocks should advance together for
 eight seconds; B should disappear and A should continue for three seconds.
-The controller closes the app and confirms exit. After a passing smoke
-result and visual check, reopen its menu and run:
+The controller closes the app and confirms exit. The targeted 0.1.1
+lifecycle retry needs this exact binary's passing smoke and owner visual
+confirmation before `--minutes 5`; the old 0.1.0 reports do not satisfy it.
+Reopen its menu for that retry. Twenty-cycle mode remains available:
 
 ```powershell
 node scripts/run-phase1-endurance-ssh.cjs --repeat
@@ -101,9 +111,11 @@ sequence. Append an optional local SSH profile alias to any command.
 
 Attach the owner's actual observations to the report's `ownerObservation`
 (`spotChecksPassed: true`, plus a factual note) only after confirmation.
-The runner never infers visible playback from telemetry. The five-minute
-command requires the same ELF's passing 20-cycle report, clean exits and
-this observation. Reopen the menu before each longer run:
+The runner never infers visible playback from telemetry. For this targeted
+lifecycle retry, the five-minute command requires the same ELF's passing
+**one-cycle smoke**, clean exit and owner observation. Repeatability of 0.1.1
+remains unverified until its own 20-cycle run; repeat 20 cycles on the final
+candidate before claiming that gate. Reopen the menu before each longer run:
 
 ```powershell
 node scripts/run-phase1-endurance-ssh.cjs --minutes 5
@@ -120,6 +132,61 @@ at fixture boundaries; native feed/callback PTS must stay monotonic. Watch
 for black output or freezes at wraps. This package holds the left/right
 layout; wider geometry and audio-focus tests remain separate.
 
+App-scoped screensaver controls in 0.1.1:
+
+- Manifest `screenSaverProperties.preferredType: 2` requests LG's extended
+  30-minute app idle policy with OSD dimming; it is not an indefinite disable.
+- SDL starts with saver allowed at the menu. During the bounded playback,
+  `SDL_DisableScreenSaver` requests inhibition. The prior SDL state is
+  restored after both players close, before run_end. Local SDL flag changes
+  do not prove the C1 power/compositor service honored the request.
+- Focus loss, hidden/minimized state and explicit exit still cancel and
+  clean up. No fake remote input or global protection/idle setting is used.
+
+[API investigation and limits](research/c1-smp-ndl-resource-path.md#app-scoped-screensaver-review-and-011-retry)
+
+Trace `screensaver_policy` status 2 records the requested metadata type;
+`screensaver_inhibit` status 0 and `screensaver_restore` status 1 record
+SDL's local disabled/enabled states. They are not TV acknowledgements.
+`exit_event` and `app_exit` have a closed status vocabulary:
+
+| Status | Cause |
+|---|---|
+| 1 / 2 / 3 | Back / Exit key / Escape |
+| 4 / 5 | SDL quit / window close |
+| 6 / 7 / 8 | Focus lost / hidden / minimized |
+| 9 / 10 / 11 | SIGTERM / SIGINT / deadline |
+
+The host decodes captured run exits into `telemetry.exitEvents`. Host
+Ctrl+C/termination is also recorded in `controllerCancellation`. If the
+process exits before its final trace can be read, native event evidence
+remains incomplete; cleanup and process exit are reported separately.
+
+Continuous runs now collect read-only CPU, memory/thread and temperature
+telemetry without an IPK change. A menu baseline is attempted, then samples
+are taken approximately every six seconds. CPU/memory reads verify the app
+process identity before and after reading. Only numeric counters are exported.
+Total CPU busy percent uses `/proc/stat`, excluding idle and iowait; app CPU
+uses its user+system ticks, normalized so one observed online core is 100%.
+The app value excludes media daemons and hardware engines. These are interval
+estimates; CPU hotplug/counter changes invalidate a sample, and brief samples
+cannot establish sustained load or the absence of throttling.
+[Linux proc counter definitions](https://docs.kernel.org/filesystems/proc.html)
+
+Temperature collection reads only `/sys/class/thermal/thermal_zone*/temp`
+and `/sys/class/hwmon/hwmon*/temp*_input`. Values use milli-Celsius, converted
+to Celsius; sensor roles and operating limits remain unknown.
+[Linux thermal sysfs](https://docs.kernel.org/driver-api/thermal/sysfs-api.html)
+No readable temperatures were exposed by those paths in the first C1 check;
+that is not proof that the TV has no temperature sensor. A later post-exit
+reading is labeled separately from in-playback samples. Nothing writes
+thermal controls, cooling settings or idle policy.
+
+The owner need not watch every second. Record which spot checks actually
+showed both clocks advancing and any observed wrap/reset. CPU/PTS progress
+cannot prove continuous visible output; leave unobserved visual intervals
+unknown. Do not promote an interrupted attempt to the 30-minute prerequisite.
+
 Back, loss of focus or Ctrl+C cancels and requests normal teardown. Limits:
 eight seconds without first frames, five seconds without callback/PTS
 progress, eight seconds without accepted feed packets, native deadline
@@ -130,10 +197,10 @@ use SSH for report collection and prerequisite enforcement.
 
 Versioned JSON (`schemaVersion: 1`) is saved under `build/reports/`:
 
-- `c1-phase1-endurance-repeat-1-0.1.0.json` (smoke).
-- `c1-phase1-endurance-repeat-20-0.1.0.json`.
-- `c1-phase1-endurance-minutes-5-0.1.0.json`.
-- `c1-phase1-endurance-minutes-30-0.1.0.json`.
+- `c1-phase1-endurance-repeat-1-0.1.1.json` (smoke).
+- `c1-phase1-endurance-repeat-20-0.1.1.json`.
+- `c1-phase1-endurance-minutes-5-0.1.1.json`.
+- `c1-phase1-endurance-minutes-30-0.1.1.json`.
 
 Copy reports before repeating a profile; filenames are reused. Reports
 contain per-cycle frame/PTS/packet/loop rows, duration/continuity assessment,
@@ -151,7 +218,7 @@ Build locally in PowerShell using the existing WSL SDK and fixtures. With
 wsl -d Ubuntu --exec cmake -S "$repo/native/phase1-endurance" -B "$repo/build/phase-1/endurance" -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_TOOLCHAIN_FILE=$sdk/share/buildroot/toolchainfile.cmake"
 wsl -d Ubuntu --exec cmake --build "$repo/build/phase-1/endurance"
 ./scripts/package-phase1.ps1 -Target endurance -LinuxNode /home/tasos/.cache/webos-multiview/node-v22.17.0-linux-x64/bin/node
-wsl -d Ubuntu --exec python3 "$repo/scripts/verify-ipk.py" --endurance "$repo/dist/io.github.tpapaz.multiview.endurance_0.1.0_arm.ipk"
+wsl -d Ubuntu --exec python3 "$repo/scripts/verify-ipk.py" --endurance "$repo/dist/io.github.tpapaz.multiview.endurance_0.1.1_arm.ipk"
 node scripts/verify-mixed-abi.cjs --endurance
 ```
 

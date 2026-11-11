@@ -18,18 +18,34 @@ and A stayed live after B release; cleanup and process exit passed. Logs
 attribute MAIN_SCALER to A and SUB_SCALER to B with distinct decoder
 allocations. This is a short video-only result, not physical-input evidence.
 
-Phase 1 remains active: repeatability, extended stability, wider independent
+Phase 1 remains active: continuous stability, fixture wraps, wider independent
 geometry and audio focus need validation. The separate endurance 0.1.0 IPK
-is built locally, packaged and C1 ABI-checked, **not TV-tested**. Next gates:
+is built locally, packaged and C1 ABI-checked. Smoke and 20 distinct app
+start/exit cycles passed progress, A continuation, cleanup and exit. The
+owner confirmed both clocks and normal viewing afterward. Four cycle
+collectors flagged stderr; resource ownership remains unknown for this run.
+The earlier smoke-controller scope error was fixed without an IPK change.
+The first five-minute attempt ended with native cancellation after 21.343 s,
+with no observed progress stall and successful cleanup/exit. Screensaver
+launch/visibility in retained logs is the leading lifecycle explanation;
+the exact SDL event remains unknown. Endurance 0.1.1 now requests app-scoped
+SDL inhibition during bounded playback, restores it afterward, selects the
+LG app-specific Type 2 idle policy and logs distinct exits. It is locally
+built/packaged/C1 ABI-checked, **not TV-tested**. CPU samples were collected; standard temperature paths
+exposed no readable sensors. [Attempt details](docs/device-tests/lg-c1-phase-1.md#five-minute-c1-attempt--interrupted-not-a-duration-pass)
+Current gates:
 
-1. Install/open the endurance app and pass one eight-second overlap smoke cycle.
-2. Pass 20 distinct app start/exit cycles, with both clocks spot-checked by the owner.
-3. Pass five minutes, including fixture wraps and owner-observed clocks.
+1. Completed: eight-second smoke cycle with owner-confirmed visible overlap and A continuity.
+2. Completed: 20 distinct app start/exit cycles with owner-confirmed clocks and normal viewing.
+3. Pending: install 0.1.1, pass its own smoke test, then retry five minutes including wraps and owner spot checks.
 4. Pass 30 minutes, then review cleanup, logs and normal viewing after exit.
 5. Prepare wider independent geometry and audio-focus experiments separately.
 
-Each longer run requires the preceding same-build report and human visual
-confirmation. This sequence validates local playback before returning to
+The targeted 0.1.1 five-minute lifecycle retry requires its own same-build
+smoke and owner confirmation; the 30-minute run requires a same-build
+five-minute pass. The 20-cycle evidence remains specific to 0.1.0; repeat
+20 cycles on the final candidate before claiming its repeatability gate.
+This sequence validates local playback before returning to
 physical-input research. [Run instructions](docs/build.md#repeatability-and-endurance)
 and [decision](docs/decisions/0002-main-sub-validation.md). [Sink investigation and exact
 C1 evidence](docs/research/c1-smp-ndl-resource-path.md).

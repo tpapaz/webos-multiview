@@ -12,6 +12,11 @@ const targets = {
     mixed: ['phase1-mixed', 'mixed', 'multiview-mixed']
 };
 
+function installedBuildMatches(manifest, build) {
+    return manifest.id === build.id && manifest.version === build.version && manifest.main === build.executable &&
+        (!build.id.endsWith('.endurance') || manifest.screenSaverProperties?.preferredType === 2);
+}
+
 function nativeBuild(target) {
     const [source, directory, executable] = targets[target];
     const manifest = JSON.parse(fs.readFileSync(path.join(root, 'native', source, 'appinfo.json')));
@@ -70,7 +75,7 @@ async function openNativeApp(client, build) {
     } catch {
         throw new Error(`Install and open ${title} ${version} first`);
     }
-    if (manifest.id !== id || manifest.version !== version || manifest.main !== executable)
+    if (!installedBuildMatches(manifest, build))
         throw new Error(`Install and open ${title} ${version} first`);
 
     const ids = (await remote(`for file in /proc/[0-9]*/exe; do ` +
@@ -100,6 +105,10 @@ async function openNativeApp(client, build) {
     };
     return {
         identityToken: crypto.createHash('sha256').update(`${pid}:${started}:${hash}`).digest('hex'),
+        cpuCounters: () => remote(`${identity} && ` +
+            `awk '$1 == "cpu" {total=0; for(i=2;i<=9;i++) total+=$i; printf "%.0f %.0f\\n",total,$5+$6} /^cpu[0-9]/ {cores++} END {print cores}' /proc/stat && ` +
+            `awk '{printf "%.0f %.0f\\n",$14+$15,$20}' /proc/${pid}/stat && ` +
+            `awk '$1 == "VmRSS:" {print $2}' /proc/${pid}/status && ${identity}`),
         trace: () => remote(`${identity} && case "$(readlink ${descriptor})" in ` +
             `${tracePath}) cat ${descriptor};; *) exit 1;; esac`),
         signal,
@@ -121,7 +130,7 @@ async function launchEnduranceApp(client, build) {
         throw new Error('Unknown repeatability app');
     const install = `/media/developer/apps/usr/palm/applications/${build.id}`;
     const manifest = JSON.parse(await command(client, `cat '${install}/appinfo.json'`));
-    if (manifest.id !== build.id || manifest.version !== build.version || manifest.main !== build.executable)
+    if (!installedBuildMatches(manifest, build))
         throw new Error('Installed repeatability build mismatch');
     await command(client, `test "$(sha256sum '${install}/${build.executable}' | cut -d' ' -f1)" = '${build.hash}'`);
     const payload = '{"id":"io.github.tpapaz.multiview.endurance"}';
@@ -135,4 +144,4 @@ function saveReport(name, build, rows, details = {}) {
     fs.writeFileSync(report, JSON.stringify({schemaVersion: 1, appId: build.id, appVersion: build.version, binarySha256: build.hash, rows, ...details}, null, 2) + '\n');
 }
 
-module.exports = {nativeBuild, openNativeApp, saveReport, command, launchEnduranceApp};
+module.exports = {nativeBuild, openNativeApp, saveReport, command, launchEnduranceApp, installedBuildMatches};
