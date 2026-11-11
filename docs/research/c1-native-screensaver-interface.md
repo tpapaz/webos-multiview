@@ -1,5 +1,20 @@
 # C1 native screensaver request veto and cleanup
 
+**Closed for the current scope; effective inhibition unverified.** See
+[decision 0003](../decisions/0003-close-idle-work-resume-hdmi.md). The source,
+ABI and experiment history below are retained, with no further retry planned.
+
+Retained final control: **0.1.3**, the owner's final short caller correction. Uses
+ordinary `LSCall`/`LSCallOneReply` on the app-owned public handle instead of
+asserting an application ID through the privileged call API. Locally built,
+packaged, C1 ABI-checked and now smoke-TV-tested. Registration, short playback,
+A recovery and cleanup passed with owner clocks; no request arrived, so
+effective veto remains unknown. The final request mode completed in 60.022 s
+with no request, successful cleanup and confirmed exit: inconclusive. The
+owner saw the menu throughout and a screensaver after exit. No actual NACK
+was exercised; idle work is closed/deferred and HDMI research resumes.
+The 0.1.2 failure below is preserved.
+
 Read-only review: 2026-11-11, LG OLED C1, firmware 03.53.45, SDK 6.5.3.
 Uses the existing run logs, fixed-path firmware copies and existing WSL ARM
 binutils. No app launch, Luna call/registration, playback, TV write or IPK build.
@@ -20,7 +35,10 @@ while its authorized playback/recovery is active. Permission from the actual
 installed application identity, receipt of requests, accepted NACKs, visible
 focus retention and restored idle eligibility after cleanup are **unknown**
 until a bounded on-device experiment. Export availability and wildcard server
-roles do not establish those outcomes. No new package is ready to install.
+roles do not establish those outcomes. The separate 0.1.2 build below is
+now smoke-TV-attempted, with registration submission failing before playback.
+The static transport recommendation below is superseded by the privilege
+guard finding in the follow-up; do not treat it as a validated caller recipe.
 
 ## Firmware contract
 
@@ -180,23 +198,72 @@ Do not enable joystick input, fabricate input or reset that global timer as
 the playback fix. No ordinary Wayland idle property name or dedicated lease
 API was established. The local SDL flag remains local telemetry.
 
-## Next bounded experiment, before another endurance run
+## Short implementation follow-up: 0.1.2
 
-The interface contract is sufficiently traced to design a small app-owned
-probe. Its runtime permission and cleanup must be demonstrated before another
-30-minute retry. A future local build should log registration reply, numbered
-request/state, decision, response reply, explicit unsubscribe reply, token
-cancellation and handle teardown separately, without raw request strings or
-bus identities. Failure or loss of subscription must stop the diagnostic
-and clean up; do not silently continue with ineffective inhibition.
+Owner steering limits the next probe to a 60-second idle-menu wait and a
+90-second total native cap. There is no thirty-minute retry or additional
+endurance campaign. The app's extended Type 2 metadata is removed so the
+normal app idle policy can produce a real request without a system timer
+change. If none arrives, the result is inconclusive and HDMI research resumes.
 
-First validate same-build smoke and normal exit. Then separate timer expiry
-from B teardown: hold both players across the Type 2 boundary, observe a real
-request and accepted veto while foreground, release B several seconds later,
-retain the veto through A recovery, then release it and check normal idle
-eligibility. Do not shorten TV timers or call `turnOnScreenSaver` to manufacture
-a request. Retain CPU/temperature sampling and owner clock observations.
-This probe is proposed, not built or TV-tested.
+[Native implementation](../../native/phase1-endurance/native-veto.h) uses
+the public C1 ABI above, validates bounded JSON and real timestamps, and
+pumps its own GLib context on the app thread. It logs register/request/NACK/
+reply/unsubscribe/cancel/unregister separately, without raw bus identifiers
+or payloads. Registration and response failures stop the diagnostic.
+Cancellation/disconnect behavior remains to be observed on the running TV.
+
+A short smoke registers the client and runs eight seconds of A/B overlap,
+B release and three seconds of A recovery. The request mode first waits
+up to 60 seconds on the idle menu for a real request and successful reply,
+then performs that same short playback/recovery sequence. Veto lifetime
+extends through A recovery and both player Unloads. Thus request expiry is
+separated from B release without a long playback run.
+
+Version 0.1.2 is locally built, packaged, C1 ABI-checked and **smoke-TV-attempted:
+failed before playback**. The bus opened and context attached, but registration
+submission returned false. The handle closed and controlled exit succeeded;
+the owner saw LG Home. No request/reply or live playback occurred.
+CPU/temp sampling, identity checks, cancellation, resource/display logs and
+separate owner observations remain in the SSH controller.
+[Build identity and pending tests](../device-tests/lg-c1-phase-1.md#native-veto-probe-012--built-not-tv-tested).
+Neither a service success reply nor telemetry alone certifies effective veto.
+Skip request mode; additional idle work is deferred in favor of read-only
+HDMI path research.
+
+The saved C1 LS2 implementation exposes a missed caller restriction:
+`LSCallFromApplication` at `0xfe7c` forwards to common call body `0xda2c`.
+With non-null application ID, `0xda5a–0xda6a` invokes
+`_LSTransportGetPrivileged` and branches to failure at `0xdcb2` when false,
+before URI parsing at `0xda90`. The same binary contains the diagnostic
+`LSCallFromApplication with application ID %s but not privileged` at file
+offset `0x2b758`. The pinned upstream comparison has the equivalent guard
+in `callmap.c:1895–1898`.
+
+The candidate uses an anonymous public connection but did not establish a
+privileged transport. Therefore the application-ID caller API is the leading
+static explanation for the immediate false return. The runtime error detail
+and actual transport privilege flag were not captured, so the exact failing
+branch is **candidate**, not verified. This is not evidence that tvpower's
+registration method rejected permission or that the NACK hook failed.
+The original code discarded `LSError` details; that logging gap prevents a
+definitive runtime diagnosis. No privilege escalation, alternate API call,
+rebuild or replay follows from this finding.
+
+The owner subsequently authorized this one correction. Actual C1 wrappers
+`LSCall` (`0xfe3c`, clears the common app-ID argument at `0xfe42/0xfe4a`)
+and `LSCallOneReply` (`0xfe5c`, clears it at `0xfe6a`) forward to `0xda2c`
+without the privileged application-ID assertion. The service still receives
+the real connection's sender; the payload's client name is a label, not
+an authorization grant. Version 0.1.3 uses these ordinary calls directly,
+with no alternate privileged path, role-file change or policy bypass.
+
+API and service failures now emit only reason classes 0–6 and bounded signed
+numeric codes. Classes: 0 no detail, 1 permission/privilege, 2 unavailable,
+3 invalid argument, 4 disconnected, 5 timeout, 6 other. Values above one
+million in magnitude use a capped marker and are reported as unknown.
+Raw error strings and JSON remain private; the class is diagnostic evidence,
+not a definitive security diagnosis. Cleanup and all runtime limits remain.
 
 Evidence ledger: ignored `build/reports/c1-native-screensaver-interface.json`,
 firmware input manifests, REA export bundle, native-client static ledger and

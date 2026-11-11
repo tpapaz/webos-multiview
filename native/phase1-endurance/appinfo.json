@@ -1,11 +1,10 @@
 {
   "id": "io.github.tpapaz.multiview.endurance",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "vendor": "tpapaz",
   "type": "native",
   "main": "multiview-endurance",
-  "title": "MultiView Main + Sub Endurance",
+  "title": "MultiView Native Veto Probe",
   "icon": "icon.png",
-  "requiredACG": [],
-  "screenSaverProperties": {"preferredType": 2}
+  "requiredACG": []
 }

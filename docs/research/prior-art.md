@@ -1,6 +1,8 @@
 # Prior-art audit
 
 Historical upstream audit, retained for provenance and licensing boundaries.
+For the next HDMI task, begin with the [handoff](../handoff/hdmi-next-chat.md)
+and [current scope decision](../decisions/0003-close-idle-work-resume-hdmi.md).
 Current C1 results and direction are in the [Phase 1 device record](../device-tests/lg-c1-phase-1.md),
 [firmware/resource investigation](c1-smp-ndl-resource-path.md) and
 [main/sub decision](../decisions/0002-main-sub-validation.md).

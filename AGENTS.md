@@ -2,12 +2,14 @@
 
 Read `ROADMAP.md` and the current research and decision records before making changes.
 
-Current Phase 1 direction: validate repeatability and endurance of the
-owner-observed SMP main_video/sub_video local-clip combination. Read
-`docs/decisions/0002-main-sub-validation.md`, the Phase 1 device record and
-the build guide before preparing another experiment. Keep historical controls.
-Build artifacts locally in the existing Linux SDK under WSL; do not add or
-invoke GitHub Actions, including push-triggered workflows. Never commit or push.
+Current direction: **Phase 2 read-only HDMI discovery**. Screensaver work is
+closed for this scope, with effective inhibition unknown; do not reopen it
+or the separate Glasshouse/Home topic without owner direction. Phase 1 is
+partially validated, not complete. Read `docs/handoff/hdmi-next-chat.md`,
+`docs/decisions/0003-close-idle-work-resume-hdmi.md`, the Phase 1 device
+record and build guide before preparing another experiment. Preserve controls
+and local evidence. Build locally in the existing Linux SDK under WSL; no
+GitHub Actions (including on push), automatic commits or pushes.
 
 ## Mission
 

@@ -40,38 +40,37 @@ the test app. The browser controller checks the specific Inspector target over
 a temporary loopback tunnel. Both use the authorized local profile and save
 reports on the development PC. [Phase 1 protocol](device-tests/lg-c1-phase-1.md)
 
-The endurance app loops only those fixtures on SMP main/sub. The repetition
-runner confirms this app exits before a fixed application-manager launch
-of the exact app ID and installed ELF. It cannot select arbitrary launch
-targets. It checks process identity before signals and stops on failure.
-The owner opens the first menu; subsequent launches are part of the
-explicitly requested bounded repetition sequence.
+The retained 0.1.3 veto diagnostic has only short modes: acknowledged
+registration and eight-second dual playback plus A recovery, or a real-request
+wait of at most 60 seconds before that playback. Native hard cap: 90 seconds.
+The owner opens a fresh menu; the controller does not relaunch or run repeated
+cycles. It uses ordinary public LS2 calls on an app-owned handle, validates
+bounded payloads, and keeps registration through A recovery and both Unloads.
+Unsubscribe, token cancellation and handle teardown are logged separately.
+The final request test received no request, so actual NACK inhibition remains
+unknown. [Scope closure](decisions/0003-close-idle-work-resume-hdmi.md).
 
-Profiles are eight seconds of dual overlap per cycle (at most 20 cycles),
-five minutes or 30 minutes, plus startup/recovery/cleanup. Longer profiles
-require same-build reports and human visual checks. Native progress/feed
-watchdogs and a hard alarm bound failures; an alarm or unconfirmed exit
-is not successful cleanup. Back, focus loss and Ctrl+C cancel. Fixture
-clocks reset at stream wraps; native PTS must keep advancing.
+Historical Endurance 0.1.0/0.1.1 repetition and longer runs are retained in the
+device journal and local control IPKs. They are not current modes or planned
+tasks. The old 0.1.1 Type 2 metadata/SDL requests were not proof of TV inhibition.
+Focus loss, Back/Exit, hide/minimize, signals and deadlines still cancel and
+release resources. A hard alarm or unconfirmed process exit is not clean
+cleanup evidence.
 
-Long playback collects resource logs in startup/final windows, not continuously.
-Retained logs are correlated privately for A/B ownership; arbitrary vendor
-strings, raw registration IDs and SSH identifiers stay out of shared reports.
-Human observations remain separate from telemetry. [Run procedure](build.md#repeatability-and-endurance)
+Log collection exports known categories and numeric/redacted evidence only,
+not arbitrary vendor strings or raw IDs. CPU telemetry reads numeric
+`/proc/stat` and identity-checked app stat/status counters. Temperature checks
+read fixed thermal/hwmon temperature paths; missing values stay unknown.
+Post-exit and idle-menu measurements are not playback load. No thermal,
+cooling, system idle settings, fake key input or timer reset loops are used.
 
-CPU telemetry reads numeric `/proc/stat` and identity-checked app stat/status
-counters only. Temperature checks read fixed thermal/hwmon temperature paths;
-no sensor role, safe limit or hardware-engine utilization is inferred. No
-thermal, cooling or TV idle-policy settings are changed. Missing readable
-sensor paths remain unknown; post-exit readings are not playback measurements.
-
-Endurance 0.1.1 selects LG's app-specific Type 2 screensaver metadata and
-requests SDL inhibition only while the bounded diagnostic owns playback.
-The prior SDL state is restored after player cleanup, before run_end; the
-menu follows its app idle policy. Local SDL flags are not TV acknowledgements.
-Focus loss, hiding, minimization, Back/Exit, quit/close, signals and deadlines
-still stop the run and release players. No system-wide screensaver setting,
-fake keypress, idle-timer reset loop or screen-protection service is used.
+Current HDMI discovery is read-only: inspect existing source, firmware,
+declarations and policy/configuration, and distinguish input selection,
+receiver ownership, output capture and presentation. Do not switch inputs,
+open capture, load a hardware session or call set methods during discovery.
+A later active test needs owner opt-in, a narrow justified interface, bounds
+and restoration. A simultaneous dual-HDMI test also needs a second independent
+source; only one is currently connected.
 
 If the app or optional helper misbehaves, close **only this app** or interrupt
 the foreground CLI. Stop testing on any unexpected input/mode/service behavior.

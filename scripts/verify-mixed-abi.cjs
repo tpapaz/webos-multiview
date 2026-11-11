@@ -13,7 +13,8 @@ if (aliases.length > 1 || aliases.some(arg => arg.startsWith('--'))) throw new E
 const target = endurance ? 'endurance' : sinks ? 'sinks' : 'mixed';
 const build = nativeBuild(target);
 const libraries = ['ld-linux.so.3', ...(sinks ? [] : ['libNDL_directmedia.so.1']), 'libplayerAPIs.so.1',
-    'libSDL2-2.0.so.0', 'libstdc++.so.6', 'libm.so.6', 'libgcc_s.so.1', 'libc.so.6'];
+    'libSDL2-2.0.so.0', 'libstdc++.so.6', 'libm.so.6', 'libgcc_s.so.1', 'libc.so.6',
+    ...(endurance ? ['libluna-service2.so.3', 'libglib-2.0.so.0', 'libjson-c.so.4'] : [])];
 async function readLibrary(client, name) {
     return new Promise((resolve, reject) => {
         let channel;

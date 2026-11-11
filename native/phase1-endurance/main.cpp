@@ -1,5 +1,6 @@
 #include "../phase1/smp-session.h"
 #include "progress.h"
+#include "native-veto.h"
 #include <algorithm>
 #include <csignal>
 
@@ -13,8 +14,7 @@ constexpr char appId[] = "io.github.tpapaz.multiview.endurance";
 volatile std::sig_atomic_t stopping = 0, requested = 0;
 void stop(int signal) { stopping = signal; }
 void cycle(int) { requested = 8; }
-void five(int) { requested = 300; }
-void thirty(int) { requested = 1800; }
+void vetoProbe(int) { requested = 60; }
 // Closed numeric vocabulary: never log arbitrary event/vendor strings.
 int exitEvent(const SDL_Event& event) {
     if (event.type == SDL_QUIT) return 4;
@@ -65,22 +65,35 @@ private:
     phase1::Trace& trace_;
     bool bClosed_=false,closed_=false;
 };
-class ScreenSaverHold {
-public:
-    explicit ScreenSaverHold(Run& run) : run_(run), previous_(SDL_IsScreenSaverEnabled()) {
-        SDL_DisableScreenSaver();
-        run_.record("screensaver_inhibit",SDL_IsScreenSaverEnabled()?1:0);
+int pollExit(Run& run) {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        const int cause=exitEvent(event);
+        if (!cause) continue;
+        run.record("exit_event",cause);
+        if (cause<=5) stopping=1;
+        return 1;
     }
-    ~ScreenSaverHold() {
-        if (previous_) SDL_EnableScreenSaver(); else SDL_DisableScreenSaver();
-        run_.record("screensaver_restore",SDL_IsScreenSaverEnabled()?1:0);
+    if (stopping) { run.record("exit_event",stopping==SIGINT?10:9); return 1; }
+    return 0;
+}
+int prepareVeto(Run& run,endurance::NativeVeto& veto,bool waitRequest) {
+    const auto deadline=Clock::now()+(waitRequest?60s:3s);
+    run.record("veto_wait_start",waitRequest?60:3);
+    while (Clock::now()<deadline) {
+        if (pollExit(run)) return 1;
+        if (!veto.pump()) return 6;
+        if (veto.ready() && (!waitRequest || veto.replies())) {
+            run.record("veto_wait_end",0); return 0;
+        }
+        SDL_Delay(4);
     }
-private:
-    Run& run_;
-    SDL_bool previous_;
-};
-int play(Run& run,const char* root,SDL_DisplayMode screen,int seconds) {
-    const auto started=Clock::now(), deadline=started+std::chrono::seconds(seconds+30);
+    run.record("veto_wait_end",waitRequest?7:6);
+    return waitRequest?7:6; // No real request is inconclusive, never a veto pass.
+}
+int play(Run& run,endurance::NativeVeto& veto,const char* root,SDL_DisplayMode screen) {
+    constexpr int seconds=8;
+    const auto started=Clock::now(), deadline=started+25s;
     const auto elapsed=[&] { return std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now()-started).count(); };
     endurance::ProgressWatch aWatch(0),bWatch(0);
     run.a.loopFixture(); run.b.loopFixture();
@@ -89,15 +102,8 @@ int play(Run& run,const char* root,SDL_DisplayMode screen,int seconds) {
     auto sampleAt=Clock::now();
     auto overlapAt=Clock::time_point::max(),releasedAt=Clock::time_point::max();
     while (!stopping && Clock::now()<deadline) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            const int cause=exitEvent(event);
-            if (cause) {
-                run.record("exit_event",cause);
-                if (cause<=5) stopping=1;
-                return 1;
-            }
-        }
+        if (pollExit(run)) return 1;
+        if (!veto.pump()) return 6;
         if (stopping) break;
         auto now=Clock::now();
         if (run.a.advance(now)!=State::running || !aWatch.observe(elapsed(),run.a.frames(),run.a.positionMs())) {
@@ -132,15 +138,15 @@ int play(Run& run,const char* root,SDL_DisplayMode screen,int seconds) {
 int main() {
     char root[4096]; if (!phase1::assetRoot(root,sizeof(root))) return 1;
     std::signal(SIGINT,stop); std::signal(SIGTERM,stop);
-    std::signal(SIGUSR1,cycle); std::signal(SIGUSR2,five); std::signal(SIGHUP,thirty);
+    std::signal(SIGUSR1,cycle); std::signal(SIGHUP,vetoProbe);
     setenv("EGL_PLATFORM","wayland",0); setenv("XDG_RUNTIME_DIR","/tmp/xdg",0);
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK,"true"); SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT,"true");
-    // Allow the normal menu idle policy; inhibit only inside a bounded run.
+    // Keep SDL's menu behavior; the traced native registration owns the veto.
     SDL_SetHintWithPriority(SDL_HINT_VIDEO_ALLOW_SCREENSAVER,"1",SDL_HINT_OVERRIDE);
     if (SDL_Init(SDL_INIT_VIDEO)!=0) return 1;
     SDL_DisplayMode screen{};
     if (SDL_GetCurrentDisplayMode(0,&screen)!=0) { SDL_Quit(); return 1; }
-    auto* window=SDL_CreateWindow("MultiView Main + Sub Endurance",SDL_WINDOWPOS_UNDEFINED,
+    auto* window=SDL_CreateWindow("MultiView Native Veto Probe",SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,screen.w,screen.h,SDL_WINDOW_FULLSCREEN);
     auto* renderer=window?SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED):nullptr;
     auto* bitmap=renderer?SDL_LoadBMP((std::string(root)+"guide.bmp").c_str()):nullptr;
@@ -151,23 +157,28 @@ int main() {
         const SDL_Rect source{0,0,960,540};
         const auto menu=[&] { SDL_RenderCopy(renderer,guide,&source,nullptr); SDL_RenderPresent(renderer); };
         menu(); trace.record("ready",0,0,0,0,0);
-        trace.record("screensaver_policy",2,SDL_IsScreenSaverEnabled()?1:0,0,0,0);
+        trace.record("screensaver_policy",0,SDL_IsScreenSaverEnabled()?1:0,0,0,0);
         while (!stopping) {
             SDL_Event event{}; const bool received=SDL_WaitEventTimeout(&event,100)!=0;
             const int cause=received?exitEvent(event):0;
             if (cause && cause<=5) { trace.record("exit_event",cause,0,0,0,0); break; }
             if (received && event.type==SDL_KEYDOWN && !event.key.repeat) {
                 if (event.key.keysym.scancode==SDL_SCANCODE_LEFT) requested=8;
-                if (event.key.keysym.scancode==SDL_SCANCODE_RIGHT) requested=300;
-                if (event.key.keysym.scancode==SDL_SCANCODE_RETURN) requested=1800;
+                if (event.key.keysym.scancode==SDL_SCANCODE_RETURN) requested=60;
             }
             if (!requested || stopping) continue;
             if (!(SDL_GetWindowFlags(window)&SDL_WINDOW_INPUT_FOCUS)) continue;
-            const int seconds=requested; requested=0;
-            SDL_SetRenderDrawColor(renderer,0,0,0,0); SDL_RenderClear(renderer); SDL_RenderPresent(renderer);
-            alarm(static_cast<unsigned>(seconds+35));
-            { Run run(trace); int result;
-              { ScreenSaverHold hold(run); result=play(run,root,screen,seconds); run.close(); }
+            const bool waitRequest=requested==60; requested=0;
+            alarm(90);
+            { Run run(trace);
+              run.record("probe_start",waitRequest?60:0);
+              endurance::NativeVeto veto(appId,[&](const char* event,int status) { run.record(event,status); });
+              int result=veto.begin()?prepareVeto(run,veto,waitRequest):6;
+              if (!result) {
+                  SDL_SetRenderDrawColor(renderer,0,0,0,0); SDL_RenderClear(renderer); SDL_RenderPresent(renderer);
+                  result=play(run,veto,root,screen);
+              }
+              run.close(); run.clean &= veto.close();
               run.record("run_end",run.clean?result:5); }
             alarm(0); requested=0;
             if (!stopping) menu();

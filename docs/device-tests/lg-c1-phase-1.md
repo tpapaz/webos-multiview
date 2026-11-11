@@ -7,41 +7,28 @@ with visible clocks. A originally ran 12 s and was extended to 30 s for
 staging. B runs 15 s. The packaged tests are video-only. Audio focus and
 simultaneous physical HDMI remain **unknown**.
 
-## Current conclusion and next gate
+## Current conclusion and handoff
 
-**Verified on this device:** staged SMP A `main_video` + B `sub_video`
-showed both clocks advancing together, independent B movement/scaling and
-A continuity after B release. B-only and Load-only controls passed first.
-The owner saw only A during Load-only, as expected with no B packets.
+**Verified on this C1:** explicit SMP A `main_video` + B `sub_video`
+showed both local clocks advancing, independent B geometry and A continuity.
+Earlier default-main SMP/NDL failed because B's presentation registration
+reclaimed MAIN_SCALER. These are local playback results, not HDMI evidence.
 
-Earlier default-main SMP and mixed SMP/NDL paths failed visible overlap.
-Retained logs established that B's presentation registration took A's
-MAIN_SCALER, even though B's media registration already held SUB_SCALER.
-Explicit Load-time sink selection resolved that measured short-run failure.
-[Exact firmware path and ownership evidence](../research/c1-smp-ndl-resource-path.md)
+The final 0.1.3 smoke passed subscription, 8.056 s overlap, 3.049 s A recovery,
+cleanup/exit and owner clocks. Its request probe ended in 60.022 s without a
+request; cleanup passed, no NACK was sent, and the result is inconclusive.
+The owner saw the menu during that wait and a screensaver after exit.
 
-The current task is repeatability and endurance, using a separate package.
-Endurance 0.1.0 is **built, packaged, C1 ABI-checked and TV-tested through
-smoke plus 20 distinct app processes**. The owner confirmed both clocks,
-A continuity and normal viewing after the final exit. The first five-minute
-attempt cancelled early, with screensaver activity as the leading lifecycle
-explanation. Endurance 0.1.1 is now locally built, packaged and C1 ABI-checked,
-**smoke-TV-tested**, with app-specific idle metadata, scoped SDL inhibition
-requests and distinct exit logs. Its repeated smoke passed with owner
-confirmation; the five-minute retry then completed 300.044 s of overlap,
-fixture wraps and cleanup with two positive owner spot checks. The visible
-ending was not observed. The later 30-minute run reached its overlap target
-but lost focus 731 ms after B release, failing the A-only recovery gate.
-Both players cleaned up and the app exited; logs show screensaver launch
-and foreground at that boundary. Next: investigate effective app-scoped idle
-handling at B release. The 0.1.0 repeatability
-result does not certify this new binary. [Install/run instructions](../build.md#repeatability-and-endurance)
-and [decision](../decisions/0002-main-sub-validation.md).
+**Screensaver work is closed for the current scope; inhibition is not
+verified fixed.** Glasshouse/Home routing remains separate owner context.
+No further idle or endurance run is scheduled. Phase 1 audio, wider geometry,
+final-build repeatability and the interrupted long recovery remain deferred.
 
-The history below consolidates the owner observations and recorded traces;
-its initial unknowns are resolved only where later evidence explicitly says so.
-Phase 1 is still active: 30-minute recovery/idle handling, final-candidate repeatability, wider independent
-geometry and audio focus remain unverified. Physical HDMI concurrency is unknown.
+Next is Phase 2 read-only HDMI discovery, with only one connected source.
+Use the [handoff](../handoff/hdmi-next-chat.md) and
+[scope decision](../decisions/0003-close-idle-work-resume-hdmi.md).
+The journal below preserves actual runs, builds, hashes and human observations.
+Earlier “next test” statements are historical, not renewed instructions.
 
 ## Native SMP — historical default-main comparison
 
@@ -464,7 +451,7 @@ exact package payload/metadata/executable checks; host JS acceptance tests,
 lint, and C++ progress-watch tests. FFmpeg decoded two concatenated copies
 of each fixture without errors; FFprobe counted 1800 A and 900 B frames.
 That proves host bitstream wrap validity, not TV loop playback.
-[Exact build, host checks and gated SSH commands](../build.md#repeatability-and-endurance)
+[Exact build, host checks and gated SSH commands](../build.md#retained-short-veto-control)
 
 Reports use `schemaVersion: 1` with per-cycle traces, progress/loop/duration
 assessment, cleanup and process-exit confirmation, separately unknown visual
@@ -951,6 +938,218 @@ B release and A recovery and separating expiry from teardown.
 Evidence: `build/reports/c1-native-screensaver-interface.json`, including
 references to copied firmware, native-client and cleanup ledgers.
 
+### Native veto probe 0.1.2 — built, not TV-tested
+
+Prepared locally on 2026-11-11 after the native contract trace. Owner direction
+limits idle work to one short probe, then returns to HDMI research. The app
+ID remains `io.github.tpapaz.multiview.endurance`; its menu title is now
+**MultiView Native Veto Probe**. Old packages remain available as controls.
+
+The native app uses public LS2 with its own app ID and validates registration,
+active request state and the exact private timestamp before NACKing. Normal
+app idle behavior replaces Type 2 metadata; the local SDL flag is no longer
+treated as a TV inhibitor. A request probe waits up to 60 seconds on the
+idle menu, then runs eight seconds of A/B overlap and three seconds of A
+recovery. The entire native run has a 90-second hard cap. Smoke skips the
+request wait and still checks registration/playback/cleanup. No long mode,
+automatic relaunch or repeated endurance sequence is included.
+
+The registration survives B release, A recovery and both Unloads, followed
+by separate unsubscribe, token cancellation and handle-close logging. Back,
+focus loss, signals, API errors and deadlines retain cleanup. The controller
+keeps CPU/RSS/thread and thermal/hwmon sampling, projected resource/display
+and idle categories, exact manifest/ELF identity checks, and versioned JSON.
+No raw request timestamps, bus IDs, vendor payloads or credentials are saved.
+
+- IPK: `dist/io.github.tpapaz.multiview.endurance_0.1.2_arm.ipk`, 711228 bytes.
+- IPK SHA-256: `fb4cd5dd88e043494431aeb49cf6374372ad432971eeddee5c7c4e4c9bd403a0`.
+- ELF SHA-256: `35f1efda831a8ef10d29a39b3b9ccdce92a39871f4fd433e204f0677df4abbc0`.
+- Local WSL CMake/Ninja Release build passed with warnings treated as errors.
+- IPK archive/manifest/exact payload and executable mode checks passed.
+- C1 ABI: 116 required imports, 9 DT_NEEDED libraries, ARM32 soft-float,
+  `/lib/ld-linux.so.3`, exact versioned providers matched, no RPATH/RUNPATH.
+- `npm test`, `npm run lint` and syntax checks for changed controller scripts
+  passed. Acceptance checks reject premature veto release, missing cleanup,
+  stale build identity, invalid/denied replies, progress stalls and long modes;
+  no-request timeout is explicitly inconclusive.
+
+Build evidence: `build/reports/c1-phase1-veto-build-0.1.2.json` and
+`build/phase-1/abi-endurance-0.1.2.json` (ignored local evidence).
+At packaging time, **not TV-tested:** app permission, accepted NACKs, applied service decision,
+visible clocks, focus retention and restored idle eligibility remain unknown.
+No playback or active policy request was made during this build task.
+Next: install/open to the menu for one short smoke, then at most one request
+probe. After that, resume read-only HDMI research. The old 30-minute failure
+and unproven HDMI concurrency remain unchanged.
+
+### Native veto probe 0.1.2 — smoke aborted before playback
+
+Owner-authorized SSH smoke on 2026-11-11, C1 03.53.45, installed menu open.
+Manifest and ELF identity matched the built 0.1.2 candidate. Native trace
+ran from 25845 to 25855 ms after process trace opening: **10 ms** total.
+
+| Stage | Native result |
+|---|---|
+| Public bus registration | `veto_bus:0` |
+| GLib context attach | `veto_attach:0` |
+| Disconnect callback setup | `veto_disconnect_watch:0` |
+| `LSCallFromApplication` registration submission | `veto_register:1` — false return; no service acknowledgement |
+| Handle unregister | `veto_handle_close:0` |
+| Native run end | `run_end:6` — interface failure |
+| SSH controller exit | Confirmed after normal app-scoped TERM |
+
+No `run_start`, overlap, request, reply or recovery was observed; all frame,
+packet and PTS counters remained zero. Neither player started. Unload events
+are no-op cleanup for unstarted sessions. No subscription cancellation was
+logged because this path produced no live token. The full-smoke assessment's
+`cleanup:false` and `bounded:false` require later-stage markers absent from
+this early abort; they do not contradict the observed handle unregister and
+confirmed process exit. The full diagnostic correctly remains **failed**.
+
+The owner reported that the app closed and went to LG Home. This matches
+the controller's deliberate closure after registration failure, not an observed
+playback crash. Permission denial, application identity/argument rejection
+and other transport causes remain **unknown**: the native trace records only
+the false submission return, and the bounded syslog collector observed zero
+lines. A later retained-log read examined 981 lines in the submission window,
+including 21 Luna/app-related lines, without a correlated cause. The saved C1
+LS2 body then exposed a pre-send privilege check for non-null application IDs
+(`0xda5a–0xda6a`). The app's anonymous public connection did not establish
+that privilege; this is the leading **candidate** cause, not a runtime-proven
+branch. The omitted `LSError` detail prevents certainty.
+[Caller restriction evidence](../research/c1-native-screensaver-interface.md#short-implementation-follow-up-012).
+Do not claim a service-level rejection or an applied veto.
+
+CPU evidence is menu-only: one 2.109-second interval, system busy 11.37%,
+app CPU 0.47% of one core, RSS 31840 KiB, nine threads. No playback CPU sample
+exists. Three temperature reads (two menu, one post-exit) yielded no values.
+The log collector closed without error or truncation; zero lines/entries
+provide no service-side cause attribution.
+
+Evidence: `build/reports/c1-phase1-veto-smoke-0.1.2.json`, including the
+owner observation and early-abort interpretation; the original unmodified
+report is archived as `c1-phase1-veto-smoke-attempt-1-0.1.2.json` with its
+hash retained in the canonical report. The ELF remains
+`35f1efda831a8ef10d29a39b3b9ccdce92a39871f4fd433e204f0677df4abbc0`.
+No rebuild, request-mode retry, system policy change, commit or push occurred.
+**Next: skip `--veto`, defer further idle work and resume read-only HDMI
+path research.** The previous local-clip and HDMI capability conclusions
+are unchanged.
+
+### Native veto caller correction 0.1.3 — built, not TV-tested
+
+Owner-authorized final short attempt, prepared locally on 2026-11-11.
+Replace `LSCallFromApplication` / its one-reply variant with ordinary public
+`LSCall` / `LSCallOneReply` on the same app-owned connection. The real
+connection sender remains authoritative; payload clientName is not a
+privilege assertion. Request schema, NACK correlation, lifecycle safeguards,
+60-second idle wait, eight-second overlap, three-second A recovery and
+90-second hard cap remain. Veto stays through A recovery and both Unloads.
+No privileged fallback, role change, global timer modification or long retry.
+
+LSError and service error replies now emit numeric codes and fixed reason
+classes only; raw messages/identifiers are not saved. CPU/temp and projected
+resource/display/idle sampling remain enabled. The controller reports a
+redacted reason/code when one is available. The 0.1.2 failure remains archived.
+
+- IPK: `dist/io.github.tpapaz.multiview.endurance_0.1.3_arm.ipk`, 712780 bytes.
+- IPK SHA-256: `82916a4f25ab3e904bcad508f310e54cad122220b227c4c10290bd2261820e5b`.
+- ELF SHA-256: `e693f742284c1d3b4ad7c57a4a6dd3c788657343e1977c2102765b6e1fbb0cc6`.
+- WSL CMake/Ninja Release build and exact IPK content/mode checks passed.
+- C1 ABI: 120 imports, nine DT_NEEDED libraries, exact providers, ARM32
+  soft-float and `/lib/ld-linux.so.3`; no RPATH/RUNPATH.
+- `npm test`, `npm run lint`, changed-script syntax and the WSL host C++
+  error-classification/code-capping acceptance test passed.
+
+Build record: `build/reports/c1-phase1-veto-build-0.1.3.json`; ABI record:
+`build/phase-1/abi-endurance-0.1.3.json`. **Not TV-tested**: normal-call
+authorization, subscription, effective veto, visible clocks, recovery and
+normal idle restoration remain unknown. Install/open to the menu for one
+short smoke. Only its own passing smoke and owner clock confirmation can
+enable the short request mode. After this final short attempt, return to HDMI
+research. No playback occurred during this build task; no commit/push/Actions.
+
+### Native veto 0.1.3 — short smoke passed
+
+Owner-authorized SSH smoke on 2026-11-11, C1 firmware 03.53.45, installed
+manifest and ELF identity matched. Native total 13.330 s; overlap 8.056 s,
+seven dual samples and zero bad sampled intervals. A continued for 3.049 s
+after B release, adding 15 callbacks and 3000 ms PTS. Final accepted packets:
+A 395, B 271. Both Unloads succeeded. No API/service errors or exit events.
+
+Public bus/context, disconnect watch, registration submission and service
+acknowledgement succeeded. The registration stayed active through A recovery
+and both Unloads; explicit unsubscribe, original token cancellation and
+handle unregister each succeeded. Native run_end was 0, and the controller
+confirmed normal process exit. No screensaver requests or NACK replies
+occurred, so **effective inhibition is still unknown**.
+
+The owner answered **Yes to both**: both clocks advanced together, and A
+kept advancing after B disappeared. This is this build's own short visual
+confirmation and smoke prerequisite, not an endurance or HDMI result.
+
+CPU sampling returned three valid intervals: menu 2.124 s (system 5.35%,
+app 0.47% of one core), host-labeled overlap 5.569 s (14.17% / 5.61%),
+host-labeled recovery 5.591 s (7.51% / 5.37%). Labels describe the ending
+phase; intervals span transitions and do not isolate steady playback load.
+RSS was 31836–37020 KiB; threads 9–33; three cores observed. Five temperature
+reads yielded no values. The log collector examined 2365 lines, retained
+108 projected entries and closed without error/truncation. These projected
+resource entries alone do not establish A/B ownership.
+
+Evidence: `build/reports/c1-phase1-veto-smoke-0.1.3.json`, including the
+owner confirmation; the pre-observation original is archived as
+`c1-phase1-veto-smoke-attempt-1-0.1.3.json` with its hash in the canonical
+report. ELF remains
+`e693f742284c1d3b4ad7c57a4a6dd3c788657343e1977c2102765b6e1fbb0cc6`.
+No rebuild or automatic retry occurred. Next: reopen the same app menu for
+the separate request probe (60-second wait / 90-second total maximum), then
+return to HDMI research. No long test is scheduled.
+
+### Native veto 0.1.3 — request probe inconclusive, within cap
+
+Owner-authorized request test on 2026-11-11, C1 03.53.45. Same installed
+manifest/ELF and owner-confirmed same-build smoke prerequisite. Native total
+**60.022 s**, idle wait 60.001 s, controlled host interval 61.023 s including
+exit confirmation: within the requested 90-second limit.
+
+Bus/context and service subscription succeeded. No request, decision or
+reply was observed during the wait; the mode therefore did not start either
+player. All frame/packet/PTS counters stayed zero. Timeout ended with
+`veto_wait_end:7` and `run_end:7`, explicitly **inconclusive_no_request**.
+No API/service error or lifecycle exit was recorded. Explicit unsubscribe,
+original token cancellation and handle unregister all returned success;
+the controller confirmed process exit. No actual NACK or effective veto
+has been verified. Unloads were no-op cleanup for unstarted players.
+
+The owner confirmed the menu stayed visible with no screensaver during the
+wait, then later reported **NOW the screensaver activated**, after the probe
+had closed. Exact later activation time was not instrumented; this is an
+owner observation, not proof of an app-scoped timer restoration or veto.
+The owner is unsure whether idle activation takes several minutes, so the
+earlier under-one-minute expectation is not established on this app.
+
+Additional owner context: Glasshouse was updated and Home now reaches LG
+Home instead of expected Glasshouse Home. Its version, trigger and causal
+relation to these tests remain unknown. The SSH runner closed only the
+identity-checked probe with TERM; it sent no Home key and changed no launcher
+setting. Glasshouse was not inspected or modified during this test.
+
+CPU: eight valid host-labeled idle-wait intervals covering 44.774 s, weighted
+system busy 10.95%, app 0.48% of one core; one unavailable/invalid sample.
+These are idle-menu measurements, not playback load. RSS remained 31732 KiB,
+nine threads, three cores in valid samples. Thirteen thermal/hwmon reads
+returned no values. The collector examined 824 lines, retained 21 projected
+entries and closed without error/truncation; no screensaver categories were
+retained. No raw vendor identifiers were exported.
+
+Evidence: `build/reports/c1-phase1-veto-request-0.1.3.json`, owner observations
+and post-exit context included. The original pre-observation report is
+archived as `c1-phase1-veto-request-attempt-1-0.1.3.json` with its hash retained
+in the canonical report. No rerun, rebuild, policy write, long wait, commit
+or push followed. **This completes the final short idle attempt. Next:
+read-only HDMI input/presentation path research; inhibition stays unknown.**
+
 Read-only inspection found an aarch64 kernel with ARM32 EABI5 soft-float
 userspace, glibc 2.28 and loader `/lib/ld-linux.so.3`. ARM binaries used
 CMake/Ninja under Ubuntu on WSL with the
@@ -975,6 +1174,8 @@ cancellation in desktop Chrome before the TV comparison.
 | Main/sub 0.1.0 | 81 | `c96c41242715c4ea8b1c3786de0d9ff36074c966e6ef1d7dd75ec81158cce0ad` |
 | Endurance 0.1.0 (smoke TV-tested) | 82 | `943a4477567b9368641152761f03cabb9a0b78f7a282f51dc95cc4291844129d` |
 | Endurance 0.1.1 (five-minute telemetry + visual spot checks) | 86 | `5649a3f2cd85dd99a9edfe32f32073a77236a7c42c280781fec4d5b91be50ee0` |
+| Veto probe 0.1.2 (smoke failed before playback) | 116 | `fb4cd5dd88e043494431aeb49cf6374372ad432971eeddee5c7c4e4c9bd403a0` |
+| Veto probe 0.1.3 (smoke TV-passed, owner clocks) | 120 | `82916a4f25ab3e904bcad508f310e54cad122220b227c4c10290bd2261820e5b` |
 
 TV-playback-tested ELF SHA-256 values:
 

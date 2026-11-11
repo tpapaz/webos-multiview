@@ -14,7 +14,7 @@ const targets = {
 
 function installedBuildMatches(manifest, build) {
     return manifest.id === build.id && manifest.version === build.version && manifest.main === build.executable &&
-        (!build.id.endsWith('.endurance') || manifest.screenSaverProperties?.preferredType === 2);
+        (!build.id.endsWith('.endurance') || manifest.screenSaverProperties === undefined);
 }
 
 function nativeBuild(target) {
@@ -99,7 +99,7 @@ async function openNativeApp(client, build) {
         throw new Error('App telemetry descriptor unavailable');
     const [descriptor] = fds;
     const signal = name => {
-        const allowed = id.endsWith('.endurance') ? ['USR1', 'USR2', 'HUP', 'TERM'] : id.endsWith('.ndl') ? ['USR1', 'TERM'] : ['USR1', 'USR2', 'TERM'];
+        const allowed = id.endsWith('.endurance') ? ['USR1', 'HUP', 'TERM'] : id.endsWith('.ndl') ? ['USR1', 'TERM'] : ['USR1', 'USR2', 'TERM'];
         if (!allowed.includes(name)) throw new Error('Unsupported app control');
         return remote(`${identity} && ${hashCheck} && kill -${name} ${pid}`);
     };
@@ -124,24 +124,10 @@ async function openNativeApp(client, build) {
     };
 }
 
-// Fixed app-only launch for explicitly requested repeatability runs.
-async function launchEnduranceApp(client, build) {
-    if (build.id !== 'io.github.tpapaz.multiview.endurance' || build.executable !== 'multiview-endurance' || !/^[a-f0-9]{64}$/.test(build.hash))
-        throw new Error('Unknown repeatability app');
-    const install = `/media/developer/apps/usr/palm/applications/${build.id}`;
-    const manifest = JSON.parse(await command(client, `cat '${install}/appinfo.json'`));
-    if (!installedBuildMatches(manifest, build))
-        throw new Error('Installed repeatability build mismatch');
-    await command(client, `test "$(sha256sum '${install}/${build.executable}' | cut -d' ' -f1)" = '${build.hash}'`);
-    const payload = '{"id":"io.github.tpapaz.multiview.endurance"}';
-    const reply = JSON.parse(await command(client, `luna-send -n 1 luna://com.webos.applicationManager/launch '${payload}'`));
-    if (reply.returnValue !== true) throw new Error('Repeatability app launch rejected');
-}
-
 function saveReport(name, build, rows, details = {}) {
     const report = path.join(root, 'build/reports', name + '.json');
     fs.mkdirSync(path.dirname(report), {recursive: true});
     fs.writeFileSync(report, JSON.stringify({schemaVersion: 1, appId: build.id, appVersion: build.version, binarySha256: build.hash, rows, ...details}, null, 2) + '\n');
 }
 
-module.exports = {nativeBuild, openNativeApp, saveReport, command, launchEnduranceApp, installedBuildMatches};
+module.exports = {nativeBuild, openNativeApp, saveReport, command, installedBuildMatches};

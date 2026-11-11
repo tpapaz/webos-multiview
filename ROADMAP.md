@@ -7,71 +7,42 @@ The current setup has one connected HDMI source.
 
 ## Current position
 
-Phase 0C is complete. Earlier default-main SMP/NDL comparisons failed visible
-overlap: B Load reclaimed A's MAIN_SCALER. Retained logs established the
-ownership handover, and firmware inspection identified explicit sink selection.
-[Phase 1 test record](docs/device-tests/lg-c1-phase-1.md)
+**Active: Phase 2 read-only HDMI discovery**, by owner decision. Phase 0
+passive discovery is complete; Phase 1 is partially validated and its remaining
+gaps are deferred, not passed.
+[Scope/closure decision](docs/decisions/0003-close-idle-work-resume-hdmi.md)
+and [next-chat handoff](docs/handoff/hdmi-next-chat.md).
 
-**Verified on this C1:** explicit SMP A main_video + B sub_video showed both
-local clip clocks advancing together in the full staged run. B moved/shrank
-and A stayed live after B release; cleanup and process exit passed. Logs
-attribute MAIN_SCALER to A and SUB_SCALER to B with distinct decoder
-allocations. This is a short video-only result, not physical-input evidence.
+Verified on C1 03.53.45: two local video-only SMP sessions using
+`main_video` / `sub_video` showed owner-confirmed live clocks, B geometry
+and A continuity. Default-main SMP/NDL comparisons contended for MAIN_SCALER.
+Endurance 0.1.1 reached long overlap but failed its full recovery gate.
+The 0.1.3 short smoke passed registration/playback/cleanup; its final
+60.022-second request test received no request and was inconclusive.
+[Phase 1 journal](docs/device-tests/lg-c1-phase-1.md).
 
-Phase 1 remains active: 30-minute recovery/idle handling, final-candidate repeatability,
-wider independent geometry and audio focus need validation. The endurance 0.1.0 IPK
-is built locally, packaged and C1 ABI-checked. Smoke and 20 distinct app
-start/exit cycles passed progress, A continuation, cleanup and exit. The
-owner confirmed both clocks and normal viewing afterward. Four cycle
-collectors flagged stderr; resource ownership remains unknown for this run.
-The earlier smoke-controller scope error was fixed without an IPK change.
-The first five-minute attempt ended with native cancellation after 21.343 s,
-with no observed progress stall and successful cleanup/exit. Screensaver
-launch/visibility in retained logs is the leading lifecycle explanation;
-the exact SDL event remains unknown. Endurance 0.1.1 now requests app-scoped
-SDL inhibition during bounded playback, restores it afterward, selects the
-LG app-specific Type 2 idle policy and logs distinct exits. It is locally
-built/packaged/C1 ABI-checked and now smoke-TV-tested: native progress,
-SDL local inhibition/restoration, cleanup/exit and owner-observed clocks
-passed. Its five-minute retry then completed 300.044 s of overlap, 10 A / 20 B
-fixture loops, native A continuation, cleanup and exit, without a recorded
-lifecycle exit. The owner reported two positive in-run spot checks but did
-not observe the ending. CPU samples were collected; standard temperature paths
-exposed no readable sensors. [Attempt details](docs/device-tests/lg-c1-phase-1.md#five-minute-c1-attempt--interrupted-not-a-duration-pass)
-The 0.1.1 30-minute run reached 1800.033 s of concurrent progress, with
-60 A / 120 B loops and zero bad sampled intervals. Focus loss 731 ms after
-B release interrupted the required three-second A recovery. Both Unloads,
-SDL restoration and process exit succeeded. Logs show screensaver launch
-and foreground takeover at that boundary. The **full diagnostic failed**;
-30-minute overlap is established separately from recovery. The owner confirmed
-both clocks advancing at spot checks and spontaneous app disappearance,
-without Home/Back/input/app changes. Continuous visual coverage and normal
-viewing afterward remain unknown. [Long-run record](docs/device-tests/lg-c1-phase-1.md#endurance-011-30-minute-run--overlap-reached-recovery-interrupted)
-The read-only [idle-path review](docs/research/c1-app-idle-path.md) found a
-matching active request before B unload; the logged ACK is AirPlay's, not
-an Endurance response. C1 SDL's inspected Wayland factory/init do not install
-the generic screensaver callback. The [native contract trace](docs/research/c1-native-screensaver-interface.md)
-now establishes public request/NACK handlers and cancellation/disconnect
-registration cleanup statically. Next: a bounded app-owned probe must verify
-caller permission, effective veto and restored idle eligibility, separating
-expiry from B teardown. No new IPK is built; the exact pending-request/teardown
-interaction remains unknown.
-Current gates:
+Screensaver work is **closed/deferred for this scope**, with effective veto
+unknown. No further idle, long endurance or Glasshouse/Home work is scheduled.
 
-1. Completed: eight-second smoke cycle with owner-confirmed visible overlap and A continuity.
-2. Completed: 20 distinct app start/exit cycles with owner-confirmed clocks and normal viewing.
-3. Completed: 0.1.1 smoke and five-minute telemetry/cleanup with fixture wraps and owner spot checks; visible ending unknown.
-4. Pending: 30-minute overlap reached; resolve focus loss after B release and pass the full recovery gate.
-5. Prepare wider independent geometry and audio-focus experiments separately.
+## Next research gate
 
-The targeted 0.1.1 five-minute lifecycle retry requires its own same-build
-smoke and owner confirmation; the 30-minute run requires a same-build
-five-minute pass. The 20-cycle evidence remains specific to 0.1.0; repeat
-20 cycles on the final candidate before claiming its repeatability gate.
-This sequence validates local playback before returning to
-physical-input research. [Run instructions](docs/build.md#repeatability-and-endurance)
-and [decision](docs/decisions/0002-main-sub-validation.md). [Sink investigation and exact
-C1 evidence](docs/research/c1-smp-ndl-resource-path.md).
+1. Read existing pinned upstream sources, C1 firmware/SDK declarations and
+   policy/configuration. Produce a cited interface map for input selection,
+   receiver/session ownership, output capture and surface/viewport control.
+2. Distinguish selected-input/output capture from independently addressable
+   HDMI ports. Neither local dual playback nor a display/scaler tap proves
+   simultaneous HDMI.
+3. Propose the smallest bounded selected-HDMI presentation experiment only
+   after identifying a plausible C1 path, permissions and cleanup/restoration.
+   Do not switch inputs or invoke active methods during read-only discovery.
+4. A simultaneous HDMI 1 + 2 experiment requires a second independent source,
+   an evidenced per-port path and owner opt-in. Only one source is connected.
+
+Remaining Phase 1 audio/geometry/repeatability/recovery gates stay visible
+before release claims. The owner approved read-only Phase 2 research without
+repeating those local-clip campaigns first. Preserve all control packages,
+original reports and human observations; detailed history stays in the device
+journal and research records, not in this action list.
 
 ## Phases and acceptance gates
 

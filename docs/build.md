@@ -31,35 +31,22 @@ and payload bytes. Archive timestamps can change the package hash.
 
 ## Phase 1 local clip packages
 
-Current direction: native SMP A `main_video` + B `sub_video`. The staged
-main/sub 0.1.0 package passed short C1 playback; the separate endurance
-0.1.0 package passed smoke and 20 distinct app start/exit cycles on the C1,
-with owner-confirmed clocks, A continuation and normal viewing afterward.
-The first five-minute attempt cancelled early around a screensaver transition;
-it did not pass the duration gate. Endurance **0.1.1** is now locally built,
-packaged, C1 ABI-checked and **smoke-TV-tested**, with owner-confirmed clocks,
-app-scoped screensaver requests and distinct exit-event logs. Its five-minute
-retry completed 300.044 s of overlap and fixture loops without a recorded
-lifecycle exit; owner spot checks were positive, the ending unobserved.
-The 30-minute run then reached 1800.033 s overlap but lost focus 731 ms after
-B release, failing the full recovery gate despite successful Unloads/exit.
-Retained logs show screensaver launch/foreground at that boundary. Investigate
-app-scoped idle handling before another long-run retry. The owner confirmed
-live clocks at spot checks and spontaneous disappearance without input;
-the full diagnostic remains failed. The
-read-only [idle-path review](research/c1-app-idle-path.md) now explains why
-the local SDL flag is insufficient: its inspected C1 Wayland backend does
-not install the screensaver hook. The active request also predates B release.
-No new IPK is prepared. The [native contract trace](research/c1-native-screensaver-interface.md)
-identifies public request/NACK handlers and cancellation/disconnect cleanup
-in the exact C1 firmware. A bounded app-owned probe must still verify permission,
-effective veto and restored idle eligibility before another endurance run.
-The earlier
-host log-save error was fixed without an IPK change. Four repetition
-collectors flagged stderr; playback/cleanup passed, resource attribution is unknown.
-Keep all control IPKs. Installing 0.1.1 upgrades only the Endurance app;
-the staged main/sub, SMP, NDL and mixed apps remain separate. The original
-Endurance 0.1.0 IPK is retained for rollback. [Evidence](device-tests/lg-c1-phase-1.md)
+Phase 1 packages are **retained controls**, not the current work queue.
+Screensaver work is [closed for this scope](decisions/0003-close-idle-work-resume-hdmi.md);
+continue with the [HDMI discovery handoff](handoff/hdmi-next-chat.md).
+
+The final Native Veto Probe 0.1.3 is locally built, packaged, C1 ABI-checked
+and smoke-TV-tested. Its service registration, short dual playback, A recovery
+and cleanup passed with owner clocks. The separate 60.022-second request test
+received no request and was inconclusive. Effective veto is still unknown.
+No reinstall, rerun or longer idle experiment is needed for HDMI discovery.
+
+The [device journal](device-tests/lg-c1-phase-1.md) holds exact build hashes,
+run results and the older Endurance/mixed/SMP history. Keep every control
+IPK and local evidence. All Endurance versions share one application ID,
+so installing one replaces that installed control; SMP, NDL, mixed and staged
+main/sub controls have separate IDs. The retained commands below are for a
+future explicitly requested control rerun, not automatic next steps.
 
 On Windows, use PowerShell with FFmpeg and FFprobe on PATH. For the ARM
 packages, install Ubuntu in WSL with CMake, Ninja, Python 3, binutils, Node 22
@@ -89,7 +76,7 @@ The SMP build uses `native/phase1` with output `build/phase-1/arm` and
 |---|---|---|
 | HTML5 comparison | `io.github.tpapaz.multiview.browser_0.1.0_all.ipk` | `node scripts/run-phase1-browser-ssh.cjs` |
 | Native SMP stages | `io.github.tpapaz.multiview.phase1_0.1.4_arm.ipk` | `node scripts/run-phase1-ssh.cjs` |
-| Main/sub endurance (next) | `io.github.tpapaz.multiview.endurance_0.1.1_arm.ipk` | `node scripts/run-phase1-endurance-ssh.cjs --repeat --cycles 1` |
+| Retained native veto control | `io.github.tpapaz.multiview.endurance_0.1.3_arm.ipk` | `node scripts/run-phase1-endurance-ssh.cjs --smoke` |
 | SMP main/sub sinks | `io.github.tpapaz.multiview.sinks_0.1.0_arm.ipk` | `node scripts/run-phase1-sinks-ssh.cjs --solo-b` |
 | Mixed SMP A + NDL B | `io.github.tpapaz.multiview.mixed_0.1.0_arm.ipk` | `node scripts/run-phase1-mixed-ssh.cjs` |
 | Native NDL v2 solo | `io.github.tpapaz.multiview.ndl_0.1.1_arm.ipk` | `node scripts/run-phase1-ndl-ssh.cjs` |
@@ -97,159 +84,140 @@ The SMP build uses `native/phase1` with output `build/phase-1/arm` and
 Use an authorized local SSH profile. Pass its alias to the runner if
 several root profiles are configured. [C1 playback record](device-tests/lg-c1-phase-1.md)
 
-### Repeatability and endurance
+### Retained short veto control
 
-Install `dist/io.github.tpapaz.multiview.endurance_0.1.1_arm.ipk` through
-Dev Manager. Open **MultiView Main + Sub Endurance** to its menu and leave
-the remote buttons alone. This is separate from the staged control app.
-Start with one smoke cycle:
+**Historical procedure; work closed by owner.** Do not rerun without a fresh
+request. [Current HDMI scope](decisions/0003-close-idle-work-resume-hdmi.md).
+
+Retained control: **Native Veto Probe 0.1.3**. Only short modes are available;
+the earlier endurance campaigns remain historical evidence. The owner has
+deferred additional long tests in favor of returning to HDMI research.
+
+**Previous 0.1.2 result:** smoke aborted at registration submission before
+playback. Its request mode was skipped. The owner authorized 0.1.3 as one
+final short correction using ordinary LS2 calls. Its fresh smoke now passed
+with owner confirmation. Registration/cleanup is TV-verified; effective veto
+still needs a real request. Do not transfer evidence from the older build.
+
+The separate 0.1.3 request attempt is now complete: no request arrived in the
+60-second wait, so no clips started and no NACK was sent. Cleanup/exit passed;
+the owner saw the menu, then reported a screensaver after exit. This does not
+establish the app-specific idle delay or an applied veto. Do not extend or
+repeat this run automatically. Glasshouse/Home routing was reported separately
+after a Glasshouse update; no launcher setting was inspected or changed.
+
+Install `dist/io.github.tpapaz.multiview.endurance_0.1.3_arm.ipk` through
+Dev Manager. It upgrades the Endurance app and appears as **MultiView Native
+Veto Probe**. Keep all old IPKs as controls. Open its menu and start with:
 
 ```powershell
-node scripts/run-phase1-endurance-ssh.cjs --repeat --cycles 1
+node scripts/run-phase1-endurance-ssh.cjs --smoke
 ```
 
-Watch A start left, then B right. Both clocks should advance together for
-eight seconds; B should disappear and A should continue for three seconds.
-The controller closes the app and confirms exit. The targeted 0.1.1
-lifecycle retry needs this exact binary's passing smoke and owner visual
-confirmation before `--minutes 5`; the old 0.1.0 reports do not satisfy it.
-Reopen its menu for that retry. Twenty-cycle mode remains available:
+The app registers its native veto, plays A left and B right together for
+eight seconds, releases B, and checks A for three seconds. The veto stays
+registered through A recovery and both Unloads. The controller closes only
+this identity/hash-verified app. Confirm both clocks and A continuation.
+
+After adding that actual observation to the smoke report's
+`ownerObservation.bothClocksAdvancedTogether: true` (or confirmed
+`spotChecksPassed: true`), reopen the menu for one short request probe:
 
 ```powershell
-node scripts/run-phase1-endurance-ssh.cjs --repeat
+node scripts/run-phase1-endurance-ssh.cjs --veto
 ```
 
-This runs 20 cycles, closing the app after each and launching a new process
-of **only this verified app** for subsequent cycles. Every process is checked
-against the installed manifest and local ELF hash. Spot-check both clocks
-across the sequence and normal viewing afterward. A failure stops the
-sequence. Append an optional local SSH profile alias to any command.
+This waits **at most 60 seconds on the idle menu** for a real screensaver
+request and successful NACK reply. Then the same eight-second A/B playback
+and three-second A recovery run. The entire native probe has a **90-second
+hard cap**. If no request arrives, it cleans up and records
+`inconclusive_no_request`; it does not extend the wait or run a long test.
+Denied registration, invalid replies, focus loss, Back or cancellation stop
+the diagnostic and perform cleanup. No automatic relaunch or repeated cycles.
 
-Attach the owner's actual observations to the report's `ownerObservation`
-(`spotChecksPassed: true`, plus a factual note) only after confirmation.
-The runner never infers visible playback from telemetry. For this targeted
-lifecycle retry, the five-minute command requires the same ELF's passing
-**one-cycle smoke**, clean exit and owner observation. Repeatability of 0.1.1
-remains unverified until its own 20-cycle run; repeat 20 cycles on the final
-candidate before claiming that gate. Reopen the menu before each longer run:
+The Type 2 thirty-minute app metadata is removed for this probe, allowing
+normal app idle behavior. SDL's local disabled flag is no longer used as
+inhibition evidence. The public LS2 subscription is owned by the native app,
+uses the real app ID and only NACKs validated active requests during this
+bounded opt-in. After both Unloads: explicit unsubscribe, original token
+cancellation, outstanding call cancellation and handle unregister are logged
+separately. Busy unsubscribe does not replace token cancellation.
+[Exact C1 contract and limitations](research/c1-native-screensaver-interface.md)
 
-```powershell
-node scripts/run-phase1-endurance-ssh.cjs --minutes 5
-# After a passing five-minute report and owner-confirmed clocks:
-node scripts/run-phase1-endurance-ssh.cjs --minutes 30
-```
+Ordinary `LSCall`/`LSCallOneReply` use the public connection's real sender,
+without asserting an app ID via the privileged proxy API. Error events
+`veto_api_error` / `veto_service_error` contain reason classes 0 no detail,
+1 permission/privilege, 2 unavailable, 3 invalid argument, 4 disconnected,
+5 timeout, 6 other. `veto_api_negative/positive` and service equivalents
+encode signed numeric error codes; magnitudes above one million are capped
+and decoded as unknown. No raw error text is exported.
 
-The 30-minute prerequisite is the five-minute report with
-`ownerObservation.bothClocksAdvancedTogether: true` (or confirmed spot checks).
-Durations measure **concurrent overlap** after both players establish
-progress, followed by B release and three seconds of A recovery. The same
-30 s A / 15 s B fixtures loop without player reloads. Burned-in clocks reset
-at fixture boundaries; native feed/callback PTS must stay monotonic. Watch
-for black output or freezes at wraps. This package holds the left/right
-layout; wider geometry and audio-focus tests remain separate.
+The numeric trace records `veto_bus`, `veto_attach`,
+`veto_disconnect_watch`, `veto_register`, `veto_registered`,
+`veto_request`, `veto_decision`, `veto_reply_send`, `veto_reply`,
+`veto_wait_start/end`, `veto_end`, `veto_unsubscribe_send`,
+`veto_unsubscribe`, token cancellations and `veto_handle_close`.
+Status 0 normally means success; `veto_request:1` means validated active
+request and `veto_decision:0` means NACK. Service reply 1 means rejected,
+2 invalid payload, 3 response deadline; unsubscribe 4 means its one-second
+wait expired. Native result 6 is interface failure; 7 means no request.
+Request timestamps, bus IDs and raw service payloads are never exported.
+A service success reply alone may be a no-op for an unknown client:
+require attributable tvpower `set NACK` and actual visual evidence before
+claiming effective inhibition.
 
-App-scoped screensaver controls in 0.1.1:
+Focus/exit vocabulary remains Back/Exit/Escape 1/2/3, SDL quit/window close
+4/5, focus lost/hidden/minimized 6/7/8, TERM/INT/deadline 9/10/11.
+The local frame/PTS/feed watchdogs remain active. An alarm or abrupt process
+exit is not clean cleanup evidence.
 
-- Manifest `screenSaverProperties.preferredType: 2` requests LG's extended
-  30-minute app idle policy with OSD dimming; it is not an indefinite disable.
-- SDL starts with saver allowed at the menu. During the bounded playback,
-  `SDL_DisableScreenSaver` requests inhibition. The prior SDL state is
-  restored after both players close, before run_end. Local SDL flag changes
-  do not prove the C1 power/compositor service honored the request.
-- Focus loss, hidden/minimized state and explicit exit still cancel and
-  clean up. No fake remote input or global protection/idle setting is used.
+CPU/RSS/thread sampling and read-only thermal/hwmon sampling run in both
+short modes, approximately every six seconds, including a menu baseline and
+a separately labeled post-exit temperature read. System CPU excludes idle
+and iowait; app CPU uses one core = 100% and excludes media daemons/hardware.
+The C1 previously exposed no readable values at
+`/sys/class/thermal/thermal_zone*/temp` or
+`/sys/class/hwmon/hwmon*/temp*_input`; unavailable remains unknown.
+Resource/display and screensaver logs are projected into known categories
+and actor/attribution labels for the bounded run; no raw identifiers persist.
+An AirPlay ACK is not an Endurance NACK.
 
-[API investigation and limits](research/c1-smp-ndl-resource-path.md#app-scoped-screensaver-review-and-011-retry)
+Reports use `schemaVersion: 1`:
+`build/reports/c1-phase1-veto-smoke-0.1.3.json` and
+`c1-phase1-veto-request-0.1.3.json`. Copy reports before repeating a mode.
+Native telemetry success, service NACK evidence and owner visual confirmation
+are separate fields. Neither short mode proves HDMI concurrency or endurance.
 
-Trace `screensaver_policy` status 2 records the requested metadata type;
-`screensaver_inhibit` status 0 and `screensaver_restore` status 1 record
-SDL's local disabled/enabled states. They are not TV acknowledgements.
-`exit_event` and `app_exit` have a closed status vocabulary:
-
-| Status | Cause |
-|---|---|
-| 1 / 2 / 3 | Back / Exit key / Escape |
-| 4 / 5 | SDL quit / window close |
-| 6 / 7 / 8 | Focus lost / hidden / minimized |
-| 9 / 10 / 11 | SIGTERM / SIGINT / deadline |
-
-The host decodes captured run exits into `telemetry.exitEvents`. Host
-Ctrl+C/termination is also recorded in `controllerCancellation`. If the
-process exits before its final trace can be read, native event evidence
-remains incomplete; cleanup and process exit are reported separately.
-
-Continuous runs now collect read-only CPU, memory/thread and temperature
-telemetry without an IPK change. A menu baseline is attempted, then samples
-are taken approximately every six seconds. CPU/memory reads verify the app
-process identity before and after reading. Only numeric counters are exported.
-Total CPU busy percent uses `/proc/stat`, excluding idle and iowait; app CPU
-uses its user+system ticks, normalized so one observed online core is 100%.
-The app value excludes media daemons and hardware engines. These are interval
-estimates; CPU hotplug/counter changes invalidate a sample, and brief samples
-cannot establish sustained load or the absence of throttling.
-[Linux proc counter definitions](https://docs.kernel.org/filesystems/proc.html)
-
-Temperature collection reads only `/sys/class/thermal/thermal_zone*/temp`
-and `/sys/class/hwmon/hwmon*/temp*_input`. Values use milli-Celsius, converted
-to Celsius; sensor roles and operating limits remain unknown.
-[Linux thermal sysfs](https://docs.kernel.org/driver-api/thermal/sysfs-api.html)
-No readable temperatures were exposed by those paths in the first C1 check;
-that is not proof that the TV has no temperature sensor. A later post-exit
-reading is labeled separately from in-playback samples. Nothing writes
-thermal controls, cooling settings or idle policy.
-
-The owner need not watch every second. Record which spot checks actually
-showed both clocks advancing and any observed wrap/reset. CPU/PTS progress
-cannot prove continuous visible output; leave unobserved visual intervals
-unknown. Do not promote an interrupted attempt to the 30-minute prerequisite.
-
-Back, loss of focus or Ctrl+C cancels and requests normal teardown. Limits:
-eight seconds without first frames, five seconds without callback/PTS
-progress, eight seconds without accepted feed packets, native deadline
-requested seconds +30, hard process alarm +35. An alarm is **not clean
-cleanup evidence**. Host control and SSH reads also have bounded waits.
-Manual menu keys: Left eight seconds, Right five minutes, OK 30 minutes;
-use SSH for report collection and prerequisite enforcement.
-
-Versioned JSON (`schemaVersion: 1`) is saved under `build/reports/`:
-
-- `c1-phase1-endurance-repeat-1-0.1.1.json` (smoke).
-- `c1-phase1-endurance-repeat-20-0.1.1.json`.
-- `c1-phase1-endurance-minutes-5-0.1.1.json`.
-- `c1-phase1-endurance-minutes-30-0.1.1.json`.
-
-Copy reports before repeating a profile; filenames are reused. Reports
-contain per-cycle frame/PTS/packet/loop rows, duration/continuity assessment,
-Unload results, process exit, build identity, errors and separate unknown
-visual/audio/HDMI fields. Long runs save checkpoints each minute. Short
-cycles capture resource categories throughout; long runs capture startup
-and final windows only. Each collector is capped at 4 MiB/2000 projected
-entries. Separate A/B attribution is required; these windows do not prove
-continuous resource ownership during the unsampled middle of a long run.
-
-Build locally in PowerShell using the existing WSL SDK and fixtures. With
-`$repo` and `$sdk` set as above:
+Build locally in PowerShell with the existing Linux SDK and unchanged clips.
+This C1-specific build uses the read-only firmware copies retained during
+the interface trace for legacy LS2 and JSON-C 4. They are link inputs only;
+no proprietary shared library is bundled into the IPK. The CMake shared-library
+link allowance accommodates retail `fcntl@GLIBC_2.28` references absent from
+the newer SDK; the executable's imports and providers must pass the C1 ABI
+check below.
 
 ```powershell
-wsl -d Ubuntu --exec cmake -S "$repo/native/phase1-endurance" -B "$repo/build/phase-1/endurance" -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_TOOLCHAIN_FILE=$sdk/share/buildroot/toolchainfile.cmake"
+# $repo is the WSL path; $sdk is the existing 2026.08 SDK path.
+wsl -d Ubuntu --exec cmake -S "$repo/native/phase1-endurance" -B "$repo/build/phase-1/endurance" -G Ninja "-DCMAKE_BUILD_TYPE=Release" "-DCMAKE_TOOLCHAIN_FILE=$sdk/share/buildroot/toolchainfile.cmake" "-DLUNA_LIBRARY=$repo/build/phase-1/firmware-inspection/native-idle/libluna-service2.so.3" "-DJSON_C_LIBRARY=$repo/build/phase-1/firmware-inspection/native-idle/libjson-c.so.4"
 wsl -d Ubuntu --exec cmake --build "$repo/build/phase-1/endurance"
 ./scripts/package-phase1.ps1 -Target endurance -LinuxNode /home/tasos/.cache/webos-multiview/node-v22.17.0-linux-x64/bin/node
-wsl -d Ubuntu --exec python3 "$repo/scripts/verify-ipk.py" --endurance "$repo/dist/io.github.tpapaz.multiview.endurance_0.1.1_arm.ipk"
+wsl -d Ubuntu --exec python3 "$repo/scripts/verify-ipk.py" --endurance "$repo/dist/io.github.tpapaz.multiview.endurance_0.1.3_arm.ipk"
 node scripts/verify-mixed-abi.cjs --endurance
+npm test
+npm run lint
+wsl -d Ubuntu --exec g++ -std=c++14 -Wall -Wextra -Wpedantic -Werror "$repo/tests/host/veto_error_test.cpp" -o "$repo/build/phase-1/veto-error-test"
+wsl -d Ubuntu --exec "$repo/build/phase-1/veto-error-test"
 ```
 
-The ABI check reads fixed firmware libraries without starting playback.
-Host checks: `npm test`, `npm run lint` and the standalone watchdog test:
-
-```powershell
-wsl -d Ubuntu --exec g++ -std=c++14 -Wall -Wextra -Wpedantic -Werror "$repo/tests/host/progress_watch_test.cpp" -o "$repo/build/phase-1/progress-watch-test"
-wsl -d Ubuntu --exec "$repo/build/phase-1/progress-watch-test"
-```
+The ABI check reads fixed firmware files and never starts playback. See
+[build identity and completed request result](device-tests/lg-c1-phase-1.md#native-veto-013--request-probe-inconclusive-within-cap).
+This experiment is complete. Continue with the [HDMI handoff](handoff/hdmi-next-chat.md);
+additional idle and local-clip endurance work is deferred.
 
 ### Mixed SMP + NDL build and test
 
 Historical comparison/control: its default route did not show visible overlap.
-Use the main/sub endurance sequence for current validation.
+Retain it for an explicitly requested control; no comparison rerun is scheduled.
 
 Reuse `build/phase-1/media/clip-a.h264` (30 s) and `clip-b.h264` (15 s).
 Do not regenerate the fixtures for this comparison. From the repository in

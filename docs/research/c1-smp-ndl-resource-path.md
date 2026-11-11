@@ -1,10 +1,27 @@
 # C1 SMP / NDL resource path and main/sub selection
 
+Retained Phase 1 evidence. Current task: [HDMI discovery handoff](../handoff/hdmi-next-chat.md).
+Screensaver follow-ups are [closed for this scope](../decisions/0003-close-idle-work-resume-hdmi.md);
+historical next-test statements below are not current instructions.
+
 Date: 2026-11-11. Device: rooted LG OLED C1, firmware 03.53.45,
 webOS SDK 6.5.3. This review uses the owner-operated Phase 1 runs,
 read-only SSH copies of firmware libraries/configuration, ARM disassembly,
 and attributed upstream source. Static/retrospective reviews made no new
 playback runs; subsequent owner-authorized main/sub tests are recorded below.
+
+Latest attempt: 0.1.2 is built locally, packaged and C1 ABI-checked; its TV
+smoke failed at registration submission before playback. Handle closure and
+controlled exit succeeded. Skip request mode and resume read-only HDMI research;
+the owner then authorized one final 0.1.3 caller correction. It uses ordinary
+public LS2 calls with redacted error logging, keeps the 60/90-second caps,
+and is locally built/packaged/C1 ABI-checked. Its 0.1.3 smoke now passed native
+registration/playback/cleanup and owner clocks. No request arrived; effective
+veto remains unknown: the separate request probe finished in 60.022 s with
+no request, clean unsubscribe/cancel/exit and owner-observed idle menu. A
+screensaver was reported after probe exit; no causal veto claim follows.
+Idle work is deferred; HDMI research is next.
+[Current procedure](../build.md#retained-short-veto-control).
 
 **Current conclusion:** default-main presentation reclaimed A's MAIN_SCALER.
 Explicit SMP A main_video / B sub_video passed short visible overlap, B
@@ -26,7 +43,7 @@ launch/foreground is recorded at this boundary. The full diagnostic failed;
 effective app-scoped idle handling at this transition needs investigation.
 [Current decision](../decisions/0002-main-sub-validation.md),
 [device evidence](../device-tests/lg-c1-phase-1.md) and
-[run procedure](../build.md#repeatability-and-endurance).
+[run procedure](../build.md#retained-short-veto-control).
 
 Review plan: trace NDL Load into SMP, inspect firmware resource acquisition
 and presentation choices, compare with the stage traces, then choose a

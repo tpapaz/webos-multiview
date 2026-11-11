@@ -80,12 +80,12 @@ try {
         $canvas.DrawString('Phase 1 / NDL DirectMedia v2', $heading, $white, 54, 46)
         $canvas.DrawString("OK       Play the single local clip`nBACK  Close", $body, $white, 54, 116)
     } elseif ($Target -eq 'endurance') {
-        $canvas.DrawString('Phase 1 / Main + Sub Endurance', $heading, $white, 54, 46)
-        $canvas.DrawString("LEFT     Short dual-playback cycle`nRIGHT   Five-minute dual playback`nOK         Thirty-minute dual playback`nBACK     Cancel, clean up and close", $body, $white, 54, 116)
-        $canvas.DrawString('SSH runner checks cycles and closes/reopens this app.', $small, $white, 54, 320)
+        $canvas.DrawString('Phase 1 / Native Veto Probe', $heading, $white, 54, 46)
+        $canvas.DrawString("LEFT     Short A + B smoke test`nOK         Wait briefly for idle request, then A + B`nBACK     Cancel, clean up and close", $body, $white, 54, 116)
+        $canvas.DrawString('SSH runner: --smoke, then --veto. No long-run mode.', $small, $white, 54, 320)
         $canvas.DrawString('Clip clocks wrap every 30 s / 15 s; PTS stays monotonic.', $small, $white, 54, 365)
-        $canvas.DrawString('0.1.1 / Playback requests screensaver inhibition.', $small, $white, 54, 410)
-        $canvas.DrawString('Menu uses app idle policy. Smoke this build before 5 minutes.', $small, $white, 54, 450)
+        $canvas.DrawString('0.1.3 / Native veto stays through B release and A recovery.', $small, $white, 54, 410)
+        $canvas.DrawString('Idle wait: 60 s max. Entire probe: 90 s hard limit.', $small, $white, 54, 450)
     } elseif ($Target -eq 'sinks') {
         $canvas.DrawString('Phase 1 / Main + Sub SMP', $heading, $white, 54, 46)
         $canvas.DrawString("LEFT     B-only sub_video control`nOK         Start A main_video on the left`nRIGHT   Step B: window / construct / foreground`n               Load / Feed / Play / smaller geometry`nDOWN   Release B; observe A recovery`nBACK     Cancel and close", $body, $white, 54, 116)
