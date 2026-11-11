@@ -1,0 +1,10 @@
+{
+  "id": "io.github.tpapaz.multiview.sinks",
+  "version": "0.1.0",
+  "vendor": "tpapaz",
+  "type": "native",
+  "main": "multiview-sinks",
+  "title": "MultiView Main + Sub Test",
+  "icon": "icon.png",
+  "requiredACG": []
+}

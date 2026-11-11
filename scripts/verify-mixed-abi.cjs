@@ -4,7 +4,14 @@ const crypto = require('node:crypto');
 const {connect} = require('./phase1-device.cjs');
 const path = require('node:path');
 const fs = require('node:fs');
-const libraries = ['ld-linux.so.3', 'libNDL_directmedia.so.1', 'libplayerAPIs.so.1',
+const {nativeBuild} = require('./phase1-native-ssh.cjs');
+const args = process.argv.slice(2);
+const sinks = args.includes('--sinks');
+const aliases = args.filter(arg => arg !== '--sinks');
+if (aliases.length > 1 || aliases.some(arg => arg.startsWith('--'))) throw new Error('Use [SSH profile] [--sinks]');
+const target = sinks ? 'sinks' : 'mixed';
+const build = nativeBuild(target);
+const libraries = ['ld-linux.so.3', ...(sinks ? [] : ['libNDL_directmedia.so.1']), 'libplayerAPIs.so.1',
     'libSDL2-2.0.so.0', 'libstdc++.so.6', 'libm.so.6', 'libgcc_s.so.1', 'libc.so.6'];
 async function readLibrary(client, name) {
     return new Promise((resolve, reject) => {
@@ -22,7 +29,7 @@ async function readLibrary(client, name) {
     });
 }
 async function main() {
-    const client = await connect(process.argv[2]);
+    const client = await connect(aliases[0]);
     const firmware = {}, hashes = {};
     try {
         for (const name of libraries) {
@@ -34,7 +41,7 @@ async function main() {
     } finally { client.end(); }
     const root = path.resolve(__dirname, '..').replace(/\\/g, '/').replace(/^([A-Za-z]):/, (_, drive) => '/mnt/' + drive.toLowerCase());
     const report = await new Promise((resolve, reject) => {
-        const child = spawn('wsl', ['-d', 'Ubuntu', '--exec', 'python3', `${root}/scripts/verify-native-abi.py`, `${root}/build/phase-1/mixed/multiview-mixed`], {timeout: 30000});
+        const child = spawn('wsl', ['-d', 'Ubuntu', '--exec', 'python3', `${root}/scripts/verify-native-abi.py`, `${root}/build/phase-1/${target}/${build.executable}`], {timeout: 30000});
         let output = '';
         child.stdout.on('data', chunk => { output += chunk; });
         child.stderr.on('data', chunk => { output += chunk; });
@@ -43,8 +50,8 @@ async function main() {
         child.on('close', code => code === 0 ? resolve(output) : reject(new Error('ABI check failed: ' + output)));
         child.stdin.end(JSON.stringify(firmware));
     });
-    const binarySha256 = crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, '../build/phase-1/mixed/multiview-mixed'))).digest('hex');
-    fs.writeFileSync(path.join(__dirname, '../build/phase-1/abi-mixed-0.1.0.json'), JSON.stringify({schemaVersion: 1, binarySha256, firmwareLibrarySha256: hashes, report}, null, 2) + '\n');
+    const binarySha256 = crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, '../build/phase-1', target, build.executable))).digest('hex');
+    fs.writeFileSync(path.join(__dirname, `../build/phase-1/abi-${target}-${build.version}.json`), JSON.stringify({schemaVersion: 1, binarySha256, firmwareLibrarySha256: hashes, report}, null, 2) + '\n');
     console.log(report.trim());
 }
 main().catch(error => { console.error(error.message); process.exitCode = 1; });

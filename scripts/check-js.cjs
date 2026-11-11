@@ -9,6 +9,7 @@ for (const name of [
     'native/phase1/appinfo.json',
     'native/phase1-ndl/appinfo.json',
     'native/phase1-mixed/appinfo.json',
+    'native/phase1-sinks/appinfo.json',
     'schemas/capability-v1.schema.json'
 ]) {
     JSON.parse(fs.readFileSync(name, 'utf8'));

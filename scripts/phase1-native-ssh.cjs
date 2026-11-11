@@ -5,6 +5,7 @@ const {setTimeout: delay} = require('node:timers/promises');
 
 const root = path.resolve(__dirname, '..');
 const targets = {
+    sinks: ['phase1-sinks', 'sinks', 'multiview-sinks'],
     smp: ['phase1', 'arm', 'multiview-phase1'],
     ndl: ['phase1-ndl', 'ndl', 'multiview-ndl'],
     mixed: ['phase1-mixed', 'mixed', 'multiview-mixed']
@@ -56,7 +57,7 @@ function command(client, text) {
 
 async function openNativeApp(client, build) {
     const {id, executable, version, title, hash} = build;
-    if (!/^io\.github\.tpapaz\.multiview\.(phase1|ndl|mixed)$/.test(id))
+    if (!/^io\.github\.tpapaz\.multiview\.(phase1|ndl|mixed|sinks)$/.test(id))
         throw new Error('Unknown diagnostic app ID');
     const install = `/media/developer/apps/usr/palm/applications/${id}`;
     const jail = `/var/palm/jail/${id}`;
@@ -118,4 +119,4 @@ function saveReport(name, build, rows, details = {}) {
     fs.writeFileSync(report, JSON.stringify({schemaVersion: 1, appId: build.id, appVersion: build.version, binarySha256: build.hash, rows, ...details}, null, 2) + '\n');
 }
 
-module.exports = {nativeBuild, openNativeApp, saveReport};
+module.exports = {nativeBuild, openNativeApp, saveReport, command};

@@ -1,0 +1,11 @@
+const assert = require('node:assert/strict');
+const {projectLine} = require('../../scripts/phase1-resource-log.cjs');
+const id = 'io.github.tpapaz.multiview.mixed';
+const projected = projectLine(`starfish ResourceManager policy release OVERLAY_VIDEO appId=${id} connectionId=private-token windowId=secret-window 192.0.2.1 serial=private-serial`, id);
+assert.deepEqual(projected, {categories: ['policy','release','display'], resources: ['OVERLAY_VIDEO'], attribution: 'app-id-match'});
+assert.equal(/private|secret|192\.0\.2/.test(JSON.stringify(projected)), false);
+assert.equal(projectLine('other service VDEC release', id), null);
+assert.deepEqual(projectLine('AVProxy disconnected MAIN_SCALER', id), {categories: ['disconnect','display'], resources: ['MAIN_SCALER'], attribution: 'unattributed-system-event'});
+assert.deepEqual(projectLine('SMP acquiring VDEC_BUS', id).resources, ['VDEC_BUS']);
+assert.equal(projectLine('SMP ' + 'a'.repeat(17000), id), null);
+console.log('Resource log privacy and attribution checks passed');

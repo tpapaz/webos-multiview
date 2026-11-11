@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');
+const {parseTrace,advancing,measurement,requireAProgress}=require('../../scripts/phase1-sinks-evidence.cjs');
+const r=parseTrace('0,sample,6,0,2,0,100\n1200,sample,6,0,9,0,1300\n2000,step_end,4,20,0,2000,0\n5000,sample,4,20,0,2000,0\n6000,step_end,8,20,0,2000,0\n8000,sample,8,31,0,4300,0');
+assert(advancing(r,'b',6));
+assert(!advancing(r.map(x=>({...x,bMs:100})),'b',6));
+assert.throws(()=>requireAProgress(measurement(r,4,3000)),/stopped advancing/);
+requireAProgress(measurement(r,8));
+assert.equal(measurement(r,5),null);
+assert.throws(()=>parseTrace('0,unrecognized,0,0,0,0,0'));
+console.log('Sub-sink solo advancement and A-stall progression gates passed');

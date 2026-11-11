@@ -9,8 +9,20 @@ The current setup has one connected HDMI source.
 
 Phase 0C is complete. In Phase 1, NDL 0.1.1 passed Load, accepted the
 solo clip and exited cleanly. The owner confirmed its on-screen clock
-advances. The separate SMP A + NDL B staged package is built and ABI-checked;
-visible overlap awaits the owner-operated TV test. [Phase 1 test record](docs/device-tests/lg-c1-phase-1.md)
+advances. The SMP A + NDL B SSH test also stalled A during B Load; A
+callbacks and PTS resumed after B was released. The owner observed A, black
+screen, B, then A, with no two clocks visible together. [Phase 1 test record](docs/device-tests/lg-c1-phase-1.md)
+
+**Verified on this C1:** explicit SMP A main_video + B sub_video showed both
+local clip clocks advancing together in the full staged run. B moved/shrank
+and A stayed live after B release; cleanup and process exit passed. Logs
+attribute MAIN_SCALER to A and SUB_SCALER to B with distinct decoder
+allocations. This is a short video-only result, not physical-input evidence.
+
+Phase 1 remains active: repeatability, extended stability, wider independent
+geometry and audio focus need validation. Next: repeated clean start/exit
+cycles, then a bounded longer local-video run. [Sink investigation and exact
+C1 evidence](docs/research/c1-smp-ndl-resource-path.md).
 
 ## Phases and acceptance gates
 

@@ -1,4 +1,4 @@
-param([string]$LinuxNode = 'node', [ValidateSet('smp', 'ndl', 'mixed')][string]$Target = 'smp')
+param([string]$LinuxNode = 'node', [ValidateSet('smp', 'ndl', 'mixed', 'sinks')][string]$Target = 'smp')
 
 $ErrorActionPreference = 'Stop'
 
@@ -21,6 +21,12 @@ if ($Target -eq 'mixed') {
     $binaryDir = 'mixed'
     $executable = 'multiview-mixed'
     $stageName = 'package-mixed'
+}
+if ($Target -eq 'sinks') {
+    $nativeDir = 'phase1-sinks'
+    $binaryDir = 'sinks'
+    $executable = 'multiview-sinks'
+    $stageName = 'package-sinks'
 }
 $binary = Join-Path $build "$binaryDir/$executable"
 $source = Join-Path $root "native/$nativeDir"
@@ -67,6 +73,10 @@ try {
     if ($Target -eq 'ndl') {
         $canvas.DrawString('Phase 1 / NDL DirectMedia v2', $heading, $white, 54, 46)
         $canvas.DrawString("OK       Play the single local clip`nBACK  Close", $body, $white, 54, 116)
+    } elseif ($Target -eq 'sinks') {
+        $canvas.DrawString('Phase 1 / Main + Sub SMP', $heading, $white, 54, 46)
+        $canvas.DrawString("LEFT     B-only sub_video control`nOK         Start A main_video on the left`nRIGHT   Step B: window / construct / foreground`n               Load / Feed / Play / smaller geometry`nDOWN   Release B; observe A recovery`nBACK     Cancel and close", $body, $white, 54, 116)
+        $canvas.DrawString('SSH runner: solo B first, then staged main + sub.', $small, $white, 54, 408)
     } elseif ($Target -eq 'mixed') {
         $canvas.DrawString('Phase 1 / SMP A + NDL B', $heading, $white, 54, 46)
         $canvas.DrawString("OK         Start SMP A on the left`nRIGHT   Step NDL B: Init / foreground / Load`n               SetArea / Feed on the right`nDOWN   Release B; observe A for 3 seconds`nBACK     Cancel and close", $body, $white, 54, 116)

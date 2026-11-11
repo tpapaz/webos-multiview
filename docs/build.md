@@ -59,6 +59,7 @@ The SMP build uses `native/phase1` with output `build/phase-1/arm` and
 |---|---|---|
 | HTML5 comparison | `io.github.tpapaz.multiview.browser_0.1.0_all.ipk` | `node scripts/run-phase1-browser-ssh.cjs` |
 | Native SMP stages | `io.github.tpapaz.multiview.phase1_0.1.4_arm.ipk` | `node scripts/run-phase1-ssh.cjs` |
+| SMP main/sub sinks | `io.github.tpapaz.multiview.sinks_0.1.0_arm.ipk` | `node scripts/run-phase1-sinks-ssh.cjs --solo-b` |
 | Mixed SMP A + NDL B | `io.github.tpapaz.multiview.mixed_0.1.0_arm.ipk` | `node scripts/run-phase1-mixed-ssh.cjs` |
 | Native NDL v2 solo | `io.github.tpapaz.multiview.ndl_0.1.1_arm.ipk` | `node scripts/run-phase1-ndl-ssh.cjs` |
 
@@ -123,6 +124,117 @@ A clean diagnostic completion does not imply concurrent playback succeeded.
 The separate SMP 0.1.4 and NDL 0.1.1 packages remain available in `dist/` as
 controls, with their original hashes. This test does not establish audio
 focus, independent geometry changes, or HDMI concurrency.
+
+### Load-only resource experiment with installed mixed 0.1.0
+
+Open **MultiView SMP + NDL Test** to its menu, then run:
+
+```powershell
+node scripts/run-phase1-mixed-ssh.cjs --load-only
+```
+
+An optional SSH profile alias may precede the flag. The runner verifies the
+installed manifest and running ELF, starts A, and advances B through Init,
+foreground and Load only. It holds stage 3 for at least 6.5 s, without
+SetArea or feeding, releases B, measures A recovery and checks cleanup/exit.
+Back or Ctrl+C cancels. The existing native 45 s deadline/50 s alarm apply.
+
+The passive collector follows new `/var/log/messages` lines using the C1's
+BusyBox `timeout -t 50 tail -n 0 -F`, with 4 MiB input, 16 KiB per line and
+2000 projected entries as limits. It changes no logging settings. Raw lines
+are discarded; only known event categories/resource names, host receipt time
+and app-ID-match versus unattributed-system-event are saved. Other media
+activity can appear as unattributed events; neither that label nor an app ID
+match identifies A versus B. Host receipt timestamps can lag native events.
+Missing events at existing log levels cannot disprove resource reclamation.
+
+Report: `build/reports/c1-phase1-mixed-load-only-0.1.0.json`, separate from the
+feeding-run report. It includes collector errors/limits, native trace, stage
+deltas, build hash, process exit and checks that accepted packets stay zero
+and no SetArea/feed event occurred. No IPK rebuild is needed.
+
+### Two-SMP main/sub package
+
+Built locally with the same 30 s A and 15 s B video-only H.264 fixtures.
+The separate app ID is `io.github.tpapaz.multiview.sinks`; the title is
+**MultiView Main + Sub Test**. Both players use the hardware-default decoder
+request, with explicit `main_video` for A and `sub_video` for B in the initial
+Load options. No graphic rendering, window-type change or policy override.
+
+Build from PowerShell with `$repo` and `$sdk` set as above:
+
+```powershell
+wsl -d Ubuntu --exec cmake -S "$repo/native/phase1-sinks" -B "$repo/build/phase-1/sinks" -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_TOOLCHAIN_FILE=$sdk/share/buildroot/toolchainfile.cmake"
+wsl -d Ubuntu --exec cmake --build "$repo/build/phase-1/sinks"
+./scripts/package-phase1.ps1 -Target sinks -LinuxNode /home/tasos/.cache/webos-multiview/node-v22.17.0-linux-x64/bin/node
+wsl -d Ubuntu --exec python3 "$repo/scripts/verify-ipk.py" --sinks "$repo/dist/io.github.tpapaz.multiview.sinks_0.1.0_arm.ipk"
+node scripts/verify-mixed-abi.cjs --sinks
+```
+
+Install the IPK in Dev Manager, open **MultiView Main + Sub Test** and leave
+it at the menu. Run the B-only control first; do not press OK separately:
+
+```powershell
+node scripts/run-phase1-sinks-ssh.cjs --solo-b
+```
+
+Watch B's right-hand clock for the eight-second control. The runner verifies
+callback and PTS progress, collects resource logs, checks Unload and closes
+the app. Report: `build/reports/c1-phase1-sinks-solo-b-0.1.0.json`.
+Confirm the clock visibly advances and inspect retained resource logs for
+SubVideo/SUB0 and B presentation SUB_SCALER with no MAIN_SCALER takeover.
+A telemetry pass alone is insufficient. Keep the control report; staged
+commands require it to match this exact ELF and have clean process exit.
+
+Once the owner confirms B's visible control and resource selection has been
+reviewed, reopen the app to its menu for the Load-only test:
+
+```powershell
+node scripts/run-phase1-sinks-ssh.cjs --staged --load-only --confirm-solo-b-visible
+```
+
+The confirmation flag is an explicit owner-observation assertion, not an
+automatic inference. It must not be used if B was black or its clock froze.
+This run establishes A progress, steps B through empty window, construction,
+foreground and Load, holds Load for at least three seconds, releases B and
+samples three seconds of recovery. No B Feed or Play is requested. Report:
+`build/reports/c1-phase1-sinks-load-only-0.1.0.json`.
+
+After verifying A remained visible/advancing and the expected separate
+presentation grants, reopen the menu and run the full staged comparison:
+
+```powershell
+node scripts/run-phase1-sinks-ssh.cjs --staged --confirm-solo-b-visible
+```
+
+This adds Feed without explicit Play, Play, and a smaller/lower B rectangle,
+then releases B. Each normal stage gets at least two seconds of telemetry;
+Load gets three seconds. A's callback count and PTS must both increase at
+each measured stage or the runner stops progression, releases B and closes
+the app. After Play, B must increase both too. Aggregate sampled progress
+cannot exclude a brief interruption between samples; inspect the trace,
+resource attribution and both visible clocks. Never infer a concurrency pass
+from `telemetryPassed` alone. The full report is
+`build/reports/c1-phase1-sinks-stages-0.1.0.json`.
+
+All three modes capture redacted resource log categories using the existing
+bounded collector. Resource ownership and visible results remain unknown in
+the generated report until the human observation and A/B attribution are
+attached. Reports include schema version 1, ELF hash, device reference,
+requested sinks, frame/PTS rows, packet-count rows, stage deltas, cleanup,
+controller errors and process exit confirmation. Copy reports before a repeat
+because each mode reuses its filename. Append a local SSH profile alias to
+any command when needed.
+
+Manual controls: Left starts B-only; OK starts A/staged mode; Right advances
+B's stages; Down releases B; Back cancels/closes. SSH uses USR2 at the menu
+for solo B, USR1 for staged start/advance, USR2 during a run for B release,
+and TERM to close. SIGINT/Ctrl+C requests normal release/cleanup. The native
+run deadline is 45 s with a 50 s hard alarm, and the inherited first-frame
+limit is eight seconds after Play. Cleanup is recorded before run_end.
+Status codes: 0 completed, 1 cancelled/focus lost, 2 startup/stage failure,
+3 pipeline failure, 4 deadline, 5 cleanup failure. A hard alarm is not clean
+cleanup evidence. Existing SMP, NDL and mixed control IPKs are preserved.
 
 ## Optional native ARM inventory
 

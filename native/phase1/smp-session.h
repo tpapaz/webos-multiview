@@ -12,6 +12,8 @@
 namespace phase1 {
 using namespace std::chrono_literals;
 constexpr int width = 640, height = 360, fps = 30;
+enum class VideoSink { automatic, main, sub };
+
 enum class State { running, done, failed };
 
 class Session {
@@ -59,7 +61,7 @@ public:
         return player_->notifyForeground() || fail("foreground rejected");
     }
 
-    bool load(const char* root, bool softwareVideo = false) {
+    bool load(const char* root, bool softwareVideo = false, VideoSink sink = VideoSink::automatic) {
         const char clip = label_ == 'A' ? 'a' : 'b';
         char path[4096];
         if (std::strlen(root) + sizeof("clip-x.frames") > sizeof(path)) return fail("asset path too long");
@@ -72,11 +74,13 @@ public:
         char load[1200];
         const int size = std::snprintf(load, sizeof(load),
               R"json({"args":[{"mediaTransportType":"BUFFERSTREAM","option":{"appId":"%s","windowId":"%s",)json"
-              R"json(%s"queryPosition":false,"externalStreamingInfo":{"contents":{"codec":{"video":"H264"},)json"
+              R"json(%s%s"queryPosition":false,"externalStreamingInfo":{"contents":{"codec":{"video":"H264"},)json"
               R"json("esInfo":{"pauseAtDecodeTime":false,"ptsToDecode":0,"seperatedPTS":true,"videoFpsValue":30,"videoFpsScale":1},)json"
               R"json("format":"RAW","provider":"Chrome"},"bufferingCtrInfo":{"srcBufferLevelVideo":{"minimum":1024,"maximum":8388608}}},)json"
               R"json("adaptiveStreaming":{"audioOnly":false,"maxWidth":640,"maxHeight":360,"maxFrameRate":30}}}]})json",
-              appId, window_, softwareVideo ? R"json("useSoftwareVideoDecoder":true,)json" : "");
+              appId, window_, sink == VideoSink::main ? R"json("avSink":{"videoSink":{"type":"main_video"}},)json" :
+                  sink == VideoSink::sub ? R"json("avSink":{"videoSink":{"type":"sub_video"}},)json" : "",
+              softwareVideo ? R"json("useSoftwareVideoDecoder":true,)json" : "");
         if (size < 0 || static_cast<size_t>(size) >= sizeof(load)) return fail("Load payload overflow");
         loadAttempted_ = true;
         if (!player_->Load(load, onEvent, this)) return fail("Load rejected");
@@ -95,8 +99,8 @@ public:
         return player_->Play() || fail("Play rejected");
     }
 
-    bool start(const char* root, SDL_Rect destination, bool softwareVideo = false) {
-        if (!reserveWindow() || !createPlayer() || !foreground() || !load(root, softwareVideo) ||
+    bool start(const char* root, SDL_Rect destination, bool softwareVideo = false, VideoSink sink = VideoSink::automatic) {
+        if (!reserveWindow() || !createPlayer() || !foreground() || !load(root, softwareVideo, sink) ||
             !(positioned_ || move(destination))) return false;
         enableFeed();
         return true;
@@ -113,6 +117,7 @@ public:
     }
 
     const char* windowId() const { return window_; }
+    unsigned packets() const { return static_cast<unsigned>(fed_); }
     unsigned frames() const { return frames_.load(); }
     unsigned positionMs() const { return positionMs_.load(); }
 
