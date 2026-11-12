@@ -15,6 +15,131 @@ smallest bounded observation without assuming a second receiver exists.
 Phase 1 remains partial; [decision 0003](../decisions/0003-close-idle-work-resume-hdmi.md)
 continues to close idle and Glasshouse/Home work for this scope.
 
+## Focused acquisition and owned-window review — 2026-11-12
+
+**Saved evidence/local work only: no TV connection, run, retrieval or permission
+change.** Owner direction pauses the three-call IWC preflight and makes a live
+physical HDMI picture in our own window the next milestone, followed by two
+independently live HDMI sources. This section supersedes the selected-HDMI HUD
+proposal below; the earlier research/provenance remains historical evidence.
+
+Implementation plan: trace the export's origin and UTP binding, distinguish a
+presentation ID from receiver/scaler allocation, implement only an evidenced
+single-session client, then run focused host checks and a local ARM/direct-ABI
+check. Do not add another IWC preflight or infer a second input path from SMP.
+
+### The missing client-side connection
+
+**Verified/static on the saved C1 03.53.45 client:** `windowId` is assigned to a
+Wayland exported object owned by the HDMI frontend, rather than discovered from
+IWC or chosen as a MAIN/SUB output index:
+
+1. In F6, `InputCommon::registerWindowId` (`0xcc58–0xcd2c`) obtains
+   `WebOSPlatform::webOSForeign` (`0xcc6e`), supplies its own QWindow and exported
+   type **2** (`0xcc72–0xcc76`) to `export_element`, and initializes source and
+   destination to its 1920×1080 app rectangle (`0xcc9c–0xccba`). Its Qt connection
+   at `0xccf2` connects assignment notification to the frontend handler.
+2. `InputCommon::onWindowIdAssigned` (`0xcd2c–0xce2c`) forwards the assigned string
+   and type into the frontend's signal (`0xcdc2–0xcdd8`). Saved `MainView.qml`
+   (F6 provenance's `policy-7.txt`, lines 101–103) forwards the ID to the model.
+3. F3 lines 338–345 and 708–711 map the input type, call open with that ID, retain
+   the returned `pipelineId` and start initialization. F2 lines 58–64 / 87–93
+   pass `options: {appId, windowId}` and `inputSourceType` to `utp.extinputs/open`.
+   F3 lines 491–497 / 1293–1329 select port 1/2/3/4 on the retained pipeline.
+   There is no separate SMP Load or decoder feeding step in this client chain.
+4. F7 independently corroborates explicit rebinding: `UTPConnector::setWindowId`
+   (`0x163e4–0x165e4`) puts its retained pipeline string into `pipelineId`
+   (`0x16414–0x1643c`) and the supplied window string into `windowId`
+   (`0x16450–0x16472`), targeting `utp.extinputs/setPipelineWindowId` (endpoint
+   at file offset `0x22788`). This is a client request construction, not a
+   measured server import or a receiver/scaler selector. The direct prototype
+   binds at open, so does not need a redundant rebinding request.
+5. For ordinary frontend exit, F3 lines 440–460 call `stop` then `close`; F2
+   lines 125–145 use only the retained pipeline ID. F7 `unregisterId` at
+   `0x15c54` also constructs a close. These are evidenced cleanup requests,
+   not proof of resource reclamation, disconnect rollback or hardware restoration.
+
+The connector's richer open options were also checked rather than treated as an
+unexamined second-sink escape hatch. F7 `0x15968–0x159c0` adds `mediaFrontend`
+and `mediaId`; `0x159d4–0x159e6` branches on window-type values 402 and 401.
+The corresponding branches write `options.windowType: "InitialWindow"`
+(`0x15b2a–0x15b4e`) or `"NoWindow"` (`0x15b64–0x15b88`), then return to the
+same open construction. These are **verified/static client values**, not
+identified MAIN/SUB or independent receiver selectors. Their server meaning is
+unknown. The prototype follows the simpler stock frontend's open options and
+does not guess values for these connector-specific fields.
+
+**Verified/declaration, new SDK cross-check:** the existing SDK's
+`usr/include/SDL2/SDL_webOS.h:35–38,46–54` declares exported content types,
+create, geometry and destroy. SHA-256:
+`a6b6dea111c13312d3c01e8ea79faa6090c5aed0316b699fb0bdc0cdc63791e1`.
+`usr/include/wayland-webos-foreign-client-protocol.h:123,189,226,310` defines
+transparent-object type 2, `export_element`, `window_id_assigned` and `set_exported_window`;
+SHA-256 `2f83db1664499d62018a7bb9320f6d0bda58b96eddacb382ffb91777c0468ed3`.
+Paths are under the S1 sysroot. The C1 SDL FIRMWARE, already used by Phase 1,
+exports `SDL_webOSCreateExportedWindow` (`0x23a00`),
+`SDL_webOSSetExportedWindow` (`0x23a10`) and destroy (`0x23a48`). Its exact
+saved SHA-256 is
+`d3358bab5342c947b5e1f32373b5929b65030628ff8b88e054488dabb3629c58`,
+also bound by `build/phase-1/abi-endurance-0.1.3.json` and the new local direct-ABI
+record; the SDK declarations alone are not a retail behavior
+guarantee. Phase 1 exercised video exports, not this HDMI/transparent-export path.
+
+This resolves the **client-side acquisition-to-owned-window contract** enough
+to build an opt-in single-session candidate. It does not establish successful
+Homebrew acquisition or simultaneous physical inputs.
+
+### What remains missing for a second independently live picture
+
+- **Unknown:** UTP server open/allocation/arbitration and importer behavior.
+  The retained client/connector/policy evidence does not include the corresponding
+  UTP server implementation. A separate assigned window string can name a second
+  presentation object, but cannot grant a second HDMI receiver or scaler.
+- **Unknown:** whether a second port can remain activated while the first keeps
+  advancing, and how each UTP session reaches MAIN versus SUB hardware. None of
+  the traced open/select/binding requests contains an evidenced sink/resource
+  selector. Do not transfer SMP `avSink` options to UTP or use connector port 5.
+- **Unknown:** admission using our app's actual connection; the stock wildcard
+  role and the separate IWC application's denial cannot answer it. The candidate
+  uses its own named public connection and stops on denial, without impersonation,
+  another identity/bus retry, permission edits or privileged generic IPC.
+- **Unknown:** release after an open whose ID never returns. There is no evidenced
+  allocation lookup/cancellation contract here. The candidate records uncertainty
+  and ends; destroying its export or killing its process is not proven cleanup.
+
+### Local implementation and validation
+
+[`native/phase2-hdmi-window/`](../../native/phase2-hdmi-window/README.md) is the
+small single-HDMI candidate: default launch is inert; explicit HDMI-4 consent,
+one owned type-2 export, fixed (480,270,960,540) rectangle in required 1920×1080
+app coordinates, one open/select and at most eight seconds observation, then
+owned-pipeline stop/close and local release. No IWC publication is accessed.
+The coordinates are the candidate's own app contract, not a guessed stock-window
+baseline or a panel/signal resolution. No arbitrary port/identity/endpoint is
+accepted. Cleanup reuses established SDL/LS2 cancellation/release patterns, not
+an invented UTP-capable version of the fake-worker supervisor.
+
+**ARM-built, focused host acceptance-tested and direct-executable ABI checked;
+not packaged, simulator-tested, TV-tested or device-ready.** Own-caller admission,
+actual physical video, release/restoration and dual HDMI remain unknown. The
+[current plan](../device-tests/current-plan.md) specifies these readiness limits
+and future single/dual-picture acceptance gates; no TV procedure is authorized.
+
+Local evidence lives in `build/phase-2/hdmi-window-local-20261112/`, including
+scoped `inputcommon-window-binding.asm`, exact ELF inspection and hash-checked
+`direct-abi.json`/`.txt`. The direct ABI check uses existing
+`scripts/verify-native-abi.py`: 75 executable imports, eight direct providers,
+ELF32 ARM soft-float, `/lib/ld-linux.so.3`, no RPATH/RUNPATH. It does not validate
+the complete SDL graphics dependency closure or dynamic runtime paths.
+The prototype README records exact local build/check commands.
+
+Validation: focused CMake/CTest acceptance, `npm test`, `npm run lint`, saved-runtime
+direct ABI check and documentation/diff checks. No simulator, packaging or TV
+tests. REA opened and identified F6, but native `analyze_function` returned
+`provider_unavailable` for this ARM ELF on Windows; no decompiled output is
+claimed. Existing WSL SDK objdump and saved assembly supplied the trace instead.
+The REA target was closed; no provider installation/configuration was changed.
+
 ## Findings
 
 Here, **verified/static** describes bytes, declarations or source flow,
@@ -159,6 +284,9 @@ The community proposal, network players and unread LG combination table there
 add no C1 dual-port evidence.
 
 ## Smallest proposed active experiment — selected-HDMI HUD only
+
+**Historical proposal, superseded by the acquisition/owned-window direction
+above.** It is not the current plan or a queued intermediate test.
 
 **Candidate, not built/packaged/ABI-checked/simulator-tested/TV-tested.**
 After explicit owner opt-in, an original decoder-free transparent overlay

@@ -1,0 +1,11 @@
+{
+  "id": "io.github.tpapaz.multiview.hdmiwindow",
+  "version": "0.1.0",
+  "vendor": "tpapaz",
+  "type": "native",
+  "main": "multiview-hdmi-window",
+  "title": "MultiView HDMI Window Candidate",
+  "icon": "icon.png",
+  "transparent": true,
+  "requiredACG": []
+}

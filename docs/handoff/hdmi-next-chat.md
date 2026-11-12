@@ -6,8 +6,9 @@ Updated 2026-11-12. Workspace: `D:\Development\webos-multiview`.
 
 1. Read [Status](../../STATUS.md) for the current result and single next task.
 2. Follow [contributor instructions](../../AGENTS.md) and [safety rules](../safety.md).
-3. Read the single [current test plan](../device-tests/current-plan.md); use the
-   [recovery-gate analysis](../research/c1-iwc-gates-after-lifecycle.md) when needed.
+3. Read the single [current plan](../device-tests/current-plan.md), the
+   [focused acquisition trace](../research/c1-hdmi-interface-map.md#focused-acquisition-and-owned-window-review--2026-11-12)
+   and [prototype contract](../../native/phase2-hdmi-window/README.md).
 4. Use the [documentation index](../README.md) for a specific test/source record.
 
 The [roadmap](../../ROADMAP.md) holds product phases. The
@@ -17,19 +18,24 @@ resume the selected task.
 
 ## Current continuation boundary
 
-The next proposed implementation is the **fixed real-worker read-only IWC
-preflight**, as specified in the linked contract. It is not implemented or
-TV-tested. The existing native helper runs fake workers only. Root listing and
-native normal/control-EOF cases were tested separately and passed; their exact
-limits and remaining recovery gates are in Status and the device records.
+The three-call IWC preflight is **paused by owner direction**. Focus on UTP
+acquisition/window binding and the smallest direct HDMI prototype. Saved C1
+client evidence establishes export → assigned window ID → UTP open → numbered
+port selection. `native/phase2-hdmi-window/` implements one owned fixed window
+and HDMI 4, with explicit opt-in, bounded observation and stop/close/release.
+It is locally ARM-built, host acceptance-tested and direct-executable ABI checked;
+it is not packaged, simulator-tested, TV-tested or device-ready.
 
-Do not repeat generic normal/EOF preparation. Do not promote local simulation
-flags, permission predictions or process cleanup into applied HDMI recovery.
-A new adapter needs focused local acceptance tests, a local ARM build and ABI
-verification against saved C1 runtime evidence, then a separately owner-directed
-TV run. There is no current command for the proposed real-worker mode.
+Own-caller UTP admission, server allocation/cleanup (including open-without-ID)
+and hardware restoration remain unknown. A distinct window ID is presentation
+identity, not a second HDMI receiver or SUB_SCALER grant. Resolve or explicitly
+bound these questions before proposing the first normal-exit picture test.
+Then test two independent physical sources in fixed windows; add controls only
+after concurrency works. Do not restart generic normal/EOF or IWC infrastructure
+work. Existing helpers remain fake-only and supply no UTP cleanup guarantee.
 
-Keep the app closed. No permission changes, active geometry/crop, automatic input
+No TV operations or permission changes are authorized. Keep the diagnostic apps closed.
+No stock-window geometry/crop, automatic input
 switching, persistent daemon, service restart or new privileged generic endpoint.
 A past authorization applies to its completed run, not another run. No further
 TV execution is authorized merely by this handoff. Screensaver/Glasshouse work
@@ -40,6 +46,7 @@ and Phase 1 repeat campaigns remain outside the current scope.
 | Path | Purpose |
 |---|---|
 | `native/phase2-admission/` | Installed app diagnostic; named registration worked, first policy query denied. No relaunch queued. |
+| `native/phase2-hdmi-window/` | Minimal direct UTP/owned-export candidate; default launch inert, explicit HDMI-4 opt-in only. Local build/tests; no TV execution. |
 | `scripts/iwc-diagnostic.cjs`, `scripts/collect-iwc-diagnostic.cjs` | Fixed stock-utility listing collector, counts only; root reads 001/002 passed. |
 | `scripts/iwc-recovery-model.cjs` | Pure local simulation; real arming gates remain unresolved. |
 | `scripts/iwc-local-process-harness.cjs` | Host Linux fake-worker process harness. |

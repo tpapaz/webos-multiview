@@ -12,8 +12,8 @@ the whole research trail before continuing.
 | [Status](../STATUS.md) | What works, what does not, and the single next task. |
 | [Handoff](handoff/hdmi-next-chat.md) | Concise continuation instructions and workspace pointers. |
 | [Roadmap](../ROADMAP.md) | Product phases and acceptance gates. |
-| [Current test plan](device-tests/current-plan.md) | Single procedure/acceptance contract for the planned read-only preflight. Candidate, not implemented. |
-| [Remaining IWC gates](research/c1-iwc-gates-after-lifecycle.md) | Recovery analysis and static evidence; operational steps live only in the current plan. |
+| [Current plan](device-tests/current-plan.md) | UTP acquisition/window candidate, remaining readiness limits and future single/dual HDMI acceptance gates. No TV execution authorized. |
+| [Remaining IWC gates](research/c1-iwc-gates-after-lifecycle.md) | Retained recovery analysis for the paused stock-window route. |
 | [Contributor rules](../AGENTS.md) / [safety](safety.md) | Workflow, scope and device restrictions. |
 | [Build guide](build.md) | Existing local SDK and build/package procedures; commands are not authorization to run a device test. |
 
@@ -33,6 +33,7 @@ they are historical references, not extra current plans. Raw reports are unchang
 | Tool contract/source | Scope and execution status |
 |---|---|
 | [Admission runner](../native/phase2-admission/README.md) | Built/packaged/ABI-checked; app 0.1.2 TV-tested and denied. No app relaunch is queued. |
+| [Single-HDMI window candidate](../native/phase2-hdmi-window/README.md) | Own exported window bound at UTP open; one fixed HDMI-4 picture attempt. ARM-built, focused host tests and direct executable ABI check; not packaged or TV-tested. |
 | [IWC diagnostic collector](research/c1-iwc-diagnostic-collector.md) | Fixed root listing; TV-tested in reads 001/002. Exports counts only. |
 | [Local recovery model](research/c1-iwc-local-recovery-model.md) | Deterministic simulated arming/failure rules; no device adapter. |
 | [Local process harness](research/c1-iwc-local-process-harness.md) | Thirteen Linux fake-process scenarios; host-only evidence. |

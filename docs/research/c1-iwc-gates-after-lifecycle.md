@@ -1,6 +1,6 @@
 # C1 IWC recovery gates after normal/EOF controls
 
-> Recovery-gate review. Operational steps live in the [single current test plan](../device-tests/current-plan.md). [Current status](../../STATUS.md) selects the task.
+> Historical recovery-gate review. **The proposed three-call IWC preflight is paused** by the owner's acquisition/window-prototype direction. The decisions and “next” statements below describe the earlier proposal, not the current task. Follow the [single current plan](../device-tests/current-plan.md) and [Status](../../STATUS.md). Retained IWC arming limits still apply to that route.
 
 2026-11-12. LG OLED C1, firmware 03.53.45 / SDK 6.5.3.
 **Saved-evidence review only. No TV connection, app launch, permission change,

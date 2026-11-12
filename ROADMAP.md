@@ -11,7 +11,7 @@ TV's own hardware. Additional source types do not replace this objective.
 Reference device: LG OLED C1 (2021), firmware 03.53.45 / SDK 6.5.3.
 Simultaneous HDMI is **unknown**. One HDMI source is currently connected.
 
-**Active phase: Phase 2 read-only HDMI discovery and recovery preparation.**
+**Active phase: Phase 2 HDMI acquisition and application-owned window research.**
 Phase 0 is complete. Phase 1 has useful device evidence but remains partially
 validated; its remaining gates are deferred, not passed. The selected next task,
 its readiness and latest test results live only in [Status](STATUS.md).
@@ -22,7 +22,7 @@ its readiness and latest test results live only in [Status](STATUS.md).
 |---|---|---|
 | 0A–C | Pinned research, host checks, passive metadata and redacted report | Complete: C1 passive report and clean lifecycle. [Device record](docs/device-tests/c1-journal.md#phase-0) |
 | 1 | Two independent local clips on movable video surfaces | Partially validated: explicit main/sub live playback and B geometry observed. Audio, wider geometry, final-build repeatability and full recovery remain open/deferred. [Journal](docs/device-tests/c1-journal.md#phase-1) |
-| 2 — current | Selected-HDMI presentation research, then independently live HDMI 1 + 2 | Prove physical-input access, placement/scaling and safe recovery separately. Dual-port proof needs two independent sources, a justified per-port path and explicit owner scope. |
+| 2 — current | Resolve UTP acquisition/window binding; one live HDMI in our fixed window; then independently live HDMI 1 + 2 in two fixed windows | First require visibly advancing physical HDMI content in an application-owned window and clean exit/restoration. Next require two distinct moving sources to keep advancing together without freezing or switching. Dual-port proof needs an independent receiver/presentation path and explicit owner scope. Move/resize, layouts, remote workflows and audio selection follow concurrency proof. |
 | 3 | Source management for proven inputs; local/network sources where resources permit | Stable playback and predictable buffering, reconnection and resource contention. |
 | 4 | Remote-first picker, PiP/split/grid layouts, focus, audio selection and presets | Complete workflows for each verified combination, including reset and uninstall. |
 | 5 | Compatibility matrix and community beta | ABI and device tests for every claimed model/firmware/backend. |

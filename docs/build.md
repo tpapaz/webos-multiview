@@ -31,6 +31,15 @@ python3 scripts/verify-ipk.py dist/io.github.tpapaz.multiview.probe_0.1.0_all.ip
 IPK is web-only. `verify-ipk.py` checks archive structure, file allowlist
 and payload bytes. Archive timestamps can change the package hash.
 
+## Phase 2 single-HDMI candidate
+
+The [owned-window candidate](../native/phase2-hdmi-window/README.md) has its own
+local WSL build/host acceptance commands and saved-runtime direct ABI record.
+It is ARM-built, not packaged or TV-tested; unresolved UTP acquisition/release
+semantics keep it not device-ready. Default launch performs no graphics or IPC.
+The three-call IWC preflight is paused. Follow the [current acquisition plan](device-tests/current-plan.md);
+no TV launch, install, permission change or input switch is authorized here.
+
 ## Phase 1 local clip packages
 
 Phase 1 packages are **retained controls**, not the current work queue.

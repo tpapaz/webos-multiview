@@ -1,88 +1,89 @@
-# Current C1 test plan
+# Current C1 HDMI acquisition plan
 
-Updated 2026-11-12. [Status](../../STATUS.md) · [Results journal](c1-journal.md) · [Recovery gates](../research/c1-iwc-gates-after-lifecycle.md)
+Updated 2026-11-12. [Status](../../STATUS.md) · [Actual TV results](c1-journal.md) · [Saved acquisition evidence](../research/c1-hdmi-interface-map.md#focused-acquisition-and-owned-window-review--2026-11-12)
 
-## Readiness and purpose
+## Objective and scope
 
-**Candidate: not implemented, built, ABI-checked or TV-tested.** Prepare the
-focused real-worker adapter locally first; this document authorizes no TV run.
-The existing native helper has fake workers only. Its normal/EOF cases and
-stock-utility listing passed separately; [journal](c1-journal.md).
+**One live physical HDMI picture in an application-owned fixed window, followed
+by two independently live HDMI 1 + HDMI 2 pictures.** Product controls follow
+concurrency proof. The three-call IWC preflight is **paused**; no further generic
+supervisor/recovery integration is queued.
 
-Next proposed device test: **one supervised read-only IWC preflight on HDMI 4**.
-It combines the supervisor with actual stock utility children, checks predicted
-permissions and records a sanitized HDMI baseline. No geometry or fault injection.
+This task uses saved evidence and local builds only. **No TV operation, install,
+launch, permission change or input switch is authorized.** The C1 journal is
+unchanged because there is no new device result.
 
-## Before a future authorized run
+## What is ready
 
-- Implement fixed operations and test locally: own-PID/default-identity matching,
-  reply limits/schema, sequential child exit/reap, cancellation, hangs and cleanup.
-  Reuse the existing listing schema: unique IDs, bounded strings and positive
-  32-bit integral published dimensions; no permissive raw-reply capture.
-- Build in the existing WSL SDK; ABI-check against saved C1 runtime evidence.
-  Pin the new artifact; retain the existing fake helper and original reports.
-- Recheck the actual `/usr/bin/luna-send` and its eight existing binary/policy
-  bindings, runtime and app absence. No policy edits, install or persistent service.
-- Owner manually selects HDMI 4 and confirms normal uncropped full view, PiP off,
-  framing/motion/sound. Stop on a different/unknown port; no automatic switching.
-- Reserve fresh host capture, exclusively create one private temporary directory,
-  and prepare exact owned-process verification/cleanup. Keep control stdin and
-  both SSH connections open; no fault injection in this first real-worker case.
+The [minimal candidate](../../native/phase2-hdmi-window/README.md) is ARM-built,
+focused host acceptance-tested and checked against saved C1 direct executable
+ABI providers. It is **not packaged, simulator-tested, TV-tested or device-ready**.
+The graphics dependency closure/dynamic runtime paths are not fully ABI-checked.
 
-## Fixed operation
+The candidate follows the saved frontend's client contract, with its own fixed
+placement and bounds:
 
-TV-local supervisor launches at most **three sequential owned children**, without
-a shell, arbitrary input/endpoint, name/app override or helper LS2 registration.
-Each executes the actual `/usr/bin/luna-send` with fixed `-n 1 -w 2000`.
+1. Export an app-owned window; wait for its assigned window ID.
+2. Open `utp.extinputs` with our own app ID, that window ID and source type HDMI.
+3. Select physical port 4 on the returned pipeline, matching the owner's last
+   connected-source observation. This is active acquisition, not passive discovery.
+4. Observe for at most eight seconds in a fixed 960×540 rectangle at (480,270)
+   in a required 1920×1080 app coordinate space.
+5. Stop and close only that returned pipeline; cancel pending calls, unregister
+   the handle and destroy our own exported/SDL windows. Never touch the stock
+   publication. A close acknowledgment is not observed hardware restoration.
 
-| Order | Actual destination | Payload |
-|---|---|---|
-| 1 | `luna://com.webos.service.bus/isCallAllowed` | `uri`: `luna://com.webos.service.iwc/listPublishedWindows`; requester: this utility child's own generated name. |
-| 2 | `luna://com.webos.service.bus/isCallAllowed` | `uri`: `luna://com.webos.service.iwc/setExportedWindow`; requester: this second utility child's own generated name. |
-| 3 | `luna://com.webos.service.iwc/listPublishedWindows` | `{"subscribe":false}` |
+Normal launch exits before graphics or bus registration. The sole opt-in is
+`acquireHdmi4: true`; arbitrary ports, identities, windows and URIs are rejected.
+Each IPC reply is limited to 4 KiB and two seconds. Cancellation drains the current
+bounded open reply so that a returned ID can still be closed. Progression stops
+on Back/Exit, focus/visibility loss, SIGINT/SIGTERM, denial or malformed replies.
+The native progression deadline is 17 seconds; the hard cap is 22 seconds, leaving
+room for two bounded cleanup requests. A hard exit never confirms cleanup.
 
-Each policy child derives its requester from **its own PID before exec**,
-matching the pinned utility's automatic `com.webos.lunasend-%d` name. Exec
-preserves that PID. Prove this contract locally before use; never borrow/reuse
-another identity. Requester names remain private. Different children have
-different connections; policy predictions establish no FIFO/application fence.
-The setter URI above is **query data only**, never a call destination.
+## Remaining readiness questions
 
-## Bounds, stops and pass criteria
+- **Unknown:** admission for our own app/connection to UTP open, port selection,
+  stop and close. The stock frontend's wildcard role is not ours; ordinary IWC
+  denial says nothing conclusive about UTP. No identity substitution, root utility
+  fallback or policy edits are implemented.
+- **Unknown:** UTP server arbitration, allocation and disconnect cleanup. If open
+  is submitted but no valid ID returns, we cannot name an allocation to release.
+  The candidate reports acquisition uncertain and stops; export destruction or
+  process exit is not a proven inverse. No corresponding server implementation
+  was found in the retained evidence inventory. This is a readiness blocker.
+- **Unknown:** whether our export displays physical HDMI, and whether normal
+  stop/close restores ordinary viewing. Allocation may reclaim the stock HDMI
+  session or other hardware resources even though we never alter its window.
+- **Unknown:** a second pipeline's independent receiver and scaler assignment.
+  `windowId` and `setPipelineWindowId` name presentation bindings. They do not
+  select SUB0/SUB_SCALER or establish simultaneous jack acquisition. Do not add
+  SMP `avSink` options to UTP by analogy, or treat connector port 5 as a jack.
 
-- Two seconds per reply; 32 KiB/reply, at most 64 publications; one child at a
-  time. Validate its reply and confirm exit/reap before launching the next.
-- Stop new work by native entry +7 s, reserve cleanup through +8 s and launch
-  only when reply/cleanup budgets fit. Keep a native hard deadline and bounded
-  separate host capture/emergency cleanup. These bound attempts, not kernel stalls.
-  Retain host budgets of 10 s preflight and 15 s after exec, with identity-checked
-  emergency attempts at 10 s after exec; an emergency-rescued run cannot pass.
-- Stop at first denial, malformed reply, timeout, unknown exit/identity or target
-  mismatch. No retry, escalation, fallback identity or silent retargeting.
-- Pass requires both `returnValue: true` / `allowed: true` predictions, all three
-  children exited 0/reaped, one total publication and one matching HDMI-4 app
-  candidate, valid published logical dimensions and owner-port agreement.
-- Require helper/child absence, durable host capture **before** exact temporary
-  file removal, no host rescue, and owner-confirmed normal viewing after exit.
-  A rescued/uncertain run cannot pass.
+The next work is a focused review of these acquisition/release limits and the
+candidate, then a concrete first-picture proposal for owner authorization. Keep
+this tied to HDMI acquisition; do not restart IWC preflight or generic fault tests.
+No runnable device procedure is approved at this readiness stage.
 
-## Capture and limits
+## Future acceptance sequence — requires separate owner scope
 
-Export policy Booleans, counts, publisher-derived port, bounded published logical
-width/height, owner agreement, elapsed/exit/cleanup fields and artifact hashes.
-Keep raw replies, target IDs, requester names and errors in memory only. Owned
-PIDs/start times may use private `0600` cleanup metadata, never exported reports.
-No saved target may arm a later write. Preserve separate owner observations.
+**Single source:** after readiness review, the owner identifies the actual port
+and a source with distinct moving content, and confirms normal baseline viewing.
+The initial candidate is fixed to HDMI 4; a different connection requires an
+explicit source change in the candidate, never silent retargeting. Success needs
+visible motion inside our smaller fixed window, no full-screen takeover presented
+as window success, clean stop/close/process exit, and owner-confirmed normal
+picture/motion/sound afterward. Record service outcomes and human observations
+separately. Black/frozen video, denial, unexpected switching or uncertain cleanup
+ends the attempt without retry or permission changes.
 
-Keep the app closed. No setters, crop, publish/stop-publish/property calls,
-priority changes, subscriptions, input changes, service restarts or generic
-privileged IPC. Listing may activate the dynamic IWC provider; it changes no
-requested publication content/geometry but is not zero-effect process inspection.
+**Two sources:** only after the single-source result and independent allocation
+path justify it, connect different moving sources to HDMI 1 and HDMI 2. Extend
+to two distinct owned exports/pipelines and fixed rectangles. Both must advance
+at the same time without either freezing, replacing or switching the other;
+release one and check the other continues, then confirm restoration. Two opens,
+two window IDs or successful service replies cannot pass this gate.
 
-A pass establishes real-worker read integration, current permission predictions
-and one baseline sample. Actual setter admission/application, current crop/
-priority, `logicalFullViewMatched`, applied ordering and hardware restoration
-remain unknown/not tested. Published app coordinates are not panel/signal pixels.
-Whole-SSH/app survival and simultaneous HDMI remain unproved. The geometry gate
-stays closed; use the [recovery review](../research/c1-iwc-gates-after-lifecycle.md)
-for those unresolved requirements. No runnable command exists for this new mode yet.
+Only after that proof add move/resize, PiP/split layouts, remote navigation and
+audio selection. Retain the existing cleanup controls and evidence; do not claim
+the fake-worker supervisor has tested HDMI recovery.
