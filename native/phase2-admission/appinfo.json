@@ -1,0 +1,10 @@
+{
+  "id": "io.github.tpapaz.multiview.admission",
+  "version": "0.1.2",
+  "vendor": "tpapaz",
+  "type": "native",
+  "main": "multiview-admission",
+  "title": "MultiView IWC Admission",
+  "icon": "icon.png",
+  "requiredACG": []
+}

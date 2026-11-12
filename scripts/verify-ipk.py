@@ -9,6 +9,7 @@ import tarfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--admission', action='store_true', help='verify the read-only IWC admission package')
 parser.add_argument('--endurance', action='store_true', help='verify the bounded main/sub endurance package')
 parser.add_argument('--sinks', action='store_true', help='verify the SMP main/sub sink test')
 parser.add_argument('--mixed', action='store_true', help='verify the Phase 1 SMP + NDL package')
@@ -16,7 +17,15 @@ parser.add_argument('--ndl', action='store_true', help='verify the Phase 1 NDL t
 parser.add_argument('packages', nargs='+')
 args = parser.parse_args()
 
-if args.ndl or args.mixed or args.sinks or args.endurance:
+if args.admission:
+    source = ROOT / 'native/phase2-admission'
+    executable = 'multiview-admission'
+    files = {
+        'appinfo.json': source / 'appinfo.json',
+        'icon.png': ROOT / 'apps/probe-ui/icon.png',
+        executable: ROOT / 'build/phase-2/admission-arm' / executable,
+    }
+elif args.ndl or args.mixed or args.sinks or args.endurance:
     target = 'endurance' if args.endurance else 'sinks' if args.sinks else 'mixed' if args.mixed else 'ndl'
     source = ROOT / ('native/phase1-' + target)
     stage = ROOT / ('build/phase-1/package-' + target)
@@ -36,7 +45,7 @@ else:
 
 manifest = json.loads((source / 'appinfo.json').read_bytes())
 app = manifest['id']
-architecture = 'arm' if args.ndl or args.mixed or args.sinks or args.endurance else 'all'
+architecture = 'arm' if args.admission or args.ndl or args.mixed or args.sinks or args.endurance else 'all'
 
 def require(condition, message):
     if not condition:
@@ -65,6 +74,9 @@ for filename in args.packages:
                     data = archive.extractfile(entry).read()
                     if member == 'data.tar.gz' and p.name in files:
                         require(data == files[p.name].read_bytes(), 'App content mismatch: ' + p.name)
+                    if args.admission and member == 'data.tar.gz' and p.name == 'packageinfo.json':
+                        require(json.loads(data) == {'id': app, 'version': manifest['version'], 'app': app},
+                                'Unexpected generated admission package metadata')
                     if member == 'control.tar.gz' and entry.name == 'control':
                         fields = data.decode().splitlines()
                         require(f'Package: {app}' in fields and f"Version: {manifest['version']}" in fields

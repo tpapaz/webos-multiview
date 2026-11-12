@@ -1,9 +1,11 @@
 # Prior-art audit
 
+> Research/tool record. [Current status](../../STATUS.md) · [Documentation index](../README.md). Earlier next steps and untested labels describe that stage; use Status and later device records for current results.
+
 Historical upstream audit, retained for provenance and licensing boundaries.
 For the next HDMI task, begin with the [handoff](../handoff/hdmi-next-chat.md)
 and [current scope decision](../decisions/0003-close-idle-work-resume-hdmi.md).
-Current C1 results and direction are in the [Phase 1 device record](../device-tests/lg-c1-phase-1.md),
+Current C1 results and direction are in the [Phase 1 device record](../device-tests/c1-journal.md#phase-1),
 [firmware/resource investigation](c1-smp-ndl-resource-path.md) and
 [main/sub decision](../decisions/0002-main-sub-validation.md).
 
@@ -29,7 +31,7 @@ that is not a proof of hardware impossibility.
 | [angelcode1/webos-HomeBack](https://github.com/angelcode1/webos-HomeBack/tree/27e5f4543a39a50484a3f184fe36a92cea565368) | `27e5f4543a39a50484a3f184fe36a92cea565368` | GPL-2.0-only lineage stated in README; native hooks have separate GPL-3.0 obligations. Do not copy application/native code into an unreviewed license combination. |
 | [iDaddyCz/ha-lg-webos-pip](https://github.com/iDaddyCz/ha-lg-webos-pip/tree/c9e22766b7e045810cda7aafe63f4f732d0f5f18) | `c9e22766b7e045810cda7aafe63f4f732d0f5f18` | MIT (LICENSE); preserve notice if reused. |
 | [webosbrew/webosbrew.org](https://github.com/webosbrew/webosbrew.org/tree/fc4b8aaa23cbb4784f8eabc540a778d44965b3ab) | `fc4b8aaa23cbb4784f8eabc540a778d44965b3ab` | Documentation research only; no redistribution/license conclusion. |
-| [webosbrew/webos-userland](https://github.com/webosbrew/webos-userland/tree/00a5f8721e15d5c10030b99b2f3e73e0c527bcce) | `00a5f8721e15d5c10030b99b2f3e73e0c527bcce` | Unlicense (LICENSE); ABI declarations remain reverse-engineered, not vendor guarantees. |
+| [webosbrew/webos-userland](https://github.com/webosbrew/webos-userland/tree/00a5f8721e15d5c10030b99b2f3e73e0c527bcce) | `00a5f8721e15d5c10030b99b2f3e73e0c527bcce` | Repository LICENSE is Unlicense; individual headers can retain vendor restrictions. The DILE VT header is declaration research only; see the [C1 map's licensing note](c1-hdmi-interface-map.md#pinned-upstream-boundaries-and-licensing). ABI declarations are not vendor guarantees. |
 
 ## SMP, NDL, video-plane ownership and ABI
 
@@ -145,7 +147,7 @@ that is not a proof of hardware impossibility.
   one-shot service request rather than bundling a library that may query more.
   A small original `PalmServiceBridge` adapter performed the metadata query
   on firmware 03.53.45. In-flight cancellation on the C1 remains **unknown**.
-  [Phase 0 C1 result](../device-tests/lg-c1-phase-0.md)
+  [Phase 0 C1 result](../device-tests/c1-journal.md#phase-0)
 - **verified/documented:** LG's [ACG guide](https://webostv.developer.lge.com/develop/guides/acg-guide)
   maps `getSystemInfo` to `systemconfig.query` on current ACG platforms. The
   manifest declares precisely that group. This contemporary declaration is not
@@ -156,6 +158,30 @@ that is not a proof of hardware impossibility.
   No public API inspected here documents acquiring concurrent independent HDMI
   frames or an exclusive-input bypass for C1. webOS OSE and commercial Signage
   APIs must not be treated as consumer C1 contracts.
+
+## SDK boundary for the C1 investigation
+
+Checked 2026-11-11 after the owner's SDK question. LG's public
+[TV SDK tools](https://webostv.developer.lge.com/develop/tools/sdk-introduction)
+cover app development, packaging, installation and debugging. Its
+[public TV Luna API inventory](https://webostv.developer.lge.com/develop/references/luna-service-introduction)
+does not list IWC or a simultaneous-HDMI acquisition API. This is a bounded
+documentation finding, not proof that no partner/private SDK exists.
+
+LG also supplies an [OSE native development kit](https://www.webosose.org/docs/guides/setup/setting-up-native-development-kit/)
+and LS2 library documentation. These are useful reusable foundations, but LG
+explicitly does not guarantee [OSE APIs on retail TV products](https://www.webosose.org/docs/reference/).
+The [OSE bus query documentation](https://www.webosose.org/docs/reference/ls2-api/com-webos-service-bus/#iscallallowed)
+corroborates our admission-query route; the exact C1 binary verifies availability.
+Reuse documented LS2 mechanics rather than reconstructing them unnecessarily.
+
+The project already uses the community Linux ARM SDK recorded in the build
+guide. [Homebrew native guidance](https://www.webosbrew.org/pages/native-development.html)
+provides toolchain and reverse-engineered API leads; compilation support alone
+does not supply LG's proprietary HDMI ownership/recovery contract. LG's newer
+[Flutter SDK announcement](https://webostv.developer.lge.com/news/flutter-for-webos-tv-is-now-available-for-developers)
+requires webOS TV 26 Re:New or later, outside the recorded C1 webOS 6.5.3 runtime.
+None of these sources establishes independently live HDMI 1 + HDMI 2 on C1.
 
 ## Physical-input research gaps
 
@@ -169,4 +195,4 @@ that is not a proof of hardware impossibility.
 | Built-in Multi-View on C1 | **Unknown** | Exact model and firmware evidence. The Homebrew guide covers some webOS 7+ models. |
 
 Seek C1-specific documentation for input ownership and video resource policy.
-Use observed interfaces and bounded probes. [C1 playback evidence](../device-tests/lg-c1-phase-1.md)
+Use observed interfaces and bounded probes. [C1 playback evidence](../device-tests/c1-journal.md#phase-1)

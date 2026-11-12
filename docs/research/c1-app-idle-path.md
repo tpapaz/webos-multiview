@@ -1,5 +1,7 @@
 # C1 app-scoped idle path after the 30-minute run
 
+> Research/tool record. [Current status](../../STATUS.md) · [Documentation index](../README.md). Earlier next steps and untested labels describe that stage; use Status and later device records for current results.
+
 Historical idle investigation, **closed for the current scope** by
 [decision 0003](../decisions/0003-close-idle-work-resume-hdmi.md).
 Effective veto remains unknown. Earlier plans below are retained as history;
@@ -15,7 +17,7 @@ IPK build, active idle-policy calls, service restart or configuration change.
 The 0.1.1 run reached 1800.033 s of overlap, then lost focus 731 ms after
 B release. Its full recovery gate still failed; the owner confirmed live
 clocks at spot checks and spontaneous disappearance.
-[Device measurements](../device-tests/lg-c1-phase-1.md#endurance-011-30-minute-run--overlap-reached-recovery-interrupted)
+[Device measurements](../device-tests/archive/lg-c1-phase-1.md#endurance-011-30-minute-run--overlap-reached-recovery-interrupted)
 
 ## Findings
 

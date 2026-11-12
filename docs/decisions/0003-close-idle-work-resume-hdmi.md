@@ -28,7 +28,7 @@ HDMI 1 + HDMI 2 on the TV's hardware, not a local/network playback product.
 | Dual HDMI | **Unknown.** Only one HDMI source is currently connected. |
 
 Detailed measurements and provenance remain in the
-[Phase 1 device journal](../device-tests/lg-c1-phase-1.md),
+[Phase 1 device journal](../device-tests/c1-journal.md#phase-1),
 [native idle contract](../research/c1-native-screensaver-interface.md) and
 [resource-path analysis](../research/c1-smp-ndl-resource-path.md).
 Original reports, firmware copies and all control IPKs remain local under

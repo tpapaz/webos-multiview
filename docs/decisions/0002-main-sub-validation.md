@@ -11,7 +11,7 @@ The C1 03.53.45 staged tests establish a short, video-only combination:
 SMP A requests `main_video`, SMP B requests `sub_video`. The owner saw both
 clocks advance together, B move/shrink and A continue after B release.
 Attributed logs show distinct decoder grants and MAIN_SCALER for A versus
-SUB_SCALER for B. [Device evidence](../device-tests/lg-c1-phase-1.md)
+SUB_SCALER for B. [Device evidence](../device-tests/c1-journal.md#phase-1)
 
 Earlier default-main SMP and mixed SMP/NDL tests failed because B's separate
 presentation registration reclaimed MAIN_SCALER. B holding a media-pipeline

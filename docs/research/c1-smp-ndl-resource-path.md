@@ -1,5 +1,7 @@
 # C1 SMP / NDL resource path and main/sub selection
 
+> Research/tool record. [Current status](../../STATUS.md) · [Documentation index](../README.md). Earlier next steps and untested labels describe that stage; use Status and later device records for current results.
+
 Retained Phase 1 evidence. Current task: [HDMI discovery handoff](../handoff/hdmi-next-chat.md).
 Screensaver follow-ups are [closed for this scope](../decisions/0003-close-idle-work-resume-hdmi.md);
 historical next-test statements below are not current instructions.
@@ -42,7 +44,7 @@ The 30-minute run subsequently reached its overlap target but lost focus
 launch/foreground is recorded at this boundary. The full diagnostic failed;
 effective app-scoped idle handling at this transition needs investigation.
 [Current decision](../decisions/0002-main-sub-validation.md),
-[device evidence](../device-tests/lg-c1-phase-1.md) and
+[device evidence](../device-tests/c1-journal.md#phase-1) and
 [run procedure](../build.md#retained-short-veto-control).
 
 Review plan: trace NDL Load into SMP, inspect firmware resource acquisition
@@ -56,7 +58,7 @@ SMP/NDL runs all first show sustained A callback/PTS starvation at B Load.
 In the mixed run, A holds at 6.866 s before B feeding starts. Init and the
 explicit foreground stage leave A progressing. SetArea occurs after the
 stall. Releasing B restores A callbacks. The owner saw A, black, B, A and
-never two visible clocks together. See [device record](../device-tests/lg-c1-phase-1.md)
+never two visible clocks together. See [device record](../device-tests/c1-journal.md#phase-1)
 and `build/reports/c1-phase1-mixed-0.1.0.json`, ELF
 `a719fd64e879ef093bcde95b4e1639badbb2a83936287ff24e367b8aeb432a32`.
 
@@ -160,7 +162,7 @@ near both boundaries, plus policy and disconnect categories. This makes
 presentation-resource contention a more specific candidate at collection
 time. The later retained-log correlation below resolved per-player ownership
 and the policy handover. See the
-[Load-only device record](../device-tests/lg-c1-phase-1.md#load-only-resource-experiment--c1-run-2026-11-11)
+[Load-only device record](../device-tests/archive/lg-c1-phase-1.md#load-only-resource-experiment--c1-run-2026-11-11)
 and `build/reports/c1-phase1-mixed-load-only-0.1.0.json` for the trace,
 redacted log projections, acceptance checks and owner observation.
 
@@ -371,7 +373,7 @@ handover. Both players had separate decoder allocations and clean teardown.
 This verifies the short local-video main/sub combination on the specified
 C1/firmware. It does not establish long-run stability, audio ownership or
 physical HDMI concurrency. Detailed measurements and owner observation:
-[full staged device result](../device-tests/lg-c1-phase-1.md#mainsub-010-full-staged-feedplay--visible-overlap-verified),
+[full staged device result](../device-tests/archive/lg-c1-phase-1.md#mainsub-010-full-staged-feedplay--visible-overlap-verified),
 `build/reports/c1-phase1-sinks-stages-0.1.0.json` and its redacted resource
 attribution companion. No new IPK was needed after the 0.1.0 build.
 
@@ -382,7 +384,7 @@ The first five-minute 0.1.0 attempt had progressing A/B callbacks and PTS,
 one B fixture wrap and then native cancellation. Retained logs show screensaver
 launching/visibility near that boundary; exact SDL cancellation cause was
 not recorded. This is a separate lifecycle lead, not another measured
-MAIN_SCALER takeover. [Attempt evidence](../device-tests/lg-c1-phase-1.md#five-minute-c1-attempt--interrupted-not-a-duration-pass)
+MAIN_SCALER takeover. [Attempt evidence](../device-tests/archive/lg-c1-phase-1.md#five-minute-c1-attempt--interrupted-not-a-duration-pass)
 
 **Verified/documentation:** LG offers app-specific
 `screenSaverProperties: {"preferredType": 2}`, extending idle time to
@@ -436,7 +438,7 @@ This verifies the combined setup's bounded five-minute result, with those
 visual limits; it does not identify which control prevented the prior
 screensaver interruption or prove continuous resource ownership. The next
 30-minute run requires separate evidence.
-[Complete retry measurements](../device-tests/lg-c1-phase-1.md#endurance-011-five-minute-retry--telemetry-pass-with-owner-spot-checks)
+[Complete retry measurements](../device-tests/archive/lg-c1-phase-1.md#endurance-011-five-minute-retry--telemetry-pass-with-owner-spot-checks)
 
 The later 30-minute run reached 1800.033 s of overlap and 60 A / 120 B
 feed loops, with zero bad sampled progress intervals. B unloaded at the
@@ -459,7 +461,7 @@ or change TV screen-protection policy.
 The owner subsequently confirmed both clocks advancing together at spot
 checks and that the app disappeared by itself, without intentional input.
 Continuous visual coverage and visible A-only recovery remain unknown.
-[Long-run measurements and limits](../device-tests/lg-c1-phase-1.md#endurance-011-30-minute-run--overlap-reached-recovery-interrupted)
+[Long-run measurements and limits](../device-tests/archive/lg-c1-phase-1.md#endurance-011-30-minute-run--overlap-reached-recovery-interrupted)
 
 The later [app-scoped idle trace](c1-app-idle-path.md) narrows that lead:
 the matched active request precedes B unload by about two seconds, its

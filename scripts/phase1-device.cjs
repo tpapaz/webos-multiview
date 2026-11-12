@@ -3,7 +3,8 @@ const path = require('node:path');
 const {createRequire} = require('node:module');
 const {Client} = createRequire(require.resolve('@webos-tools/cli/package.json'))('ssh2');
 
-function connect(alias) {
+function connect(alias, {signal} = {}) {
+    if (signal?.aborted) return Promise.reject(new Error('TV SSH connection cancelled'));
     const profiles = JSON.parse(fs.readFileSync(path.join(process.env.APPDATA, '.webos/ose/novacom-devices.json')));
     const candidates = profiles.filter(profile => profile.username === 'root' && profile.privateKey?.openSsh &&
         (!alias || profile.name === alias));
@@ -11,8 +12,15 @@ function connect(alias) {
     const profile = candidates[0];
     const client = new Client();
     return new Promise((resolve, reject) => {
-        client.once('ready', () => resolve(client));
-        client.on('error', () => reject(new Error('TV SSH connection failed')));
+        const cancel = () => {
+            client.destroy();
+            reject(new Error('TV SSH connection cancelled'));
+        };
+        signal?.addEventListener('abort', cancel, {once: true});
+        const detach = () => signal?.removeEventListener('abort', cancel);
+        client.once('ready', () => { detach(); resolve(client); });
+        client.on('error', () => { detach(); reject(new Error('TV SSH connection failed')); });
+        client.once('close', detach);
         client.connect({host: profile.host, port: profile.port, username: profile.username,
             privateKey: fs.readFileSync(path.join(process.env.USERPROFILE, '.ssh', profile.privateKey.openSsh)),
             passphrase: profile.passphrase, readyTimeout: 10000});

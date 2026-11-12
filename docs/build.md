@@ -1,5 +1,7 @@
 # Build, inspect and install
 
+> [Current status](../STATUS.md) · [Documentation index](README.md). This is a procedure/reference guide; device commands below are not authorization to repeat an experiment.
+
 ## Passive probe and host checks
 
 Builds and package artifacts are produced locally. This repository has no
@@ -41,7 +43,7 @@ and cleanup passed with owner clocks. The separate 60.022-second request test
 received no request and was inconclusive. Effective veto is still unknown.
 No reinstall, rerun or longer idle experiment is needed for HDMI discovery.
 
-The [device journal](device-tests/lg-c1-phase-1.md) holds exact build hashes,
+The [archived detailed journal](device-tests/archive/lg-c1-phase-1.md) holds exact build hashes,
 run results and the older Endurance/mixed/SMP history. Keep every control
 IPK and local evidence. All Endurance versions share one application ID,
 so installing one replaces that installed control; SMP, NDL, mixed and staged
@@ -82,7 +84,7 @@ The SMP build uses `native/phase1` with output `build/phase-1/arm` and
 | Native NDL v2 solo | `io.github.tpapaz.multiview.ndl_0.1.1_arm.ipk` | `node scripts/run-phase1-ndl-ssh.cjs` |
 
 Use an authorized local SSH profile. Pass its alias to the runner if
-several root profiles are configured. [C1 playback record](device-tests/lg-c1-phase-1.md)
+several root profiles are configured. [C1 playback record](device-tests/c1-journal.md#phase-1)
 
 ### Retained short veto control
 
@@ -210,7 +212,7 @@ wsl -d Ubuntu --exec "$repo/build/phase-1/veto-error-test"
 ```
 
 The ABI check reads fixed firmware files and never starts playback. See
-[build identity and completed request result](device-tests/lg-c1-phase-1.md#native-veto-013--request-probe-inconclusive-within-cap).
+[build identity and completed request result](device-tests/archive/lg-c1-phase-1.md#native-veto-013--request-probe-inconclusive-within-cap).
 This experiment is complete. Continue with the [HDMI handoff](handoff/hdmi-next-chat.md);
 additional idle and local-clip endurance work is deferred.
 
@@ -410,7 +412,7 @@ Phase 1 ARM packages use the TV's own shared libraries.
 ## Human-operated web package installation
 
 Use Dev Manager or the commands below with your authorized local alias
-in place of `c1`. [Passive test procedure](device-tests/lg-c1-phase-0.md#repeat-the-test)
+in place of `c1`. [Passive test procedure](device-tests/archive/lg-c1-phase-0.md#repeat-the-test)
 
 ```sh
 npx --no-install ares-install -d c1 dist/io.github.tpapaz.multiview.probe_0.1.0_all.ipk

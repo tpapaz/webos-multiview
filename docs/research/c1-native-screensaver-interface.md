@@ -1,5 +1,7 @@
 # C1 native screensaver request veto and cleanup
 
+> Research/tool record. [Current status](../../STATUS.md) · [Documentation index](../README.md). Earlier next steps and untested labels describe that stage; use Status and later device records for current results.
+
 **Closed for the current scope; effective inhibition unverified.** See
 [decision 0003](../decisions/0003-close-idle-work-resume-hdmi.md). The source,
 ABI and experiment history below are retained, with no further retry planned.
@@ -226,7 +228,7 @@ submission returned false. The handle closed and controlled exit succeeded;
 the owner saw LG Home. No request/reply or live playback occurred.
 CPU/temp sampling, identity checks, cancellation, resource/display logs and
 separate owner observations remain in the SSH controller.
-[Build identity and pending tests](../device-tests/lg-c1-phase-1.md#native-veto-probe-012--built-not-tv-tested).
+[Build identity and pending tests](../device-tests/archive/lg-c1-phase-1.md#native-veto-probe-012--built-not-tv-tested).
 Neither a service success reply nor telemetry alone certifies effective veto.
 Skip request mode; additional idle work is deferred in favor of read-only
 HDMI path research.

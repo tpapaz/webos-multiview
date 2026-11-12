@@ -1,13 +1,22 @@
 # Contributor Instructions — webOS MultiView
 
-Read `ROADMAP.md` and the current research and decision records before making changes.
+Read `STATUS.md` first for the current result and single next task, then
+`ROADMAP.md` and the linked research/decision records relevant to the change.
+Use `docs/README.md` as the documentation index. Historical “next steps” in dated
+records do not override `STATUS.md`; do not append chronological updates to the
+roadmap or active handoff.
+Keep device testing in `docs/device-tests/c1-journal.md` (concise actual outcomes)
+and `docs/device-tests/current-plan.md` (one current procedure). Do not create a
+Markdown file per run. Preserve original reports/hashes; archive exceptional
+historical detail and link to it only when needed.
 
 Current direction: **Phase 2 read-only HDMI discovery**. Screensaver work is
 closed for this scope, with effective inhibition unknown; do not reopen it
 or the separate Glasshouse/Home topic without owner direction. Phase 1 is
 partially validated, not complete. Read `docs/handoff/hdmi-next-chat.md`,
-`docs/decisions/0003-close-idle-work-resume-hdmi.md`, the Phase 1 device
-record and build guide before preparing another experiment. Preserve controls
+`docs/decisions/0003-close-idle-work-resume-hdmi.md`, the C1 journal, current test
+plan and build guide before preparing another experiment. Read archived Phase 1
+detail when the particular control is relevant. Preserve controls
 and local evidence. Build locally in the existing Linux SDK under WSL; no
 GitHub Actions (including on push), automatic commits or pushes.
 

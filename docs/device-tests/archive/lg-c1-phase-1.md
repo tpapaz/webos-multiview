@@ -1,7 +1,9 @@
 # LG C1 Phase 1 — Local video playback
 
+> **Archived detail; no test is authorized here.** [Compact C1 journal](../c1-journal.md) · [Current test plan](../current-plan.md). Original stage-by-stage findings, commands and hashes are retained below; old next steps are historical.
+
 Reference device: LG OLED C1, firmware 03.53.45, webOS SDK 6.5.3.
-The [build guide](../build.md#phase-1-local-clip-packages) lists the IPKs
+The [build guide](../../build.md#phase-1-local-clip-packages) lists the IPKs
 and SSH commands. Tests use two synthetic H.264 clips at 640×360 and 30 fps
 with visible clocks. A originally ran 12 s and was extended to 30 s for
 staging. B runs 15 s. The packaged tests are video-only. Audio focus and
@@ -25,8 +27,8 @@ No further idle or endurance run is scheduled. Phase 1 audio, wider geometry,
 final-build repeatability and the interrupted long recovery remain deferred.
 
 Next is Phase 2 read-only HDMI discovery, with only one connected source.
-Use the [handoff](../handoff/hdmi-next-chat.md) and
-[scope decision](../decisions/0003-close-idle-work-resume-hdmi.md).
+Use the [handoff](../../handoff/hdmi-next-chat.md) and
+[scope decision](../../decisions/0003-close-idle-work-resume-hdmi.md).
 The journal below preserves actual runs, builds, hashes and human observations.
 Earlier “next test” statements are historical, not renewed instructions.
 
@@ -148,7 +150,7 @@ The mixed package starts A, separately stages NDL Init, foreground, Load,
 SetArea and feeding, then releases B and measures A recovery. The same
 video-only fixtures and bounded app-scoped controller are used. Foreground
 `-1` is recorded but Load continues, as in the solo control. Build and
-protocol details live in the [build guide](../build.md#mixed-smp--ndl-build-and-test).
+protocol details live in the [build guide](../../build.md#mixed-smp--ndl-build-and-test).
 
 ### C1 staged run, 2026-11-11
 
@@ -189,7 +191,7 @@ support. The return of A is visually confirmed; no additional clock timing
 claim is inferred from that observation.
 
 No simulator test was performed. Resource-policy cause, audio focus and
-simultaneous HDMI remain **unknown**. The [shared-path review](../research/c1-smp-ndl-resource-path.md) recommends
+simultaneous HDMI remain **unknown**. The [shared-path review](../../research/c1-smp-ndl-resource-path.md) recommends
 a bounded resource/presentation observation during B Load, followed by
 policy-callback instrumentation only if current logs are insufficient.
 
@@ -210,7 +212,7 @@ attribution of unrelated system events. A 2.2 s read-only collector preflight
 on the C1 examined eight new lines, projected two entries, and closed without
 collector error. Journal JSON queries yielded no entries; the readable syslog
 is the capture source. BusyBox requires `timeout -t 50`; that syntax was
-verified in the successful preflight. The owner subsequently opened the menu and authorized the run below. [Procedure](../build.md#load-only-resource-experiment-with-installed-mixed-010).
+verified in the successful preflight. The owner subsequently opened the menu and authorized the run below. [Procedure](../../build.md#load-only-resource-experiment-with-installed-mixed-010).
 
 The SSH command `node scripts/run-phase1-mixed-ssh.cjs --load-only` completed
 with exit code 0 against the installed mixed 0.1.0 ELF hash
@@ -270,11 +272,11 @@ continued decode execution remains unknown. This narrows the measured
 failure to contention in the main presentation scaler path.
 
 Evidence, hashes and decompressed source line references:
-[retained-log attribution](../research/c1-smp-ndl-resource-path.md#retained-log-attribution--main_scaler-handover-verified).
+[retained-log attribution](../../research/c1-smp-ndl-resource-path.md#retained-log-attribution--main_scaler-handover-verified).
 The redacted 33-record evidence report is
 `build/reports/c1-phase1-load-only-attribution-0.1.0.json` (schema 1).
 No playback repeat, IPK build or TV configuration change was performed.
-The [sink-selection review](../research/c1-smp-ndl-resource-path.md#why-main_scaler-was-selected-and-the-independent-sink-candidate)
+The [sink-selection review](../../research/c1-smp-ndl-resource-path.md#why-main_scaler-was-selected-and-the-independent-sink-candidate)
 then identified the SMP Load-time selector tested below.
 
 ## Two-SMP main/sub 0.1.0 — TV-tested control
@@ -285,7 +287,7 @@ local WSL CMake/Ninja and the 2026.08 ARM SDK. Package verification passed
 exact payload/bytes, metadata, mode 0755 and absence of extra scripts/links.
 The fresh firmware ABI check matched 81 imports and six DT_NEEDED libraries.
 Host acceptance tests, lint and shared-session regression compilation passed.
-No simulator test was performed. [Reproduction](../build.md#two-smp-mainsub-package)
+No simulator test was performed. [Reproduction](../../build.md#two-smp-mainsub-package)
 
 IPK SHA-256:
 `c96c41242715c4ea8b1c3786de0d9ff36074c966e6ef1d7dd75ec81158cce0ad`.
@@ -451,7 +453,7 @@ exact package payload/metadata/executable checks; host JS acceptance tests,
 lint, and C++ progress-watch tests. FFmpeg decoded two concatenated copies
 of each fixture without errors; FFprobe counted 1800 A and 900 B frames.
 That proves host bitstream wrap validity, not TV loop playback.
-[Exact build, host checks and gated SSH commands](../build.md#retained-short-veto-control)
+[Exact build, host checks and gated SSH commands](../../build.md#retained-short-veto-control)
 
 Reports use `schemaVersion: 1` with per-cycle traces, progress/loop/duration
 assessment, cleanup and process-exit confirmation, separately unknown visual
@@ -635,7 +637,7 @@ in appinfo.json; allow SDL saver state at the menu, request inhibition only
 during a bounded run, restore the prior state after player cleanup; log each
 exit cause separately; retain CPU/temperature sampling, identity checks,
 watchdogs, cancellation and normal teardown. Do not change global TV policy.
-[API investigation and caveats](../research/c1-smp-ndl-resource-path.md#app-scoped-screensaver-review-and-011-retry)
+[API investigation and caveats](../../research/c1-smp-ndl-resource-path.md#app-scoped-screensaver-review-and-011-retry)
 
 New CSV events are `screensaver_policy`, `screensaver_inhibit`,
 `screensaver_restore`, `exit_event` and `app_exit`. Closed exit codes identify
@@ -903,7 +905,7 @@ lifetime are not yet established. No new IPK or playback was performed,
 and the full 30-minute diagnostic remains failed. CPU/temp sampling and
 controls were not changed.
 
-[Complete idle-path review, hashes, addresses and limits](../research/c1-app-idle-path.md).
+[Complete idle-path review, hashes, addresses and limits](../../research/c1-app-idle-path.md).
 Evidence: `build/reports/c1-phase1-idle-path-review-0.1.1.json`,
 `c1-phase1-idle-attribution-0.1.1.json` and
 `c1-phase1-sdl-idle-static-0.1.1.json`. Assertions checked request matching,
@@ -934,7 +936,7 @@ accepted NACKs, focus retention and normal idle behavior after release remain
 occurred. The failed 30-minute recovery gate is unchanged. Next is a bounded
 app-owned permission/veto/cleanup probe, keeping the registration through
 B release and A recovery and separating expiry from teardown.
-[Contract, exact hashes/addresses and next experiment](../research/c1-native-screensaver-interface.md).
+[Contract, exact hashes/addresses and next experiment](../../research/c1-native-screensaver-interface.md).
 Evidence: `build/reports/c1-native-screensaver-interface.json`, including
 references to copied firmware, native-client and cleanup ledgers.
 
@@ -1017,7 +1019,7 @@ LS2 body then exposed a pre-send privilege check for non-null application IDs
 (`0xda5a–0xda6a`). The app's anonymous public connection did not establish
 that privilege; this is the leading **candidate** cause, not a runtime-proven
 branch. The omitted `LSError` detail prevents certainty.
-[Caller restriction evidence](../research/c1-native-screensaver-interface.md#short-implementation-follow-up-012).
+[Caller restriction evidence](../../research/c1-native-screensaver-interface.md#short-implementation-follow-up-012).
 Do not claim a service-level rejection or an applied veto.
 
 CPU evidence is menu-only: one 2.109-second interval, system busy 11.37%,

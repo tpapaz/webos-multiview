@@ -1,7 +1,9 @@
 # LG C1 Phase 0 — Passive probe
 
+> **Archived detail; no test is authorized here.** [Compact C1 journal](../c1-journal.md) · [Current test plan](../current-plan.md). Original stage-by-stage findings, commands and hashes are retained below; old next steps are historical.
+
 Completed historical phase. Continue with the [Phase 1 record](lg-c1-phase-1.md)
-and [main/sub validation decision](../decisions/0002-main-sub-validation.md).
+and [main/sub validation decision](../../decisions/0002-main-sub-validation.md).
 The passive results below retain their original scope.
 
 ## C1 results
@@ -27,7 +29,7 @@ worked. All physical-input capability conclusions remain unknown.
 
 ## Repeat the test
 
-1. Build or install the passive IPK using the [build guide](../build.md).
+1. Build or install the passive IPK using the [build guide](../../build.md).
    Open it in Dev Manager and verify that the initial UI responds to the
    remote.
 2. Press **Read device metadata**. Expect a result within three seconds.
@@ -39,7 +41,7 @@ worked. All physical-input capability conclusions remain unknown.
    and validate it with `python3 scripts/validate-report.py c1-web.report.json`.
 4. Close the app, return to normal viewing and remove it through Dev
    Manager. Record the package hash, firmware and observed results.
-   [Safety and privacy](../safety.md)
+   [Safety and privacy](../../safety.md)
 
 The separate native inventory CLI can be tested after an ARM build and ABI
 review against the exact firmware. Run it in the foreground from a

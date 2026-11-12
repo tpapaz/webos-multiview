@@ -1,5 +1,7 @@
 # Diagnostic scope, privacy and recovery
 
+> [Current status](../STATUS.md) · [Documentation index](README.md). These operating restrictions remain in force across research phases.
+
 This build performs no firmware changes, flash/device-node writes, kernel-module
 loads, protection bypass, persistent service/config changes, hooks/injection,
 critical service restarts, HDMI switching or active video capture. Installing an
@@ -38,7 +40,7 @@ events and counts to an unlinked process-local file. The local SSH controller
 checks the installed manifest and running executable identity before signaling
 the test app. The browser controller checks the specific Inspector target over
 a temporary loopback tunnel. Both use the authorized local profile and save
-reports on the development PC. [Phase 1 protocol](device-tests/lg-c1-phase-1.md)
+reports on the development PC. [Archived Phase 1 protocol](device-tests/archive/lg-c1-phase-1.md)
 
 The retained 0.1.3 veto diagnostic has only short modes: acknowledged
 registration and eight-second dual playback plus A recovery, or a real-request
