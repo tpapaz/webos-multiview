@@ -1,0 +1,13 @@
+{
+  "id": "io.github.tpapaz.multiview.hdmiwindow.utp-policy",
+  "version": "0.1.0",
+  "apiPermissionFiles": [
+    "/var/luna-service2/multiview-hdmi-window/hdmiwindow-utp.api.json"
+  ],
+  "clientPermissionFiles": [
+    "/var/luna-service2/multiview-hdmi-window/hdmiwindow-utp.client.json"
+  ],
+  "groupsFiles": [
+    "/var/luna-service2/multiview-hdmi-window/hdmiwindow-utp.groups.json"
+  ]
+}

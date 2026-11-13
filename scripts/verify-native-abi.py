@@ -5,18 +5,13 @@ import re
 import struct
 import subprocess
 import sys
+from native_abi_versions import table, version_providers, missing_imports
 
 binary = sys.argv[1]
 firmware = json.load(sys.stdin)
 
 def readelf(file, pass_fds=()):
     return subprocess.check_output(['readelf', '-W', '-h', '-l', '-d', '-V', '--dyn-syms', file], text=True, pass_fds=pass_fds)
-
-def table(text):
-    for line in text.splitlines():
-        match = re.match(r'^\s*\d+:\s+[0-9a-f]+\s+\d+\s+\S+\s+(GLOBAL|WEAK)\s+(DEFAULT|PROTECTED)\s+(\S+)\s+(\S+)', line)
-        if match:
-            yield match.groups()
 
 out = readelf(binary)
 assert 'Machine:                           ARM' in out and 'ELF32' in out and 'soft-float ABI' in out
@@ -38,24 +33,13 @@ for filename, encoded in firmware.items():
     soname = re.search(r'Library soname: \[([^]]+)\]', entries)
     if filename != interpreter:
         assert soname and soname[1] == os.path.basename(filename), filename
-    exports[os.path.basename(filename)] = {symbol for _, _, index, symbol in table(entries) if index != 'UND'}
+    exports[os.path.basename(filename)] = {symbol for _, _, index, symbol, _ in table(entries) if index != 'UND'}
     print('Checked firmware ARM ELF:', filename)
 assert set(needed) <= exports.keys(), f'missing dependencies: {set(needed) - exports.keys()}'
-providers = {}
-for provider, block in re.findall(r'File: (\S+)\s+Cnt: \d+\n((?:[^\n]*Name: [^\n]+\n)+)', out):
-    for version in re.findall(r'Name: (\S+)', block):
-        providers[version] = provider
-unversioned = {sym.split('@@', 1)[0] for library in needed for sym in exports[library] if '@' not in sym or '@@' in sym}
-required = {symbol for binding, _, index, symbol in table(out) if binding == 'GLOBAL' and index == 'UND'}
-missing = []
-for symbol in sorted(required):
-    name, sep, version = symbol.partition('@')
-    if sep:
-        provider = providers.get(version)
-        if not {symbol, f'{name}@@{version}'} & exports.get(provider, set()):
-            missing.append(f'{symbol} in {provider}')
-    elif name not in unversioned:
-        missing.append(name)
+providers = version_providers(out)
+required = {(symbol, version_index) for binding, _, index, symbol, version_index in table(out)
+            if binding == 'GLOBAL' and index == 'UND'}
+missing = missing_imports(required, providers, exports, needed)
 if missing:
     print('Missing required imports:', ', '.join(missing))
     sys.exit(1)

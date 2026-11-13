@@ -83,7 +83,7 @@ This deliberately advances the lifecycle investigation without transferring
 the old build's 20-cycle result. Repeat 20 cycles on the final candidate
 before claiming repeatability for that binary. The host report records the
 actual prerequisite; it contains no old-version compatibility path or override.
-[Build and run procedure](../build.md#retained-short-veto-control)
+[Build and run procedure](../archive/build-reference-2026-11-12.md#retained-short-veto-control)
 
 Phase 1 remains active until stability, wider independent geometry and audio
 focus are validated. Simultaneous HDMI 1 + HDMI 2 remains the defining

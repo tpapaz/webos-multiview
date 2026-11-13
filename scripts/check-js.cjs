@@ -18,3 +18,9 @@ for (const name of [
     JSON.parse(fs.readFileSync(name, 'utf8'));
 }
 console.log('ES5 syntax and JSON checks passed');
+for (const name of ['scripts/hdmi-window-report.cjs', 'scripts/capture-hdmi-window.cjs',
+    'scripts/hdmi-window-launch.cjs', 'tests/host/hdmi-window-launch.test.cjs',
+    'tests/host/hdmi-window-report.test.cjs']) {
+    acorn.parse(fs.readFileSync(name, 'utf8'), {ecmaVersion: 2022});
+}
+console.log('HDMI capture host syntax checks passed');

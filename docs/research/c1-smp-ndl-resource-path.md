@@ -23,7 +23,7 @@ veto remains unknown: the separate request probe finished in 60.022 s with
 no request, clean unsubscribe/cancel/exit and owner-observed idle menu. A
 screensaver was reported after probe exit; no causal veto claim follows.
 Idle work is deferred; HDMI research is next.
-[Current procedure](../build.md#retained-short-veto-control).
+[Current procedure](../archive/build-reference-2026-11-12.md#retained-short-veto-control).
 
 **Current conclusion:** default-main presentation reclaimed A's MAIN_SCALER.
 Explicit SMP A main_video / B sub_video passed short visible overlap, B
@@ -45,7 +45,7 @@ launch/foreground is recorded at this boundary. The full diagnostic failed;
 effective app-scoped idle handling at this transition needs investigation.
 [Current decision](../decisions/0002-main-sub-validation.md),
 [device evidence](../device-tests/c1-journal.md#phase-1) and
-[run procedure](../build.md#retained-short-veto-control).
+[run procedure](../archive/build-reference-2026-11-12.md#retained-short-veto-control).
 
 Review plan: trace NDL Load into SMP, inspect firmware resource acquisition
 and presentation choices, compare with the stage traces, then choose a

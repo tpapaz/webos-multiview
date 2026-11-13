@@ -8,7 +8,7 @@ Effective veto remains unknown. Earlier plans below are retained as history;
 the next task is [HDMI discovery](../handoff/hdmi-next-chat.md).
 
 Review: 2026-11-11, LG OLED C1, firmware 03.53.45, SDK 6.5.3.
-Subsequent implementation/history: [retained short probe](../build.md#retained-short-veto-control),
+Subsequent implementation/history: [retained short probe](../archive/build-reference-2026-11-12.md#retained-short-veto-control),
 60-second idle wait / 90-second native cap, then return to HDMI research.
 No long retry is scheduled; the analysis below records the earlier run.
 Scope: existing logs and read-only firmware analysis. No playback replay,

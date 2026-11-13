@@ -3,7 +3,7 @@
 > **Archived detail; no test is authorized here.** [Compact C1 journal](../c1-journal.md) · [Current test plan](../current-plan.md). Original stage-by-stage findings, commands and hashes are retained below; old next steps are historical.
 
 Reference device: LG OLED C1, firmware 03.53.45, webOS SDK 6.5.3.
-The [build guide](../../build.md#phase-1-local-clip-packages) lists the IPKs
+The [build guide](../../archive/build-reference-2026-11-12.md#phase-1-local-clip-packages) lists the IPKs
 and SSH commands. Tests use two synthetic H.264 clips at 640×360 and 30 fps
 with visible clocks. A originally ran 12 s and was extended to 30 s for
 staging. B runs 15 s. The packaged tests are video-only. Audio focus and
@@ -150,7 +150,7 @@ The mixed package starts A, separately stages NDL Init, foreground, Load,
 SetArea and feeding, then releases B and measures A recovery. The same
 video-only fixtures and bounded app-scoped controller are used. Foreground
 `-1` is recorded but Load continues, as in the solo control. Build and
-protocol details live in the [build guide](../../build.md#mixed-smp--ndl-build-and-test).
+protocol details live in the [build guide](../../archive/build-reference-2026-11-12.md#mixed-smp--ndl-build-and-test).
 
 ### C1 staged run, 2026-11-11
 
@@ -212,7 +212,7 @@ attribution of unrelated system events. A 2.2 s read-only collector preflight
 on the C1 examined eight new lines, projected two entries, and closed without
 collector error. Journal JSON queries yielded no entries; the readable syslog
 is the capture source. BusyBox requires `timeout -t 50`; that syntax was
-verified in the successful preflight. The owner subsequently opened the menu and authorized the run below. [Procedure](../../build.md#load-only-resource-experiment-with-installed-mixed-010).
+verified in the successful preflight. The owner subsequently opened the menu and authorized the run below. [Procedure](../../archive/build-reference-2026-11-12.md#load-only-resource-experiment-with-installed-mixed-010).
 
 The SSH command `node scripts/run-phase1-mixed-ssh.cjs --load-only` completed
 with exit code 0 against the installed mixed 0.1.0 ELF hash
@@ -287,7 +287,7 @@ local WSL CMake/Ninja and the 2026.08 ARM SDK. Package verification passed
 exact payload/bytes, metadata, mode 0755 and absence of extra scripts/links.
 The fresh firmware ABI check matched 81 imports and six DT_NEEDED libraries.
 Host acceptance tests, lint and shared-session regression compilation passed.
-No simulator test was performed. [Reproduction](../../build.md#two-smp-mainsub-package)
+No simulator test was performed. [Reproduction](../../archive/build-reference-2026-11-12.md#two-smp-mainsub-package)
 
 IPK SHA-256:
 `c96c41242715c4ea8b1c3786de0d9ff36074c966e6ef1d7dd75ec81158cce0ad`.
@@ -453,7 +453,7 @@ exact package payload/metadata/executable checks; host JS acceptance tests,
 lint, and C++ progress-watch tests. FFmpeg decoded two concatenated copies
 of each fixture without errors; FFprobe counted 1800 A and 900 B frames.
 That proves host bitstream wrap validity, not TV loop playback.
-[Exact build, host checks and gated SSH commands](../../build.md#retained-short-veto-control)
+[Exact build, host checks and gated SSH commands](../../archive/build-reference-2026-11-12.md#retained-short-veto-control)
 
 Reports use `schemaVersion: 1` with per-cycle traces, progress/loop/duration
 assessment, cleanup and process-exit confirmation, separately unknown visual

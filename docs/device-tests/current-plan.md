@@ -1,89 +1,191 @@
 # Current C1 HDMI acquisition plan
 
-Updated 2026-11-12. [Status](../../STATUS.md) · [Actual TV results](c1-journal.md) · [Saved acquisition evidence](../research/c1-hdmi-interface-map.md#focused-acquisition-and-owned-window-review--2026-11-12)
+Updated 2026-11-13. [Status](../../STATUS.md) · [Actual results](c1-journal.md) ·
+[Candidate contract](../../native/phase2-hdmi-window/README.md) · [Evidence map](../research/c1-hdmi-interface-map.md)
 
 ## Objective and scope
 
-**One live physical HDMI picture in an application-owned fixed window, followed
-by two independently live HDMI 1 + HDMI 2 pictures.** Product controls follow
-concurrency proof. The three-call IWC preflight is **paused**; no further generic
-supervisor/recovery integration is queued.
+First demonstrate one live physical HDMI-4 picture in our own fixed window,
+then two independently live HDMI 1 + HDMI 2 pictures. Controls follow concurrency.
+**This plan is not TV authorization.** Current work is local only. No installation,
+launch, permission deployment, input switch or power action has occurred for it.
 
-This task uses saved evidence and local builds only. **No TV operation, install,
-launch, permission change or input switch is authorized.** The C1 journal is
-unchanged because there is no new device result.
+Candidate 0.1.3 is locally built/tested/packaged/direct-ABI checked, not installed,
+simulator-tested or TV-tested. Artifact hashes, native behavior/report schema and
+build commands are maintained in the candidate contract and build guide.
+The IWC preflight and generic recovery work are paused; no more firmware is needed.
 
-## What is ready
+## Exact blockers to the first picture run
 
-The [minimal candidate](../../native/phase2-hdmi-window/README.md) is ARM-built,
-focused host acceptance-tested and checked against saved C1 direct executable
-ABI providers. It is **not packaged, simulator-tested, TV-tested or device-ready**.
-The graphics dependency closure/dynamic runtime paths are not fully ABI-checked.
+| Gate | Required validation |
+|---|---|
+| Installed context | Separately authorized installation/readback of exact ELF/manifest, generated pub/prv roles and public client grant; normal launcher, boot-clock metadata and jail report visibility. No direct root launch with assumed graphics context. |
+| Scoped admission and rollback | Verify the static stock-utility route in its actual registered context, both administrative predictions and the fresh-app sequence below. Parser/trust/activation/removal remain untested. |
+| Owner restoration conditions | Owner accepts the contingency below, has physical remote/TV-power access and confirms a safe power procedure without active update/panel maintenance. Otherwise acquisition is **unsafe_to_test**. |
 
-The candidate follows the saved frontend's client contract, with its own fixed
-placement and bounds:
+The static administrative caller and local delayed-launch guard are resolved.
+They are not measured device results. Actual motion/restoration are outcomes of
+the future trial, not a demand for a prior successful HDMI run. A second receiver,
+IWC setter recovery, Phase 1 endurance or deliberate SIGKILL/transport-failure
+experiments are not prerequisites for the first normal-exit attempt.
 
-1. Export an app-owned window; wait for its assigned window ID.
-2. Open `utp.extinputs` with our own app ID, that window ID and source type HDMI.
-3. Select physical port 4 on the returned pipeline, matching the owner's last
-   connected-source observation. This is active acquisition, not passive discovery.
-4. Observe for at most eight seconds in a fixed 960×540 rectangle at (480,270)
-   in a required 1920×1080 app coordinate space.
-5. Stop and close only that returned pipeline; cancel pending calls, unregister
-   the handle and destroy our own exported/SDL windows. Never touch the stock
-   publication. A close acknowledgment is not observed hardware restoration.
+## Scoped admission validation — prepared, not executed
 
-Normal launch exits before graphics or bus registration. The sole opt-in is
-`acquireHdmi4: true`; arbitrary ports, identities, windows and URIs are rejected.
-Each IPC reply is limited to 4 KiB and two seconds. Cancellation drains the current
-bounded open reply so that a returned ID can still be closed. Progression stops
-on Back/Exit, focus/visibility loss, SIGINT/SIGTERM, denial or malformed replies.
-The native progression deadline is 17 seconds; the hard cap is 22 seconds, leaving
-room for two bounded cleanup requests. A hard exit never confirms cleanup.
+Use the [four-file policy](../../native/phase2-hdmi-window/policy/README.md), one
+app and four methods only. Local review bundle: `build/phase-2/hdmi-first-picture-0.1.3/`.
+Package/source/policy pins: `build/phase-2/hdmi-window-0.1.3/package-validation.json`.
 
-## Remaining readiness questions
+The static administrative route is native `/usr/bin/luna-send`, own default
+`com.webos.lunasend-<actual PID>`, neither `-m` nor `-a`; do not substitute
+`luna-send-pub`. Use its existing core grant, never copy it into the app.
+Verify current utility/core hashes and both exact permission predictions before
+loading anything. The own-PID query templates and evidence pins are retained in
+`build/phase-2/hdmi-admin-caller-20261112-001/`.
 
-- **Unknown:** admission for our own app/connection to UTP open, port selection,
-  stop and close. The stock frontend's wildcard role is not ours; ordinary IWC
-  denial says nothing conclusive about UTP. No identity substitution, root utility
-  fallback or policy edits are implemented.
-- **Unknown:** UTP server arbitration, allocation and disconnect cleanup. If open
-  is submitted but no valid ID returns, we cannot name an allocation to release.
-  The candidate reports acquisition uncertain and stops; export destruction or
-  process exit is not a proven inverse. No corresponding server implementation
-  was found in the retained evidence inventory. This is a readiness blocker.
-- **Unknown:** whether our export displays physical HDMI, and whether normal
-  stop/close restores ordinary viewing. Allocation may reclaim the stock HDMI
-  session or other hardware resources even though we never alter its window.
-- **Unknown:** a second pipeline's independent receiver and scaler assignment.
-  `windowId` and `setPipelineWindowId` name presentation bindings. They do not
-  select SUB0/SUB_SCALER or establish simultaneous jack acquisition. Do not add
-  SMP `avSink` options to UTP by analogy, or treat connector port 5 as a jack.
+Each query uses a real successful own registration/attachment, possibly separate
+equivalent utility processes with the same executable/core pins, not one shared
+handle or an invented/disconnected requester. Positive prediction can fall back
+to configured groups; it does not prove active-cache population or later mutation.
+The utility timeout is not remote cancellation/rollback. Denial, malformed reply,
+transport loss or an uncertain mutation stops the sequence without automatic retry.
 
-The next work is a focused review of these acquisition/release limits and the
-candidate, then a concrete first-picture proposal for owner authorization. Keep
-this tied to HDMI acquisition; do not restart IWC preflight or generic fault tests.
-No runnable device procedure is approved at this readiness stage.
+Both future operations, `luna://com.webos.service.bus/addOneManifest` and
+`luna://com.webos.service.bus/removeOneManifest`, use this exact object:
 
-## Future acceptance sequence — requires separate owner scope
+```json
+{"prefix":"/","path":"/var/luna-service2/manifests.d/io.github.tpapaz.multiview.hdmiwindow.utp-policy.json"}
+```
 
-**Single source:** after readiness review, the owner identifies the actual port
-and a source with distinct moving content, and confirms normal baseline viewing.
-The initial candidate is fixed to HDMI 4; a different connection requires an
-explicit source change in the candidate, never silent retargeting. Success needs
-visible motion inside our smaller fixed window, no full-screen takeover presented
-as window success, clean stop/close/process exit, and owner-confirmed normal
-picture/motion/sound afterward. Record service outcomes and human observations
-separately. Black/frozen video, denial, unexpected switching or uncertain cleanup
-ends the attempt without retry or permission changes.
+| Stage | Action and acceptance |
+|---|---|
+| Install/context preflight | Install only under separate scope. Pin installed ELF/manifest and both generated roles/client grants. Confirm exact own executable/name and existing outbound permission, no inbound API. Preserve originals. Owned overlay paths/ID/group must be absent; a collision/mismatch stops, never replaces a role or file. |
+| Baseline | Fresh app `{"checkUtpAdmission":"baseline"}`; four predictions in order open/select/stop/close. Require `policy_checked`, own caller ready, local cleanup, process absent and `[0,0,0,0]`. `allowed:false` is a valid query result. An unexpected allow stops review; do not add a duplicate grant. |
+| Activate | After both admin predictions and explicit deployment scope, stage our three payloads, manifest last, then one exact add. Preserve LG/generated files. No broader trust, identity retry, reload signal or restart. |
+| Overlay | Fresh app `{"checkUtpAdmission":"overlay"}`; require `[1,1,1,1]`, completed queries, local cleanup/process absence and original generated-policy hashes unchanged. This is permission prediction, not actual UTP execution. |
+| Unload/preserve | Close app, submit one exact remove. Move only our manifest out of the scanned directory to an agreed owned holding path, preserving bytes/hashes. No deletion. Remove acknowledgment or moving/unlinking alone does not prove revocation. |
+| Removed | Fresh app `{"checkUtpAdmission":"removed"}`; require `[0,0,0,0]`, equal to baseline, clean exit/process absence and unchanged generated hashes. Persistent access leaves policy unresolved; no restart/extra grant to force a pass. |
 
-**Two sources:** only after the single-source result and independent allocation
-path justify it, connect different moving sources to HDMI 1 and HDMI 2. Extend
-to two distinct owned exports/pipelines and fixed rectangles. Both must advance
-at the same time without either freezing, replacing or switching the other;
-release one and check the other continues, then confirm restoration. Two opens,
-two window IDs or successful service replies cannot pass this gate.
+Admission modes make **zero UTP target calls and no SDL/export**, at most four
+bus queries with two-second/4-KiB reply bounds, 10-second progression and a
+12-second hard cap. A failed/incomplete report or unconfirmed exit stops the
+sequence. Keep the app closed before grant changes; use fresh connections.
 
-Only after that proof add move/resize, PiP/split layouts, remote navigation and
-audio selection. Retain the existing cleanup controls and evidence; do not claim
-the fake-worker supervisor has tested HDMI recovery.
+A later separately authorized picture trial needs exact reactivation and fresh
+`picture-ready` `[1,1,1,1]`. After all picture cleanup/restoration and app exit,
+unload/preserve the manifest and require fresh `after-picture` `[0,0,0,0]`.
+Do not revoke methods while acquisition still needs them. No phase auto-launches
+picture mode; no cold cycle is assumed to remove policy. Preserve existing slots.
+
+## Bounded capture and first-picture procedure
+
+This is a future proposal, not a ready/authorized device runner. The collector
+cannot launch, signal, execute remote commands, write or delete on TV. The IPK
+contains no policy, installer or autostart.
+
+1. Confirm package/generated bindings, successful admission rollback, separate
+   reactivation and `picture-ready` predictions. Owner confirms HDMI 4 with
+   distinct moving content, baseline sound/remote response, and restoration access.
+2. Use a fresh host directory for each phase's prepare/collect pair. Preflight
+   checks installed/generated-policy pins, app absence and no existing report.
+   Picture prepare reads boot ID (38-byte cap) → uptime (64-byte cap) → boot ID
+   at `/proc/sys/kernel/random/boot_id` and `/proc/uptime`, then exclusively saves
+   private host `launch.json` if IDs agree. It never prints the ID or queues a launch.
+3. Submit that exact unmodified payload once through the normal app launcher;
+   start the owner's independent **27-second timer at submission**. The same-boot
+   start deadline is sample +3,000 ms. Old/unbounded/stale/different-boot inputs
+   are inert before report/graphics/IPC. Do not regenerate, refresh or retry on timeout.
+4. Observe at most eight seconds after accepted selection: moving physical
+   content must appear inside our `(480,270,960,540)` region in 1920×1080 app
+   coordinates. Graphics, a full-screen takeover or successful replies do not pass.
+5. Progress dispatch stops at sample +17 s; cleanup dispatch at sample +22 s.
+   Each reply has a two-second bound. The process alarm is armed before boot
+   validation, 22 s from entry, ending by sample +25 s for an admitted start.
+   Boot-time dispatch checks include suspend and are rechecked at each request.
+   The [native contract](../../native/phase2-hdmi-window/README.md#launch-and-timing-contract)
+   explains the proof and execution limits; backend release is not bounded.
+6. Confirm exit independently by owner submit +27 s. On missing exit, cancellation,
+   error, transport loss or black/frozen/wrong picture, enter restoration by that
+   handoff. Never add a delay after a late entry, wait for the collector or retry.
+7. Collect only when safe. The read-only collector's separate 30-second cap and
+   at most 1,024 process entries never extend the owner timer. It checks exact
+   report schema/privacy, matching aliases, package/generated pins and process
+   absence before/after reading. Host `capture.json` is saved exclusively.
+
+Reports are at `/tmp/io.github.tpapaz.multiview.hdmiwindow/<filename>` or the same
+path below `/var/palm/jail/io.github.tpapaz.multiview.hdmiwindow`. Filenames are
+`picture-0.1.3.json` and `admission-<phase>-0.1.3.json`. They are at most 2 KiB,
+0600 in an owned 0700 directory, reserved before SDL/LS2 without following links
+or overwriting, then fsynced/closed. Missing/partial/conflicting reports leave
+cleanup unknown. `/tmp` may disappear during cold recovery; recovery takes priority.
+Process absence at capture time proves neither exit code nor exit before +27 s.
+
+Future separately authorized read examples, from repo PowerShell (parent host
+folder exists; destination must be new):
+
+```powershell
+node scripts/capture-hdmi-window.cjs --prepare baseline build/reports/hdmi-0.1.3-baseline --allow-tv-read
+# Separate authorized app launch; collector does not launch.
+node scripts/capture-hdmi-window.cjs --collect baseline build/reports/hdmi-0.1.3-baseline --allow-tv-read
+```
+
+Use distinct directories for overlay/removed/picture-ready/picture/after-picture
+within their authorized stages. None was run for this preparation. Offline
+validation is `node scripts/capture-hdmi-window.cjs --check-report <mode> <local-file>`;
+it never loads device credentials or connects.
+
+## Restoration route — proposal for one owner-attended trial
+
+Chosen route: bounded app cleanup → one owner UI attempt → one owner-operated
+true cold power cycle for a stuck/lost session. No software-only bounded reset is
+established. This emergency research contingency must be separately accepted;
+it is not an automatic product recovery feature or permission to power-cycle.
+
+Owner must be present with physical remote and safe access to **only the TV's**
+power connection, independent of host/SSH/HA. Confirm safe shutdown/disconnection,
+no active update/panel maintenance or operation requiring uninterrupted power.
+No Quick Start, maintenance, power, HDMI or other settings change. If these
+conditions cannot be established, acquisition remains **unsafe_to_test**.
+
+The following are experiment observation/attempt budgets, not LG guarantees or
+a validated OLED power-maintenance procedure. Safe shutdown may take longer or
+require stopping. Never force interruption to satisfy a timer.
+
+| Stage | One bounded attempt and disposition |
+|---|---|
+| Client cleanup | Drain the bounded current reply; stop→close only the returned own ID, then local teardown. No usable ID means no guessed close. Failed cancellation may leave close unsent. Stop/close acknowledgments, unregister and hard exit do not prove hardware release. Exit uncertainty reaches the owner at submit +27 s. |
+| Owner UI | Back/Exit once if app remains visible; select HDMI 4 once through normal UI if responsive. Allow 15 s to return, then observe motion/sound for 10 s. Unresponsive UI means stop keys. For a lost/uncertain session, visible UI recovery alone does not reconcile ownership: continue to cold contingency before any later experiment. |
+| True cold cycle | Stop controller/replay first. Follow confirmed safe shutdown/disconnection; once safe, disconnect **only the TV** from mains for 60 s, reconnect once and start normally with physical control. No shell reboot, service restart, settings/factory reset, file deletion or second cycle. If safe disconnection is unavailable, leave unresolved and end testing. Standby/HA off→on does not prove old processes ended. |
+| Fresh baseline | Allow 120 s after power restoration for startup. If responsive/needed, select HDMI 4 once; observe motion/sound for 10 s. Confirm no candidate relaunch when reviewed process checks are available; otherwise mark unknown. Abnormal boot/viewing or maintenance/update means stop. Do not relaunch app or reapply permissions. |
+
+If the client completed, both outer acknowledgments/local cleanup/exit are
+confirmed and owner sees normal HDMI-4 motion/sound, end normally. Conservative
+`acquisitionUncertain:true` alone does not require a cold cycle; hardware release
+still remains unknown. No emergency trial/repeat is queued.
+
+If open may have reached UTP without usable ID, stop/close is negative/missing/
+NotSent, cleanup/exit is unconfirmed, transport disappears or viewing is abnormal,
+mark failed/inconclusive and take the owner contingency. A later reply or recovered
+picture cannot turn it into a clean normal-close pass. If no open was sent, restore
+UI if needed; do not label a session lost solely because setup/opt-in was rejected.
+
+Cold power removal ends old processes/waits/maps independently of session IDs;
+successful usable recovery remains untested, not a promised duration. Keep the
+original report immutable, discard all pre-cycle IDs and ignore late replies.
+Policy state needs separate validation after boot. No deliberate stuck-session,
+SIGKILL or broken-transport test is included in the first-picture scope.
+
+## Results and later acceptance
+
+Keep machine reports and owner observations separate. Record fixed outcomes/
+timestamps for intended-rectangle motion, post-exit motion/sound, timely exit,
+UI attempt, witnessed true cold cycle and post-cycle viewing; no IDs/raw errors.
+Preserve `hardwareRelease:unknown`. Missing stop acknowledgment stays a failed
+normal-close trial even if close/cold recovery restores viewing; no pause grant.
+Append only actual authorized outcomes to the C1 journal.
+
+Only after single-source evidence and an independent allocation path justify it,
+connect different moving devices to HDMI 1 and HDMI 2. Use distinct exports/
+pipelines and two fixed rectangles; both must advance concurrently without
+freezing/replacing/switching. Release one while the other continues, then confirm
+restoration. Two opens/IDs or service replies cannot pass. Move/resize, layouts,
+remote navigation and audio selection follow concurrency proof.

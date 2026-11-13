@@ -14,9 +14,10 @@ if(CMAKE_CROSSCOMPILING)
   pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
   pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)
   find_library(LUNA_LIBRARY luna-service2 REQUIRED)
+  find_library(CLOCK_LIBRARY rt REQUIRED)
   add_executable(multiview-hdmi-window main.cpp session.cpp)
   target_include_directories(multiview-hdmi-window PRIVATE "${JSON_C_INCLUDE_DIR}")
-  target_link_libraries(multiview-hdmi-window PRIVATE PkgConfig::SDL2 PkgConfig::GLIB "${LUNA_LIBRARY}" "${JSON_C_LIBRARY}")
+  target_link_libraries(multiview-hdmi-window PRIVATE PkgConfig::SDL2 PkgConfig::GLIB "${LUNA_LIBRARY}" "${JSON_C_LIBRARY}" "${CLOCK_LIBRARY}")
   # Retail C1 link inputs only; no firmware libraries are bundled. Offline ABI
   # validation is required, as for the retained admission/endurance controls.
   target_link_options(multiview-hdmi-window PRIVATE "-Wl,--allow-shlib-undefined")

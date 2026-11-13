@@ -1,103 +1,110 @@
 # Single-HDMI owned-window candidate
 
-[Current plan](../../docs/device-tests/current-plan.md) · [Acquisition evidence](../../docs/research/c1-hdmi-interface-map.md#focused-acquisition-and-owned-window-review--2026-11-12)
+[Status](../../STATUS.md) · [Current procedure](../../docs/device-tests/current-plan.md) ·
+[Evidence map](../../docs/research/c1-hdmi-interface-map.md) · [Build commands](../../docs/build.md)
 
-Original, minimal C1 client implementation. **Locally ARM-built and host
-acceptance-tested; direct executable ABI checked. Not packaged, simulator-tested,
-TV-tested or approved for device execution.** The saved client contract supports
-this candidate; it does not prove Homebrew admission, safe release or live video.
-No firmware implementation or upstream code is copied or bundled.
+**0.1.3 is locally built, host acceptance-tested, packaged and direct-ABI checked.
+It is not installed, simulator-tested or TV-tested.** No physical HDMI result or
+hardware release is claimed. This is original client code; no proprietary runtime
+implementation or upstream code is bundled.
 
-## Fixed behavior
+## Fixed client contract
 
-Default launch exits 64 before SDL or LS2. Explicit JSON launch opt-in
-`{"acquireHdmi4":true}` permits one attempt. Optional validated launcher metadata
-is discarded; it cannot supply identities, port numbers, window IDs or endpoints.
-No device launch command is authorized by this document.
-
-The app creates one 1920×1080 SDL window, requiring that actual app size, and
-one transparent exported region (type 2, matching saved InputCommon). The fixed
-destination is (480,270,960,540). An opaque black surround and transparent interior
-make the requested region identifiable; these graphics are not HDMI evidence.
-It uses its own app/connection identity, with no root helper or proxy identity:
+App/connection identity: `io.github.tpapaz.multiview.hdmiwindow`.
+The app requires a 1920×1080 SDL coordinate space and exports its own transparent
+window (type 2) at `(480,270,960,540)`, with a black surround. Graphics alone are
+not a physical-picture result. It never lists or modifies the stock publication.
 
 | Operation | Fixed request |
 |---|---|
-| `utp.extinputs/open` | `options.appId`: `io.github.tpapaz.multiview.hdmiwindow`; `options.windowId`: our freshly created export; `inputSourceType`: `HDMI` |
-| `utp.extinputs/switchExternalInput` | Only the pipeline returned by our open; `portId: 4` |
-| `utp.extinputs/stop`, then `close` | Only that returned pipeline, including after cancellation/selection failure |
+| `utp.extinputs/open` | `options.appId`: own identity; `options.windowId`: freshly assigned own export; `options.windowType`: `NormalWindow`; `inputSourceType`: `HDMI`. |
+| `switchExternalInput` | Only the pipeline returned by this open; `portId:4`, matching the owner's last confirmed connection. |
+| `stop`, then `close` | One sequence for that returned ID, including cancellation or selection failure. No guessed IDs, retry or backend pause fallback. |
 
-The initial window binding is supplied at open. A redundant `setPipelineWindowId`
-call is unnecessary. No IWC, SMP/decoder, capture, videooutput, audio, publication,
-input-app launch or permission-setting API is used. Port selection is an active
-operation and may affect shared hardware; running this is not read-only discovery.
+After accepted selection, observe for at most eight seconds. Back/Exit, focus or
+visibility loss, signals, disconnect, invalid replies and deadlines stop
+progression. Replies are bounded to two seconds/4 KiB; an in-flight open is
+drained within that bound to retain its returned ID for cleanup. Failed token
+cancellation can leave close unsent; local unregister/destruction is not a
+hardware-release guarantee. There are no IWC, video-capture, audio or policy APIs.
 
-After accepted selection, the observation interval lasts at most eight seconds.
-Back/Exit/Escape, SDL close, focus/visibility loss, SIGINT/SIGTERM, a bus disconnect
-or the native progression deadline stops further acquisition work. Each of the
-four fixed methods has a two-second/4-KiB reply bound. In-flight open is drained
-within its bound even on cancellation, so any valid returned ID is still released.
-Stop failure does not suppress the close attempt. Unknown token cancellation
-prevents overlapping further calls. Local cleanup cancels tokens, unregisters and
-destroys only our exports/windows. Progression stops at +17 s; SIGALRM at +22 s
-bounds blocking vendor calls as a last resort, with cleanup explicitly unknown.
-There is no demonstrated survival of SIGKILL, app jail/cgroup death or lost TV
-transport; the retained fake-worker helper is not a UTP recovery adapter.
+## Launch and timing contract
 
-The final JSON contains fixed outcomes and Booleans, never window/pipeline IDs,
-requester metadata or raw service errors. `candidate_interval_completed` and exit
-0 mean the bounded client sequence and acknowledged stop/close finished. They do
-**not** mean a live picture or restored hardware was observed. Those fields remain
-`unknown` until separate owner evidence exists. Vendor stdout/stderr is not a
-sanitized report and must remain local.
+Default/malformed launch is inert. Picture mode requires `acquireHdmi4:true`,
+`launchBootId` and `launchStartByBoottimeMs`; the old unbounded opt-in is rejected.
+The fixed read-only producer in `scripts/capture-hdmi-window.cjs --prepare picture`
+reads boot ID → uptime → boot ID at fixed `/proc` paths and saves private host
+`launch.json`. IDs must agree; start deadline is the conservative centisecond
+uptime sample +3,000 ms. It does not launch, write on TV, refresh or retry.
 
-An open submission without a usable returned ID leaves `acquisitionUncertain`
-true; the client cannot close an unnamed allocation. A failed close also leaves
-it true. Even an acknowledged close is only service acknowledgment; local export
-destruction is not proof of receiver release or normal viewing restoration.
-This unresolved server contract keeps the candidate **not device-ready**.
+Native code requires the same boot and `0 < deadline - CLOCK_BOOTTIME <= 3000`
+before report reservation and again before graphics/LS2. Missing metadata/clock,
+expiry or reboot fails closed. Optional validated `nid`/`@system_native_app`
+launcher metadata supplies no routing authority. Boot ID/raw launch authority is
+never printed or included in reports.
+
+The alarm is armed before boot validation. An admitted start by sample +3 s has
+a process cap of 22 s, ending by sample +25 s. Sampling precedes the one launch
+submission, so this is before the owner's submit +27 s handoff. Boot-time
+progress/cleanup dispatch cutoffs are sample +17/+22 s, including suspend time;
+open/select cannot borrow the cleanup budget. Each cutoff is rechecked at dispatch.
+The alarm calls `_exit(124)` without writing to a potentially blocked pipe.
+This is a client contract, not unconditional survival through stopped/killed tasks,
+kernel faults or a backend hang. Actual launcher/jail integration is untested.
+
+## Admission and reports
+
+`{"checkUtpAdmission":"baseline"}` registers this app's own identity and queries
+only bus `isCallAllowed` for open/select/stop/close. Other fixed phases are
+`overlay`, `removed`, `picture-ready`, `after-picture`. No SDL/export or UTP target
+operation runs. Mixed/unknown arguments are rejected. Four queries maximum,
+10-second progression/12-second hard cap; `allowed:false` is a valid prediction.
+Phase expectations and rollout/removal order live only in the current procedure.
+
+Each explicit mode exclusively reserves its report before graphics/LS2 under
+`/tmp/io.github.tpapaz.multiview.hdmiwindow/`: owned 0700 directory, 0600 file,
+no symlink/overwrite. Slots are `picture-0.1.3.json` or
+`admission-<phase>-0.1.3.json`. Existing/unavailable slot exits 73. Report is at
+most 2 KiB, fsynced/closed before stdout/exit; write failure exits 74. Hard exit
+can leave a partial slot. `/tmp` evidence may be lost on cold recovery; do not
+delay owner restoration to collect it. Vendor stdout/stderr is not sanitized.
+
+Reports contain fixed outcomes, Booleans/counts and no IDs/raw service errors.
+`candidate_interval_completed`/exit 0 requires the client sequence, outer stop/close
+acknowledgments and local cleanup; it does not prove visible HDMI or release.
+Once open may have reached UTP, `acquisitionUncertain` remains true.
+`hardwareRelease`, `livePicture`, `restoration`, `dualHdmi` remain `unknown`.
+
+The collector is read-only, never launches/signals/deletes, and has a separate
+30-second cap. It verifies package/generated-policy pins, strict report schema,
+matching jail/host aliases and process absence at capture time. That cannot
+establish an exit code or exit before the owner's deadline. Its CLI and future
+read scope are in the current procedure; no live mode has been run for this app.
 
 ## Local build and acceptance checks
 
-From repository PowerShell, using only the existing Linux SDK:
+Use [the build guide](../../docs/build.md#phase-2-single-hdmi-candidate) for current
+commands. These are the retained artifacts, not a device-tested release:
 
-```powershell
-$repo = '/mnt/d/Development/webos-multiview'
-$sdk = '/home/tasos/.cache/webos-multiview/202608/arm-webos-linux-gnueabi_sdk-buildroot'
-$hostBuild = "$repo/build/phase-2/hdmi-window-host"
-# Host JSON-C runtime exists; copy only architecture-independent API headers.
-wsl -d Ubuntu --exec cmake -E copy_directory "$sdk/arm-webos-linux-gnueabi/sysroot/usr/include/json-c" "$hostBuild/include/json-c"
-wsl -d Ubuntu --exec cmake -S "$repo/native/phase2-hdmi-window" -B $hostBuild -G Ninja '-DCMAKE_BUILD_TYPE=Debug' "-DJSON_C_INCLUDE_DIR=$hostBuild/include"
-wsl -d Ubuntu --exec cmake --build $hostBuild
-wsl -d Ubuntu --exec ctest --test-dir $hostBuild --output-on-failure
-wsl -d Ubuntu --exec cmake -S "$repo/native/phase2-hdmi-window" -B "$repo/build/phase-2/hdmi-window-arm" -G Ninja '-DCMAKE_BUILD_TYPE=Release' "-DCMAKE_TOOLCHAIN_FILE=$sdk/share/buildroot/toolchainfile.cmake" "-DLUNA_LIBRARY=$repo/build/phase-1/firmware-inspection/native-idle/libluna-service2.so.3" "-DJSON_C_LIBRARY=$repo/build/phase-1/firmware-inspection/native-idle/libjson-c.so.4"
-wsl -d Ubuntu --exec cmake --build "$repo/build/phase-2/hdmi-window-arm"
-npm test
-npm run lint
-```
+| Artifact | Bytes | SHA-256 |
+|---|---:|---|
+| `dist/io.github.tpapaz.multiview.hdmiwindow_0.1.3_arm.ipk` | 20,806 | `375f77d753eebbc1d6f1ca292689853c90352644d21a2ec45c7078bcd061bb9b` |
+| `build/phase-2/hdmi-window-arm-0.1.3/multiview-hdmi-window` | 44,656 | `24d3b5115fe4b56ad70f48fd06329d3df27533129a261908699f88b53932d797` |
 
-Check each command's exit code before the next. These commands compile the ARM
-executable but execute only the Linux-host acceptance test. It covers explicit
-opt-in, fixed app/port/window ownership, open failure/no-ID uncertainty, cancellation
-after open/selection/during observation, stop/close failures and local cleanup.
-It does not simulate a live HDMI picture or test SDL/LS2 framework defaults.
+`build/phase-2/hdmi-window-0.1.3/package-validation.json` pins native sources,
+manifest and the four separate policy files; `direct-abi.json` covers 96 required
+imports/nine direct DSOs, exact version-index/provider matching, ELF32 ARM
+soft-float, `/lib/ld-linux.so.3`, and no RPATH/RUNPATH. The boot-clock provider is
+saved C1 `librt.so.1`, used only for linking. Full SDL graphics closure, optional
+imports/dlopen and actual loader execution remain unverified.
 
-Built artifact: `build/phase-2/hdmi-window-arm/multiview-hdmi-window`, 29,908 bytes;
-SHA-256 `ef19a74f59ad0cb95997f254f92e4bf0ad2c72377db988a121605f6f33997d3f`.
+The IPK contains only manifest, icon, executable and generated package metadata:
+no policy, install script, service, autostart or vendor library. The original
+0.1.1/0.1.2 packages, old ELFs and reports remain intact. Detailed build corrections
+and original hashes are in the [archived investigation](../../docs/research/archive/c1-hdmi-investigation-2026-11-12.md#administrative-caller-and-expiring-launch--2026-11-12)
+and retained `hdmi-window-0.1.3/finish-clock-provider.py`.
 
-Local provenance and offline verification are retained in
-`build/phase-2/hdmi-window-local-20261112/`: exact scoped disassembly, header hashes,
-`hdmi-window.elf.txt`, `verify-local.py` and `direct-abi.json`/`.txt`. The local
-driver verifies retained runtime hashes and invokes the existing
-`scripts/verify-native-abi.py` with saved bytes, never an SSH collector:
-
-```powershell
-wsl -d Ubuntu --exec python3 "$repo/build/phase-2/hdmi-window-local-20261112/verify-local.py"
-```
-
-The ABI check covers the executable's eight direct DT_NEEDED providers, 75
-required imports and their exact symbol versions, ELF32 ARM soft-float and
-`/lib/ld-linux.so.3`, with no RPATH/RUNPATH. It does not cover the entire SDL
-graphics dependency closure, optional imports or dynamic `dlopen` paths, and
-does not establish loader execution. No IPK was generated and no proprietary
-runtime libraries are redistributed. Preserve all earlier controls and reports.
+Existing acceptance checks cover acquisition/cancellation/cleanup uncertainty,
+fixed policy-query scope, launch expiry/boot binding, report privacy and exact
+ABI providers. None simulates a physical HDMI picture. Policy scope is documented
+in [policy/README.md](policy/README.md); all runtime gates remain in the current plan.

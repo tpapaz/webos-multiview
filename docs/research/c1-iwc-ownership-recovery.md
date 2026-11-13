@@ -207,7 +207,7 @@ Preserve these files; do not redistribute firmware, QML or disassembly.
 | I1 | `/usr/share/dbus-1/services/com.webos.service.iwc.service` and matching `system-services/` file → `iwc-0.bin`, `iwc-1.bin`; lines 2–4 | `49631281dc1d1ae161236a159136cae0c6d529d2d641f82165e3fbc82c9b56db` (both) |
 | I2 | `/usr/share/ls2/roles/pub/com.webos.service.iwc.json` and matching `prv/` file → `iwc-2.bin`, `iwc-3.bin`; lines 3–5,10–12 | `20470286c79090f9e48bd50cac0e234fb9be8fe9f01f695dbda32d7ea8409d41` (both) |
 | I3 | `/usr/sbin/com.webos.service.iwc` → `iwc-4.bin`, 71,280 bytes; ELF32 ARM EABI5 soft-float | `fab68a885b14f2b4fe1de8f14c988cda716d22b3c7012ee15a66a706e40b0906` |
-| P1 | Saved `DisplayVideoModel.qml` → `../hdmi-discovery-20261111/route-5.qml`; publisher wrapper is `route-2.qml` | `d61ee398fef6a9ff4e60155041965684657f4b4cfa0c87006f7cc90fc665437f`; wrapper hash in the [HDMI map](c1-hdmi-interface-map.md#provenance-and-local-evidence) |
+| P1 | Saved `DisplayVideoModel.qml` → `../hdmi-discovery-20261111/route-5.qml`; publisher wrapper is `route-2.qml` | `d61ee398fef6a9ff4e60155041965684657f4b4cfa0c87006f7cc90fc665437f`; wrapper hash in the [HDMI map](archive/c1-hdmi-investigation-2026-11-12.md#provenance-and-local-evidence) |
 | E1 | `/usr/palm/applications/com.webos.exampleapp.qmlapp.epg/main.qml` and `com.webos.exampleapp.enyoapp.epg/index.html` → `example-main-0.txt`, `example-main-1.txt` | `340506855aa43e9b11110df48227b7f17111fed8c1bc26ec7a35991c27a98548`; `c97c7e95ec2a755ac7b1cc8433643227cf7db397f711ce19dffd3a54e11ae19a` |
 
 Saved source was inspected first. An initial sandboxed connection failed

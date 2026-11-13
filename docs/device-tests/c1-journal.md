@@ -86,6 +86,76 @@ linked archive; no original hash has been replaced or regenerated.
 | Control EOF | `build/phase-2/lifecycle-c1-control-loss-001.json`; `718d53e62b4aea4b80fce5370c57e37f052281f1e8c671173902ff284cb000fe` |
 | Native helper | `build/phase-2/lifecycle-arm/multiview-lifecycle`; `375e17c98229221392a98fc11ffacadfb713dd50a09b1d425002af0dcb07bec0` |
 
+## UTP provider retrieval
+
+2026-11-12: owner-authorized **read-only SFTP** of exactly `/usr/sbin/utp-atsc`
+and `/usr/sbin/utp-dvb` succeeded (8,792,988 / 8,788,888 bytes). Size/mtime
+checks stayed stable; local SHA-256 and provenance are in the
+[provider review](../research/archive/c1-hdmi-investigation-2026-11-12.md#utp-provider-allocation-and-cleanup--2026-11-12)
+and `build/phase-2/utp-provider-20261112-001/inventory.json`. Connection closed;
+no remote commands, writes/deletes, app launches, HDMI switches or policy
+deployment. Subsequent ARM disassembly was offline. Both binaries contain the
+session handlers; active variant and hardware acquisition/cleanup remain unknown.
+This is a successful file retrieval, **not an HDMI picture or recovery test**.
+
+## UTP routing metadata
+
+2026-11-12: owner-authorized read-only SFTP metadata/immediate-name listings
+confirmed all three routing paths are directories (`0755`): 7 provider,
+31 service and 2 temporary-provider names. Relevant entries are `extinputs.json`
+and `extinputs.bypass.json`; temporary names are only `gibbs.json` / `nabs.json`.
+The first collector mishandled directory EOF; its partial report is preserved.
+A corrected same-scope pass completed with matching filename sets and stable
+before/after directory metadata. Both connections closed. No file contents,
+remote commands, writes/deletes, app launches, HDMI switches or policy deployment.
+[Exact provenance and limits](../research/archive/c1-hdmi-investigation-2026-11-12.md#provider-routing-metadata-and-cleanup-boundary--2026-11-12);
+reports: `build/phase-2/utp-routing-metadata-20261112-001/` and `-002/`.
+This establishes names/types only, not an HDMI backend cleanup result.
+
+## UTP HDMI routing configuration
+
+2026-11-12: owner-authorized read-only SFTP retrieved the two regular files
+`/etc/palm/utp/providers/extinputs.json` (366 bytes) and
+`/etc/palm/utp/services/extinputs.bypass.json` (1,088 bytes), within 64 KiB/file.
+Size/mtime checks passed; original copies/SHA-256 are retained under
+`build/phase-2/utp-routing-config-20261112-001/`. Connection closed; no remote
+commands, writes/deletes, app launches, HDMI switching or policy deployment.
+The config maps HDMI to `com.webos.service.extinputs.hdmi`; offline tracing
+identifies dispatch/timeout boundaries, not actual cleanup or hardware release.
+[Provenance and remaining gate](../research/archive/c1-hdmi-investigation-2026-11-12.md#hdmi-backend-mapping-and-cleanup-timeout-boundary--2026-11-12).
+No acquisition, picture or restoration test occurred.
+
+## HDMI backend registration and implementation
+
+2026-11-12: the authorized continuation's first SSH connection failed before
+any SFTP operation; its report is preserved. Powered on once using the existing
+Home Assistant Chrome tab as requested; its UI changed Off → On / PS5 (HDMI4).
+That is Home Assistant telemetry, not an owner-confirmed picture observation.
+Read-only SFTP then listed 275 manifest / 241 role names and retrieved six
+selected regular files: the extinput manifest, role, service record,
+`/usr/sbin/extinput-integration`, `libextinput-service.so.1.0.0` and
+`libgibb-pipeline.so.1.0.0`. Size/mtime and SHA-256 recorded; connections closed.
+Four library soname symlinks were resolved read-only; the last two library
+contents remain unsaved. No remote commands, TV file writes/deletes, app launch,
+HDMI switch, backend method call or policy deployment. Offline tracing found
+backend lookup removal after a returned release failure and a candidate
+stop/pause registration mismatch. Neither is an observed hardware leak/denial.
+[Exact files, hashes, limits and remaining gates](../research/archive/c1-hdmi-investigation-2026-11-12.md#hdmi-backend-implementation-and-release-failure--2026-11-12).
+No acquisition, picture or restoration test occurred. TV was left on.
+
+## HDMI release-client implementation retrieval
+
+2026-11-12: owner-approved read-only SFTP retrieved exactly
+`/usr/lib/libtvrm_client.so.1.0.0` (58,796 bytes) and
+`/usr/lib/libelement-base.so.1.0.0` (218,552 bytes). Both regular files passed
+size/mtime checks; original copies and SHA-256 are retained under
+`build/phase-2/hdmi-release-deps-20261112-001/`. Connection closed; no power
+action, remote command, TV write/delete, app launch, input switch, backend call
+or permission deployment. Offline review resolves the saved stop mismatch and
+finds an untimed resource-release wait plus conditional destructor release
+re-entry with ignored result. No runtime denial/hang/leak, acquisition, picture
+or restoration result is claimed. [Exact findings and limits](../research/archive/c1-hdmi-investigation-2026-11-12.md#stop-routing-resolved-and-downstream-release-boundary--2026-11-12).
+
 ## Current conclusion and archive
 
 **Verified:** local main/sub playback, root listing and normal/EOF fake-process

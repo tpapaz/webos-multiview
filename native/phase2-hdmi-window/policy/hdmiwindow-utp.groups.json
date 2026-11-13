@@ -1,0 +1,6 @@
+{
+  "io.github.tpapaz.multiview.hdmiwindow.utp": {
+    "description": "MultiView HDMI window acquisition and release through four fixed UTP methods",
+    "public": false
+  }
+}

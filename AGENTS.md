@@ -10,7 +10,10 @@ and `docs/device-tests/current-plan.md` (one current procedure). Do not create a
 Markdown file per run. Preserve original reports/hashes; archive exceptional
 historical detail and link to it only when needed.
 
-Current direction: **Phase 2 read-only HDMI discovery**. Screensaver work is
+Current direction: **Phase 2 HDMI acquisition/window research**. The candidate
+is locally packaged; the next device step is separately scoped installation and
+admission-only validation, not HDMI acquisition. This file authorizes no TV run
+or permission deployment. Screensaver work is
 closed for this scope, with effective inhibition unknown; do not reopen it
 or the separate Glasshouse/Home topic without owner direction. Phase 1 is
 partially validated, not complete. Read `docs/handoff/hdmi-next-chat.md`,

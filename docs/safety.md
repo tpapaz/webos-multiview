@@ -1,85 +1,61 @@
-# Diagnostic scope, privacy and recovery
+# Scope, privacy and device safety
 
-> [Current status](../STATUS.md) · [Documentation index](README.md). These operating restrictions remain in force across research phases.
+[Status](../STATUS.md) · [Current procedure](device-tests/current-plan.md) · [Contributor rules](../AGENTS.md)
 
-This build performs no firmware changes, flash/device-node writes, kernel-module
-loads, protection bypass, persistent service/config changes, hooks/injection,
-critical service restarts, HDMI switching or active video capture. Installing an
-application does add its ordinary package files; uninstall removes the app.
-Starting a normal foreground diagnostic app can obscure/suspend existing video
-through normal webOS lifecycle behavior. This is not an HDMI coexistence test.
+## Execution boundary
 
-The passive web probe makes no query until the user presses **Read device metadata**. It
-requests three LG-documented keys, once, with a 3 second timeout. Cancel, hiding,
-closing and completion release the bridge handle. It never subscribes, retries,
-uploads, writes browser storage or echoes arbitrary service errors. Transport
-callbacks over 8192 characters are discarded. Export is an explicit user action;
-browser downloads may add a report to the user's chosen storage.
+The active work is Phase 2 HDMI acquisition/window research. Candidate 0.1.3 is
+locally packaged, not installed or TV-tested. **No TV operation or permission
+deployment is authorized by the current documentation/repository cleanup.**
+Past completed runs do not authorize repeats. Current evidence is in Status and
+the C1 journal; historical commands are references, not execution instructions.
 
-Allowlist export, not keyword masking: export only `LG C1`/`unknown`, strictly
-numeric dotted SDK/firmware versions and fixed observation messages. Full model
-names, serial/device IDs, board/region strings, network addresses, accounts,
-tokens, credentials, arbitrary errors and user-agent strings are omitted.
-Board family is deliberately unknown. A future schema expansion needs a privacy
-review and tests. Schema validation does not prove arbitrary imported evidence
-strings are redacted. Review every report before sharing.
+Acquisition is active: the candidate's explicit picture mode opens a hardware
+session and selects HDMI 4. It can affect existing viewing. The default app is
+inert; admission-only modes make permission predictions without SDL or UTP target
+calls. A foreground app can still affect lifecycle/viewing. Do not describe an
+active opt-in as passive discovery or claim that denied admission left viewing
+unchanged.
 
-The passive native inventory CLI has no input parameters, network access, service calls, file reads
-or privileged APIs. Seven fixed local library paths are checked using stat;
-symlinks can resolve to a regular library. It does not reveal link destinations
-or read/link/load library bytes. Missing/unresolvable paths mean only
-`not_found_in_scope`, while denied/nonregular/error cases mean `unavailable`.
-Libraries in other directories/versions may exist. No counts are inferred.
-The CLI owns no hardware resources and writes only stdout/stderr. A human may
-redirect stdout to a temporary file; no TV path is written by the program.
+No flash/device-node writes, kernel modules, firmware patches, protection bypass,
+hooks/injection, critical service restarts, factory resets, arbitrary-command
+endpoints or unvalidated privileged Luna APIs. No automatic input switching during
+passive discovery. The separately prepared temporary app-specific policy adds
+only four methods to one app; no broad/borrowed grant, generated-role replacement
+or persistent system-policy change is authorized. Scope and staging/removal are
+owned by the current plan.
 
-Phase 1 apps play bundled synthetic clips after explicit owner opt-in. They
-run with the normal app lifecycle, bound playback with a timeout and release
-media on exit or loss of visibility or focus. The native apps write fixed
-events and counts to an unlinked process-local file. The local SSH controller
-checks the installed manifest and running executable identity before signaling
-the test app. The browser controller checks the specific Inspector target over
-a temporary loopback tunnel. Both use the authorized local profile and save
-reports on the development PC. [Archived Phase 1 protocol](device-tests/archive/lg-c1-phase-1.md)
+## Bounds and restoration
 
-The retained 0.1.3 veto diagnostic has only short modes: acknowledged
-registration and eight-second dual playback plus A recovery, or a real-request
-wait of at most 60 seconds before that playback. Native hard cap: 90 seconds.
-The owner opens a fresh menu; the controller does not relaunch or run repeated
-cycles. It uses ordinary public LS2 calls on an app-owned handle, validates
-bounded payloads, and keeps registration through A recovery and both Unloads.
-Unsubscribe, token cancellation and handle teardown are logged separately.
-The final request test received no request, so actual NACK inhibition remains
-unknown. [Scope closure](decisions/0003-close-idle-work-resume-hdmi.md).
+Use explicit opt-in, fixed allowlists, payload/time bounds, cancellation, local
+cleanup and sanitized capture for active probes. Preserve evidence; never retry
+or infer ownership from an old/guessed ID. The expiring launch contract prevents
+late starts for the unmodified fixed producer's payload; actual device integration
+is untested. Do not bypass it with a direct root launch or old unbounded payload.
 
-Historical Endurance 0.1.0/0.1.1 repetition and longer runs are retained in the
-device journal and local control IPKs. They are not current modes or planned
-tasks. The old 0.1.1 Type 2 metadata/SDL requests were not proof of TV inhibition.
-Focus loss, Back/Exit, hide/minimize, signals and deadlines still cancel and
-release resources. A hard alarm or unconfirmed process exit is not clean
-cleanup evidence.
+Close acknowledgment, unregister, process absence and an alarm do not prove
+hardware release. Reports retain unknown outcomes. Do not restart ACB/compositor/
+UTP or add a backend pause grant as recovery. Owner restoration, physical access,
+safe shutdown and the single true-cold-cycle contingency are defined only in the
+current plan; standby is not proof of reset. Without owner acceptance and safe
+power access, acquisition is unsafe_to_test. Never interrupt updates or panel
+maintenance to satisfy a timer. Evidence collection must not delay owner recovery.
 
-Log collection exports known categories and numeric/redacted evidence only,
-not arbitrary vendor strings or raw IDs. CPU telemetry reads numeric
-`/proc/stat` and identity-checked app stat/status counters. Temperature checks
-read fixed thermal/hwmon temperature paths; missing values stay unknown.
-Post-exit and idle-menu measurements are not playback load. No thermal,
-cooling, system idle settings, fake key input or timer reset loops are used.
+## Privacy and retained controls
 
-Current HDMI discovery is read-only: inspect existing source, firmware,
-declarations and policy/configuration, and distinguish input selection,
-receiver ownership, output capture and presentation. Do not switch inputs,
-open capture, load a hardware session or call set methods during discovery.
-A later active test needs owner opt-in, a narrow justified interface, bounds
-and restoration. A simultaneous dual-HDMI test also needs a second independent
-source; only one is currently connected.
+Export fixed allowlisted outcomes, numeric versions/counts and known categories.
+Never print/share credentials, tokens, serial/device/network identifiers, raw
+window/pipeline IDs, private boot/launch authority, arbitrary errors or unrestricted
+vendor logs. Raw stdout/stderr is not a sanitized report. Review reports before
+sharing; schema validation alone does not redact imported evidence.
 
-If the app or optional helper misbehaves, close **only this app** or interrupt
-the foreground CLI. Stop testing on any unexpected input/mode/service behavior.
-Use the physical remote's normal Home/Back/Input controls to restore viewing.
-Do not follow upstream recovery instructions that restart ACB, compositor or
-other system services. No backup/restore of firmware or settings is needed
-because this implementation has no such write path.
+Keep machine reports immutable and human observations separate. Preserve private
+firmware, original reports/hashes and old IPKs in ignored `build/`/`dist/`; do not
+ship proprietary runtime libraries. Local checks/builds are not TV evidence.
 
-The owner handles installation and checks visible playback and normal viewing
-after exit. Builds and ABI checks are tracked separately from device playback.
+The passive probe still requires its own metadata action and allowlisted export.
+Phase 1 uses synthetic clips and bounded lifecycle cleanup; historical protocols
+remain in the [build archive](archive/build-reference-2026-11-12.md) and
+[device-test originals](device-tests/archive). Screensaver and Glasshouse/Home
+work are closed/separate; no settings, fake-key loops, thermal changes or service
+restart are implied by those retained controls.

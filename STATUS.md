@@ -1,89 +1,61 @@
-# Where we are
+# Current status
 
-Updated 2026-11-12. **Start here. This is the current project status and next task.**
-Dated research notes and test records preserve history; their old “next steps”
-do not override this page. [All documentation](docs/README.md).
+Updated 2026-11-13. Start here; historical next steps do not override this page.
+[Documentation index](docs/README.md) · [Roadmap](ROADMAP.md)
 
-## The goal and current position
+## Goal and result
 
-We want **two independently live HDMI inputs**, movable/resizable in PiP or
-split screen on the TV's own hardware.
+Build two independently live **HDMI 1 + HDMI 2** pictures on the TV's own
+hardware, then add movable PiP/split layouts and controls. Reference device:
+rooted LG OLED C1, firmware 03.53.45 / SDK 6.5.3. The owner last identified the
+connected source as HDMI 4.
 
-**We have not demonstrated dual HDMI, or moving/resizing HDMI through our
-application.** We have research tools and some proven building blocks. We are
-in **Phase 2: HDMI acquisition and application-owned window research** on the rooted
-LG C1, firmware 03.53.45 / SDK 6.5.3. One HDMI source is connected; the owner
-last identified it as HDMI 4.
+**No physical HDMI picture has been demonstrated in our app. Simultaneous HDMI,
+HDMI resizing and hardware restoration remain unknown.**
 
-## What has actually been proved
+| Evidence | Result |
+|---|---|
+| Phase 1 local clips | Two main/sub surfaces advanced independently on TV, with B geometry and A continuity. Audio/repeatability/recovery remain partial; this does not prove HDMI. |
+| Earlier admission app 0.1.2 | Own registration and a query predicting denied target permission (`allowed:false`) verified on TV. No IWC setter ran. |
+| Stock utility and lifecycle controls | Root IWC listing and normal/EOF fake-worker cleanup passed on TV. These are supporting controls, not HDMI recovery tests. |
+| HDMI window candidate 0.1.3 | Locally ARM-built, host acceptance-tested, packaged, archive-inspected and direct-ABI checked. **Not installed, simulator-tested or TV-tested.** |
 
-| Work | Current result | Evidence |
-|---|---|---|
-| Two local video files on separate main/sub surfaces | **Verified on TV**, including B geometry and A continuity. Phase 1 still has audio/repeatability/recovery gaps. This does not prove HDMI support. | [Phase 1 journal](docs/device-tests/c1-journal.md#phase-1) |
-| Ordinary admission app 0.1.2 | **Verified registration, then denied** at its first permission query. It exited; it did not list or modify HDMI windows. | [App record](docs/device-tests/c1-journal.md#admission-app) |
-| Stock root utility reading HDMI window information | **Verified on TV.** One HDMI-app publication found while live HDMI was selected. Report retained counts, not usable target IDs or dimensions. | [Root read 002](docs/device-tests/c1-journal.md#root-read-002) |
-| Temporary native helper: normal completion | **Verified on TV.** Fake worker completed; children reaped; helper exited; files/processes cleaned up. | [Normal control](docs/device-tests/c1-journal.md#native-normal) |
-| Temporary native helper: loss of control stdin | **Verified on TV.** It observed EOF, cancelled fake work and cleaned up without host rescue. Both SSH connections stayed up. | [Control EOF](docs/device-tests/c1-journal.md#native-control-eof) |
-| Direct UTP acquisition/window client path | **Verified/static:** the stock frontend exports its own window and passes its assigned ID to `utp.extinputs/open`, then selects a numbered HDMI port. A minimal single-HDMI candidate is locally ARM-built and host-tested; direct executable ABI checked. **Not packaged or TV-tested.** | [Acquisition trace](docs/research/c1-hdmi-interface-map.md#focused-acquisition-and-owned-window-review--2026-11-12), [prototype](native/phase2-hdmi-window/README.md) |
-| HDMI resize/crop/reset, ordered hardware recovery, simultaneous HDMI 1 + 2 | **Unknown / not TV-tested.** Active geometry/crop is unsafe to test under the current recovery contract. | [Remaining gates](docs/research/c1-iwc-gates-after-lifecycle.md) |
-
-The helper tests were useful because recovery must survive controller failure.
-They tested processes and cleanup, **not HDMI picture control or recovery**.
+[Actual TV journal](docs/device-tests/c1-journal.md) ·
+[Current artifact, hashes and contract](native/phase2-hdmi-window/README.md) ·
+[Saved HDMI findings](docs/research/c1-hdmi-interface-map.md)
 
 ## One next task
 
-**Advance the single-HDMI application-owned window candidate toward its first
-owner-authorized picture test.** The three-call read-only IWC preflight is
-**paused**; no real-IWC-worker integration or more generic recovery machinery is
-queued. The milestone is one live physical HDMI source in our fixed window,
-then two independently live HDMI 1 + HDMI 2 sources, then product controls.
+**Separately scope installation/readback and admission-only validation.**
+No TV operation or permission deployment is authorized by the current cleanup
+request. Follow the single [current procedure](docs/device-tests/current-plan.md).
 
-The saved client path is concrete enough for a minimal candidate: one export,
-one UTP open bound to that export, explicit HDMI 4 selection, eight seconds of
-observation, then owned-pipeline stop/close and local release. Default launch
-does no graphics/IPC; acquisition requires explicit opt-in. The current source
-is fixed to HDMI 4 because that is the owner's last confirmed connection.
+The two local control gaps are closed: saved rules support stock `luna-send`
+under its own default identity for both manifest operations, and the candidate
+rejects stale/different-boot acquisition payloads. The package includes neither
+policy nor an installer. The four-method policy is prepared locally only.
 
-**Readiness: locally built and acceptance-tested, direct executable ABI checked;
-not packaged, simulator-tested, TV-tested or approved for execution.** Remaining
-questions are own-caller UTP admission, allocation/reclamation and hardware
-restoration, especially an open timeout with no returned pipeline ID. Saved
-client/connector evidence does not resolve these server behaviors or the second
-port's receiver/scaler allocation. Record these limits before proposing a bounded
-normal-exit test; do not extend the old IWC recovery contract to this new path.
-[Single current plan](docs/device-tests/current-plan.md).
+The remaining device gates are:
 
-## What still blocks an HDMI geometry test
+- Verify installed ELF/manifest, generated roles/client policy and normal
+  launcher, boot-clock and report visibility in the actual app context.
+- Verify both administrative permission predictions, then app baseline → scoped
+  overlay → removed predictions, preserving generated policy and proving rollback.
+- Before a separate picture trial, obtain owner acceptance/access and a safe
+  procedure for the [restoration contingency](docs/device-tests/current-plan.md#restoration-route--proposal-for-one-owner-attended-trial).
 
-- A fresh, unique HDMI target and logical full-view baseline; old report IDs
-  cannot be reused, and panel/signal pixels cannot substitute for app coordinates.
-- Actual setter admission/application. A successful permission prediction alone
-  would not prove either.
-- Ordered action/reset application and observable recovery. The inspected
-  interface has no applied-geometry acknowledgment. Lifecycle passes cannot
-  supply that missing guarantee.
+A permission prediction is not actual UTP execution. A close acknowledgment or
+process exit is not hardware release; the candidate reports that outcome as
+unknown. No additional firmware retrieval or generic recovery work is queued.
 
-These remain limits of the paused stock-window IWC route. The new candidate
-positions only its own export; it never lists or modifies the stock publication.
-That avoids an IWC takeover but does **not** prove safe UTP acquisition/release.
+## Scope boundaries
 
-## Boundaries and where to resume
+The first picture proposal is one fixed application-owned HDMI-4 window, then
+two distinct moving sources on HDMI 1 and HDMI 2. Product controls follow
+concurrency proof. The IWC preflight is paused; screensaver work is closed and
+Glasshouse/Home is separate. Retain Phase 1 controls and their unresolved limits.
 
-Keep the diagnostic apps closed. No TV operations, permission edits, automatic
-input switching or stock-window geometry/crop experiments are authorized.
-Each future TV operation needs explicit owner scope;
-past runs do not authorize a repeat. No new TV run is authorized by this page.
-
-Screensaver work is closed for this scope, with effective inhibition unknown.
-Glasshouse/Home is separate. Phase 1 gaps are deferred, not passed. A dual-port
-test also needs a second source and an evidenced independent input path.
-
-- [Handoff](docs/handoff/hdmi-next-chat.md): short instructions for continuing work.
-- [C1 journal](docs/device-tests/c1-journal.md): compact actual TV results and archive links.
-- [Current plan](docs/device-tests/current-plan.md): acquisition candidate, readiness limits and future acceptance gates.
-- [Roadmap](ROADMAP.md): product phases and acceptance criteria.
-- [Documentation index](docs/README.md): test evidence, tools and research history.
-- [Build guide](docs/build.md): local SDK/toolchain and retained controls.
-
-Update this page when a test result or the selected next task changes. Keep
-exact logs/hashes in original reports and exceptional diagnosis in the archive.
+This documentation/repository cleanup made no TV run, power action or permission
+change. Past completed authorizations do not authorize repeats. Preserve saved
+firmware, original reports/hashes and earlier packages. Never commit or push
+automatically.

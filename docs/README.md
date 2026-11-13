@@ -1,82 +1,56 @@
 # Documentation index
 
-**[Current status and next task](../STATUS.md) is the starting point.**
-This index separates current instructions, observed results and research history.
-Read only the records needed for the selected task; there is no need to reread
-the whole research trail before continuing.
+Start with [Status](../STATUS.md). Each current fact/procedure has one home;
+dated records retain their original evidence and earlier conclusions.
 
-## Current instructions and specification
+## Current documents
 
-| Document | Purpose |
+| Document | Responsibility |
 |---|---|
-| [Status](../STATUS.md) | What works, what does not, and the single next task. |
-| [Handoff](handoff/hdmi-next-chat.md) | Concise continuation instructions and workspace pointers. |
-| [Roadmap](../ROADMAP.md) | Product phases and acceptance gates. |
-| [Current plan](device-tests/current-plan.md) | UTP acquisition/window candidate, remaining readiness limits and future single/dual HDMI acceptance gates. No TV execution authorized. |
-| [Remaining IWC gates](research/c1-iwc-gates-after-lifecycle.md) | Retained recovery analysis for the paused stock-window route. |
-| [Contributor rules](../AGENTS.md) / [safety](safety.md) | Workflow, scope and device restrictions. |
-| [Build guide](build.md) | Existing local SDK and build/package procedures; commands are not authorization to run a device test. |
+| [Status](../STATUS.md) | Readiness, verified results, remaining gates and the single next task. |
+| [Roadmap](../ROADMAP.md) | Product phases and acceptance criteria. |
+| [Current test plan](device-tests/current-plan.md) | Admission/rollback, first-picture capture, timing and owner restoration procedure. No device execution authorized. |
+| [C1 journal](device-tests/c1-journal.md) | Actual TV outcomes only, with original report and detailed journal links. |
+| [HDMI candidate](../native/phase2-hdmi-window/README.md) | Fixed native client/launch/report contract and exact current artifact hashes. |
+| [Scoped policy](../native/phase2-hdmi-window/policy/README.md) | Four files, one app, four methods; static support and limits. Not deployed. |
+| [HDMI evidence map](research/c1-hdmi-interface-map.md) | Concise current findings linked to exact archived traces. |
+| [Build guide](build.md) | Current PowerShell/WSL toolchain and local checks. |
+| [Handoff](handoff/hdmi-next-chat.md) | Reading order, workspace and maintenance conventions. |
+| [Contributor rules](../AGENTS.md) / [safety](safety.md) | Scope, privacy and device restrictions. |
 
-## Device tests: two active files
+## Retained controls and research
 
-- [Compact C1 journal](device-tests/c1-journal.md): actual Phase 0/1, admission,
-  root-read and native normal/EOF outcomes, cleanup/owner context and report hashes.
-- [Current test plan](device-tests/current-plan.md): the single proposed next
-  experiment and its readiness, limits and pass criteria. No TV run is authorized.
+These remain available for reference, not scheduled work. Preserve source,
+tests, packages and original evidence. Phase 1 is partial; IWC is paused and
+screensaver work is closed.
 
-The journal links to all eight detailed originals under `device-tests/archive/`.
-Those retain old commands, diagnosis and every embedded report/artifact hash;
-they are historical references, not extra current plans. Raw reports are unchanged.
-
-## Implemented research tools
-
-| Tool contract/source | Scope and execution status |
+| Topic | Sources and status |
 |---|---|
-| [Admission runner](../native/phase2-admission/README.md) | Built/packaged/ABI-checked; app 0.1.2 TV-tested and denied. No app relaunch is queued. |
-| [Single-HDMI window candidate](../native/phase2-hdmi-window/README.md) | Own exported window bound at UTP open; one fixed HDMI-4 picture attempt. ARM-built, focused host tests and direct executable ABI check; not packaged or TV-tested. |
-| [IWC diagnostic collector](research/c1-iwc-diagnostic-collector.md) | Fixed root listing; TV-tested in reads 001/002. Exports counts only. |
-| [Local recovery model](research/c1-iwc-local-recovery-model.md) | Deterministic simulated arming/failure rules; no device adapter. |
-| [Local process harness](research/c1-iwc-local-process-harness.md) | Thirteen Linux fake-process scenarios; host-only evidence. |
-| [Native helper](../native/phase2-lifecycle/README.md) / [controller](research/c1-native-lifecycle-controller.md) | Built/ABI-checked; normal/EOF C1 cases passed; 47 controller simulations. Real IWC workers are not implemented. |
+| Earlier admission app | [Contract](../native/phase2-admission/README.md); 0.1.2 registration/query TV-verified, target permission predicted false. No relaunch queued. |
+| IWC read-only listing | [Collector](research/c1-iwc-diagnostic-collector.md); stock utility reads 001/002 TV-verified, counts only. |
+| Lifecycle controls | [Native helper](../native/phase2-lifecycle/README.md), [controller](research/c1-native-lifecycle-controller.md); normal/EOF fake-worker TV cases passed, no real IWC/UTP adapter. |
+| Host recovery models | [Arming model](research/c1-iwc-local-recovery-model.md), [process harness](research/c1-iwc-local-process-harness.md), [supervisor reasoning](research/c1-iwc-supervisor-design-review.md). |
+| Stock-window limits | [Remaining gates](research/c1-iwc-gates-after-lifecycle.md), [ownership](research/c1-iwc-ownership-recovery.md), [admission/reset](research/c1-iwc-admission-reset-plan.md), [caller](research/c1-iwc-permitted-caller.md), [baseline](research/c1-hdmi-target-baseline-recovery-review.md). |
+| Local video | [SMP/NDL routing](research/c1-smp-ndl-resource-path.md); actual playback/restoration limits are in the journal. |
+| Closed idle research | [Native interface](research/c1-native-screensaver-interface.md), [app idle path](research/c1-app-idle-path.md); effective inhibition remains unknown. |
+| Upstream and licensing | [Prior art](research/prior-art.md), [pinned sources](research/source-lock.json). |
+| Decisions | [Probe first](decisions/0001-probe-first.md), [main/sub validation](decisions/0002-main-sub-validation.md), [close idle/resume HDMI](decisions/0003-close-idle-work-resume-hdmi.md). |
 
-## Research and decision history
+## Archives and evidence
 
-These retain provenance, static addresses, hashes and earlier hypotheses. They
-are supporting records, not parallel task lists. Earlier “not built/tested”
-statements describe that stage; follow later device evidence and current Status.
+- [HDMI investigation through 2026-11-12](research/archive/c1-hdmi-investigation-2026-11-12.md): complete static traces, hashes, provenance and superseded next steps.
+- [Build/control reference through 2026-11-12](archive/build-reference-2026-11-12.md): historical build/setup/device commands, not an execution queue.
+- [Device-test originals](device-tests/archive): eight detailed records linked from the compact journal.
+- [Historical handoff](handoff/hdmi-history-2026-11-12.md): chronological context, not current instructions.
 
-| Topic | Records |
-|---|---|
-| Physical HDMI path and prior art | [Interface map](research/c1-hdmi-interface-map.md), [prior art](research/prior-art.md), [pinned sources](research/source-lock.json) |
-| IWC caller and recovery contract | [Ownership trace](research/c1-iwc-ownership-recovery.md), [admission/reset plan](research/c1-iwc-admission-reset-plan.md), [permitted caller](research/c1-iwc-permitted-caller.md) |
-| Baseline and lifetime reasoning | [Target/baseline review](research/c1-hdmi-target-baseline-recovery-review.md), [supervisor design](research/c1-iwc-supervisor-design-review.md) |
-| Local-video resource routing | [SMP/NDL main/sub analysis](research/c1-smp-ndl-resource-path.md) |
-| Closed idle research | [Native screensaver interface](research/c1-native-screensaver-interface.md), [app idle path](research/c1-app-idle-path.md) |
-| Decisions | [Probe first](decisions/0001-probe-first.md), [main/sub validation](decisions/0002-main-sub-validation.md), [close idle/resume HDMI](decisions/0003-close-idle-work-resume-hdmi.md) |
-| Chronological consolidation archive | [Original long handoff through 2026-11-12](handoff/hdmi-history-2026-11-12.md) |
+Ignored `build/` and `dist/` contain immutable local reports, saved firmware/assembly,
+ABI records, owner observations and retained packages. Do not publish firmware,
+credentials, profiles/network identifiers, raw target IDs or unrestricted vendor
+logs. Do not retrieve files again merely to reread evidence already saved locally.
 
-## Local evidence storage
-
-`build/` and `dist/` are retained local artifacts, not a second current-status
-source. Original machine reports are immutable; owner observations are separate.
-Research records name their exact files and hashes. Proprietary saved firmware,
-credentials, profile/network identifiers and raw target IDs must not be published.
-Do not retrieve TV files again merely to reread evidence already saved locally.
-
-Maintain one task in Status, append concise TV results to the C1 journal and
-update the current plan when the next test changes. Do not create a new Markdown
-file for every run or repeat protocol/background in each result. Keep exact
-machine reports immutable, with separate owner observations. Archive exceptional
-investigation detail only when needed. Keep chronology out of the roadmap/handoff.
-
-## Consolidation check — 2026-11-12
-
-Status/roadmap/handoff were separated from history. Eight device-test documents
-were then archived and replaced by one compact journal and one current plan;
-incoming and archived relative links were updated. Original Markdown backups
-and a report/artifact hash baseline are retained locally in
-`build/docs-test-journal-merge-20261112/`. Archive hash text and original report/
-artifact bytes were verified unchanged; Markdown links and `git diff --check`
-passed. Documentation only: no code tests/builds or TV operations, no commit/push.
-Active test prose fell from 1,969 to 188 lines (about 90% less); all 166 original
-report/artifact hashes and every embedded hash in the archived detail were retained.
+The 2026-11-13 consolidation snapshot/link/hash checks are retained locally in
+`build/docs-consolidation-20261113/`. Archive link paths may be rebased; original
+Markdown snapshots and all embedded hashes are preserved. Runtime source,
+policy JSON, tests and packages are unchanged by this cleanup. Only npm test
+entry points are reorganized: current portable HDMI checks are the default,
+with the former suite under `test:controls`.

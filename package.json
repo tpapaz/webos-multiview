@@ -7,8 +7,13 @@
     "test:iwc-recovery-model": "node tests/host/iwc-recovery-model.test.cjs",
     "test:iwc-process": "powershell -NoProfile -File scripts/test-iwc-process-harness.ps1",
     "test:lifecycle-controller": "node tests/host/lifecycle-controller.test.cjs",
-    "test": "node tests/host/probe.test.cjs && node tests/host/mixed-evidence.test.cjs && node tests/host/resource-log.test.cjs && node tests/host/sinks-evidence.test.cjs && node tests/host/endurance-evidence.test.cjs",
-    "lint": "node scripts/check-js.cjs",
+    "check:utp-policy": "node scripts/check-hdmi-utp-policy.cjs",
+    "test:hdmi-window-report": "node tests/host/hdmi-window-report.test.cjs",
+    "test:hdmi-window-launch": "node tests/host/hdmi-window-launch.test.cjs",
+    "test": "npm run test:hdmi-window",
+    "test:hdmi-window": "npm run test:hdmi-window-report && npm run test:hdmi-window-launch && npm run check:utp-policy",
+    "test:controls": "node tests/host/probe.test.cjs && node tests/host/mixed-evidence.test.cjs && node tests/host/resource-log.test.cjs && node tests/host/sinks-evidence.test.cjs && node tests/host/endurance-evidence.test.cjs",
+    "lint": "node scripts/check-js.cjs && node scripts/check-hdmi-utp-policy.cjs",
     "package": "node scripts/package.cjs"
   },
   "devDependencies": {

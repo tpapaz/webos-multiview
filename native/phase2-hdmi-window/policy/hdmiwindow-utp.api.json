@@ -1,0 +1,8 @@
+{
+  "io.github.tpapaz.multiview.hdmiwindow.utp": [
+    "com.webos.service.utp.extinputs/open",
+    "com.webos.service.utp.extinputs/switchExternalInput",
+    "com.webos.service.utp.extinputs/stop",
+    "com.webos.service.utp.extinputs/close"
+  ]
+}
