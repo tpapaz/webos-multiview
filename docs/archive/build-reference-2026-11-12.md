@@ -512,7 +512,7 @@ record describes the previous ELF, not 0.1.3.
 The complete 0.1.2 IPK/ELF and its 93-import/eight-provider reports are also
 preserved (`f80f16b09d5d6262d0262a5df1b725a8a8a8c4acbbd68d4d2590d36dc4f9010f`).
 
-The [current procedure](../device-tests/current-plan.md#bounded-capture-and-first-picture-procedure)
+The [current procedure](../device-tests/current-plan.md#completed-bounded-procedure-and-reusable-limits)
 uses `scripts/capture-hdmi-window.cjs` for separately authorized read-only capture.
 Offline `--check-report <mode> <file>` never loads device credentials. The live
 `--prepare` / `--collect` modes require `--allow-tv-read`, never launch, signal,

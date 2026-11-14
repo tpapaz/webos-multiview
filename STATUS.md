@@ -1,53 +1,66 @@
 # Current status
 
-Updated 2026-11-14. [Roadmap](ROADMAP.md) · [Documentation index](docs/README.md)
+Updated 2026-11-15. [Roadmap](ROADMAP.md) · [Documentation index](docs/README.md)
 
-## Goal and result
+## Goal and current result
 
-Show one live HDMI picture in our own window, then independently live
-**HDMI 1 + HDMI 2** using the TV's internal hardware. Reference: rooted LG OLED
-C1, firmware 03.53.45 / SDK 6.5.3. Last owner-confirmed source: HDMI 4.
+One live physical HDMI picture in our own window, then independently live
+**HDMI 1 + HDMI 2** on the TV's internal hardware. Reference: rooted LG OLED C1,
+firmware 03.53.45 / SDK 6.5.3. No physical HDMI picture is verified in our app.
+Direct UTP remains the acquisition/window research path; Glasshouse's HTML HDMI
+source is a complementary reference. No replacement browser candidate is queued.
 
-**No physical HDMI picture has been demonstrated in our app.** Version 0.1.4
-has not executed on the TV; installed-file verification is not an app run.
+**Installed 0.1.8 is machine-verified and was TV-tested once. LSRegisterPubPriv
+returned false.** Both report aliases were valid and identical (591 bytes).
+Display/request/window were 1920x1080. Window/renderer, export creation/ID/binding,
+focus wait and context creation passed. Focus changed 0 → 1, no cancellation.
+Later LS2 name/attachment/disconnect/window-ID checks were not reached. Cleanup
+calls returned and exit intent 1 was recorded. The bus error/rejection reason and
+actual exit code/signal remain unknown. A crash is not established.
+[Actual evidence](docs/device-tests/c1-journal.md#018-setup-only-diagnostic--named-ls2-registration-failed).
 
-## Latest verified state
+One acknowledged SAM attempt; two closed connections, 4.593 s and 3.486 s;
+collection opened dispatch +27.014 s. Exact installed/generated bindings passed;
+ELF/appinfo still matched afterward. Both strict three-second guards unchanged.
+No UTP query/acquisition path exists in this diagnostic. Own app absent afterward;
+log gate size_cap, hardware release unknown. Owner saw LG Home while watching
+channels and confirmed normal picture, sound and remote usable afterward.
 
-| Gate | Evidence and limit |
+## Offline registration review and next task
+
+Saved SDL video startup calls LG's helper, whose bridge attempts named public
+registration with the current app ID. Our physical startup registers that name
+after graphics. A duplicate-name collision is therefore a supported **candidate**;
+0.1.8 did not preserve the LSError needed to prove it was the actual rejection.
+The earlier admission control registers without SDL; the working endurance control
+uses an anonymous public connection. Neither justifies replacing our named caller.
+
+The smallest reviewed correction is to register/validate/attach our own named
+public handle before graphics. A [source patch](native/phase2-hdmi-picture/registration-before-graphics.patch)
+was applied only to an isolated local copy: real begin-body host scenarios,
+ARM compilation, exact C1 direct ABI and existing native CTests passed. No IPK
+was created; installed 0.1.8 and all original sources/packages remain unchanged.
+[Mechanism, provenance and limits](docs/research/c1-hdmi-interface-map.md#registration-identity-and-smallest-correction).
+
+**Single next task:** prepare a fresh setup-only diagnostic incorporating this
+startup order and fixed sanitized registration-error categories, then validate
+it locally. No new TV connection, installation, launch, permission/mode change,
+retrieval or retry is authorized. Preserve the existing strict guards and geometry.
+[Current procedure](docs/device-tests/current-plan.md).
+
+## Preserved evidence and remaining limits
+
+| Evidence | Established result / limit |
 |---|---|
-| Local candidate | 0.1.4 built, host-tested, packaged and direct-ABI checked. [Artifact/contract](native/phase2-hdmi-window/README.md). |
-| Installation | Exact app/generated files, owners and modes pass; ELF `0755`, appinfo `0644`. No correction needed. [Readback](docs/device-tests/c1-journal.md#014-installed-files-and-modes-verified). |
-| Narrow permission coverage | At 20:05 Athens on 2026-11-14, one acknowledged held-manifest activation changed fresh maps from `[0,0,0,0]` to exactly `[1,1,1,1]`, only our app/four methods. Core/file bindings pass, app absent during checks, connection closed. [Result](docs/device-tests/c1-journal.md#014-narrow-permission-activation-and-coverage-verified). |
-| Grant disposition | Left loaded pending the picture trial and separately scoped cleanup. Manifest remains outside scan roots. Retained access is not revocation. |
-| Live input / hardware release | Actual UTP admission, graphics/clock integration, HDMI motion, restoration and simultaneous ports remain **unknown**. |
-| Earlier controls | Main/sub local clips and normal/EOF fake-worker controls have TV evidence. Phase 1 remains partial; none proves physical HDMI. [Journal](docs/device-tests/c1-journal.md). |
+| 0.1.4 physical attempt | Launch flash; no native report recovered. Entry, exit, crash and actual UTP execution unknown. [Attempt](docs/device-tests/c1-journal.md#014-first-picture-attempt--no-native-capture), [postmortem](docs/device-tests/c1-journal.md#014-read-only-postmortem--reports-and-parents-absent). |
+| 0.1.5 inert diagnostic | Native entry accepted; host-derived realtime window rejected. Actual exit unknown. [Result](docs/device-tests/c1-journal.md#015-inert-diagnostic--realtime-guard-rejected). |
+| 0.1.6 inert diagnostic | TV-derived deadlines passed both strict guards. No graphics/UTP proof. [Result](docs/device-tests/c1-journal.md#016-inert-diagnostic--both-clock-guards-accepted). |
+| 0.1.7 physical attempt | setup_failed before acquisition, 527 ms; exact substage/actual exit unknown. [Result](docs/device-tests/c1-journal.md#017-physical-picture-trial--setup-failed-before-acquisition). |
+| Narrow grant | Last returned maps for 0.1.7 showed exact [1,1,1,1] coverage. This is not live-caller UTP admission; 0.1.8 made no permission-map query. [Verification](docs/device-tests/c1-journal.md#017-read-only-installed-binding-and-admission-verification). |
+| Earlier local clips | Working two-video controls; Phase 1 remains partial. They do not establish HDMI ingress or recovery. |
 
-These are dated observations, not continuous monitoring. No repeat activation,
-mode repair, diagnostic boot or generic recovery campaign is next.
-
-## One next task
-
-**One owner-attended HDMI-4 picture trial, when separately authorized.**
-Permission/configuration gates pass. Confirm moving HDMI-4 content, owner presence,
-remote/restoration access and acceptance of the contingency, then use the
-[current procedure](docs/device-tests/current-plan.md). It defines one expiring
-normal app-manager launch, the independent 27-second owner timer, visible motion
-inside the fixed rectangle, exit and restoration observations. This page
-and completed authorization scopes do not authorize a new TV operation.
-
-The principal risks remain unproven backend release and the missing independent
-second-port path. A close acknowledgment or process exit never proves hardware
-release. Product controls follow concurrency proof.
-
-## Closed and historical work
-
-The old native allowed predictions remain `phaseAccepted:false`; a removal
-dispatch lost transport with receipt/execution/cause unknown. Later denied maps
-verified rollback independently. The unchanged-UUID verifier stays failed; it is
-not a reason for another boot. The old `0777` drift is superseded by correct
-0.1.4 modes. [Dated device history](docs/device-tests/archive/c1-hdmi-preparation-2026-11-14.md) ·
-[Technical investigation](docs/research/archive/c1-hdmi-admission-2026-11-14.md).
-
-No extra firmware retrieval, IWC preflight, screensaver/Glasshouse work or Phase 1
-repeat campaign is queued. Preserve all original reports, binaries and packages;
-never commit or push automatically.
+Original reports, packages, firmware, frozen helpers and private authority remain
+local and ignored. Disposable cache cleanup and document ownership are described
+in [repository layout](docs/repository-layout.md). Historical failed acceptance
+states remain unchanged. IWC, screensaver/Glasshouse Home routing and repeat boot/
+mode diagnostics remain paused or closed. No commit or push is automatic.

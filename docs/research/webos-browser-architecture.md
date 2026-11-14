@@ -6,10 +6,18 @@ firmware 03.53.45. [Status](../../STATUS.md) · [Roadmap](../../ROADMAP.md) ·
 
 ## 1. Executive summary
 
+**Subsequent evidence, 2026-11-14:** the owner supplied Glasshouse, outside these
+six repositories. Its pinned `startPreview()` uses HTML video with
+`service/webos-external` / `ext://hdmi:<port>` and also has tuner source code.
+This materially improves the smallest single-picture client option; our own app's
+access and independent-port concurrency remain unproven. See the [pinned source
+review and updated next-candidate implication](c1-hdmi-interface-map.md#glasshouse-preview-source-and-owner-observation).
+The negative search conclusions below apply to the six original repositories.
+
 **Useful presentation techniques were found, but no browser resolves simultaneous
 HDMI acquisition or arbitrary installed-app embedding.** Keep the current
 single-HDMI owned-window milestone, then prove independently live HDMI 1 + HDMI 2.
-A browser port is not a replacement acquisition architecture.
+A browser port is not required by these findings.
 
 - **Wren is the strongest reference for this C1 generation.** Its UI creates a
   Wayland surface group; cooperating WebKit processes attach their own page

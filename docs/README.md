@@ -10,12 +10,13 @@ override Status or authorize any TV operation.
 |---|---|
 | [Status](../STATUS.md) | Latest verified state, limits and the single next task. |
 | [Roadmap](../ROADMAP.md) | Product phases and acceptance criteria. |
-| [Current test plan](device-tests/current-plan.md) | The one proposed HDMI-4 trial, timing, visual acceptance and stop/restoration rules. |
+| [Current test plan](device-tests/current-plan.md) | Setup correction readiness, evidence limits and stop/restoration rules. |
 | [C1 journal](device-tests/c1-journal.md) | Compact actual TV outcomes, with links to original detailed evidence. |
 | [HDMI candidate](../native/phase2-hdmi-window/README.md) | Fixed native acquisition/launch/report contract and canonical artifact hashes. |
 | [Scoped policy](../native/phase2-hdmi-window/policy/README.md) | Own app/four-method policy, checker semantics and offline replay. |
 | [HDMI evidence map](research/c1-hdmi-interface-map.md) | Consolidated technical findings and remaining unknowns. |
 | [Build guide](build.md) | Existing local toolchain, reproducible checks and private-evidence prerequisites. |
+| [Repository layout](repository-layout.md) | Source/control ownership, Git exclusions and local artifact retention. |
 | [Handoff](handoff/hdmi-next-chat.md) | Reading order and continuation conventions; no duplicate chronology. |
 | [Contributor rules](../AGENTS.md) / [safety](safety.md) | Stable scope, privacy and device restrictions. |
 
@@ -26,7 +27,7 @@ validation stages from current readiness. Preserve source, tests and artifacts.
 
 | Topic | Sources |
 |---|---|
-| Browser architectures | [Six-project source review](research/webos-browser-architecture.md): own-surface/media techniques, no new physical-input path. Dated proposals only. |
+| Browser architectures | [Six-project source review](research/webos-browser-architecture.md): own-surface/media techniques; later [Glasshouse source finding](research/c1-hdmi-interface-map.md#glasshouse-preview-source-and-owner-observation) adds a concrete HDMI/tuner media-element client, with own-app/concurrency limits. |
 | Prior art / licensing | [Audit](research/prior-art.md), [pinned source lock](research/source-lock.json). |
 | Local media | [SMP/NDL routing](research/c1-smp-ndl-resource-path.md); actual main/sub results and limits are in the journal. |
 | Earlier admission runner | [Contract](../native/phase2-admission/README.md); registration/query evidence, no IWC setter. |

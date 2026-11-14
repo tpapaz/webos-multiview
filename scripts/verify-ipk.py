@@ -10,7 +10,10 @@ import tarfile
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--admission', action='store_true', help='verify the read-only IWC admission package')
+parser.add_argument('--setup-diagnostic', action='store_true', help='verify setup-only diagnostic')
+parser.add_argument('--picture', action='store_true', help='verify current physical HDMI picture package')
 parser.add_argument('--hdmi-window', action='store_true', help='verify the fixed HDMI window/admission package')
+parser.add_argument('--entry-diagnostic', action='store_true', help='verify the inert native-entry diagnostic package')
 parser.add_argument('--endurance', action='store_true', help='verify the bounded main/sub endurance package')
 parser.add_argument('--sinks', action='store_true', help='verify the SMP main/sub sink test')
 parser.add_argument('--mixed', action='store_true', help='verify the Phase 1 SMP + NDL package')
@@ -18,14 +21,14 @@ parser.add_argument('--ndl', action='store_true', help='verify the Phase 1 NDL t
 parser.add_argument('packages', nargs='+')
 args = parser.parse_args()
 
-if args.hdmi_window:
-    source = ROOT / 'native/phase2-hdmi-window'
+if args.setup_diagnostic or args.picture or args.hdmi_window or args.entry_diagnostic:
+    source = ROOT / ('native/phase2-setup-diagnostic' if args.setup_diagnostic else 'native/phase2-entry-diagnostic-0.1.6' if args.entry_diagnostic else 'native/phase2-hdmi-picture' if args.picture else 'native/phase2-hdmi-window')
     executable = 'multiview-hdmi-window'
     version = json.loads((source / 'appinfo.json').read_bytes())['version']
     files = {
         'appinfo.json': source / 'appinfo.json',
         'icon.png': ROOT / 'apps/probe-ui/icon.png',
-        executable: ROOT / ('build/phase-2/hdmi-window-arm-' + version) / executable,
+        executable: ROOT / ('build/phase-2/' + ('entry-diagnostic-arm-' if args.setup_diagnostic else 'entry-diagnostic-arm-' if args.entry_diagnostic else 'hdmi-window-arm-') + version) / executable,
     }
 elif args.admission:
     source = ROOT / 'native/phase2-admission'
@@ -55,7 +58,7 @@ else:
 
 manifest = json.loads((source / 'appinfo.json').read_bytes())
 app = manifest['id']
-architecture = 'arm' if args.hdmi_window or args.admission or args.ndl or args.mixed or args.sinks or args.endurance else 'all'
+architecture = 'arm' if args.setup_diagnostic or args.picture or args.entry_diagnostic or args.hdmi_window or args.admission or args.ndl or args.mixed or args.sinks or args.endurance else 'all'
 
 def require(condition, message):
     if not condition:
@@ -84,7 +87,7 @@ for filename in args.packages:
                     data = archive.extractfile(entry).read()
                     if member == 'data.tar.gz' and p.name in files:
                         require(data == files[p.name].read_bytes(), 'App content mismatch: ' + p.name)
-                    if (args.admission or args.hdmi_window) and member == 'data.tar.gz' and p.name == 'packageinfo.json':
+                    if (args.setup_diagnostic or args.picture or args.admission or args.hdmi_window or args.entry_diagnostic) and member == 'data.tar.gz' and p.name == 'packageinfo.json':
                         require(json.loads(data) == {'id': app, 'version': manifest['version'], 'app': app},
                                 'Unexpected generated admission package metadata')
                     if member == 'control.tar.gz' and entry.name == 'control':

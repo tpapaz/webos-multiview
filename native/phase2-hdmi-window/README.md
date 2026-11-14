@@ -4,11 +4,19 @@
 [Evidence](../../docs/research/c1-hdmi-interface-map.md) · [Build](../../docs/build.md)
 
 **0.1.4 is locally built, host acceptance-tested, packaged and direct-ABI checked;
-installed files/modes/generated policies are read-only verified on C1.** It has
-not executed or been simulator-tested. Permission coverage and current grant
-retention are recorded in [Status](../../STATUS.md); exact device outcomes are in
-the [journal](../../docs/device-tests/c1-journal.md). Physical HDMI, graphics,
-actual UTP admission, hardware release and simultaneous ports remain unknown.
+installed files/modes/generated policies were verified before the first trial.**
+One normal picture launch was acknowledged, but the owner saw only a launch flash
+and no intended picture. Collection failed without a precise gate; actual native
+entry/exit and UTP execution remain unknown. A crash is unconfirmed. No simulator
+test or physical HDMI result exists. [Status](../../STATUS.md) owns the current
+blockers and grant disposition; the [journal](../../docs/device-tests/c1-journal.md#014-first-picture-attempt--no-native-capture)
+owns the actual outcome. No unchanged-candidate relaunch is queued.
+
+The later separate inert 0.1.5 diagnostic is now installed/TV-tested once: entry
+and parser succeeded, boot/uptime passed, realtime guard rejected. It contains no
+acquisition adapter and is not a new physical-picture result. Actual diagnostic
+exit and the original 0.1.4 cause remain unknown. [Actual diagnostic evidence](../../docs/device-tests/c1-journal.md#015-inert-diagnostic--realtime-guard-rejected).
+Original candidate sources and artifact hashes below are unchanged.
 
 ## Fixed client contract
 
@@ -59,7 +67,9 @@ entry; admitted start is by uptime sample +3 s, so cap ends by sample +25 s.
 Owner's independent submit +27 s handoff is unchanged. `_exit(124)` writes nothing
 to a possibly blocked launcher pipe. These are client bounds, not guarantees
 against stopped tasks/kernel faults/backend hangs. Device clock/graphics
-integration is untested; normal app-manager admission delivery is saved evidence.
+integration has no validated result. Offline production-parser replay accepts
+the saved requested payload; actual delivered argv/clock values were not observed.
+A fresh host deadline and SAM acknowledgment do not prove native guard admission.
 
 ## Admission and reports
 
@@ -86,7 +96,11 @@ Collector is read-only, ≤30 s/1,024 processes. It checks exact package bytes,
 ELF0755/appinfo0644, generated roles/client and versioned manifest linkage, own
 report aliases/schema and app absence. It never launches/signals/deletes.
 Historical reports/packages remain immutable evidence; this checkout's validator
-accepts the current version, not relabelled historical captures.
+accepts the current version, not relabelled historical captures. The first trial's
+collector returned one generic error without a stage record. Because installed/
+metadata/process/binding gates precede report reading, that error does not prove
+report absence. Strict launch readiness stays distinct from read-only failure
+evidence; recover the exact report/metadata boundary before another launch.
 
 ## Local build and acceptance checks
 

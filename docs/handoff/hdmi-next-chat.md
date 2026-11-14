@@ -12,7 +12,9 @@ chronological blockers or a second procedure into this handoff.
 The active milestone is one physical HDMI-4 picture, then independently live
 HDMI 1 + HDMI 2. No app launch, HDMI acquisition or other TV action is authorized
 by this handoff. Do not repeat completed activation, mode repair or boot diagnostics.
-IWC, screensaver/Glasshouse and Phase 1 repeat campaigns remain deferred/closed.
+IWC, screensaver/Glasshouse Home routing and Phase 1 repeat campaigns remain
+deferred/closed. Glasshouse's HDMI preview source is a separate presentation
+reference in the HDMI evidence map, not a request to modify its launcher.
 
 Use PowerShell on Windows and the existing WSL SDK for Linux builds. Preserve
 the uncommitted tree, original reports, saved firmware and packages. Never reset,

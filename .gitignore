@@ -1,10 +1,48 @@
-build/
-dist/
+# Local outputs and private research evidence; never commit build/dist contents.
+/build/
+/dist/
+/out/
+/coverage/
 node_modules/
 .venv/
+.cache/
+.pytest_cache/
+.ruff_cache/
 __pycache__/
+*.py[cod]
 *.ipk
 *.report.json
+
+# Native/CMake outputs, including accidental in-source builds.
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+build.ninja
+.ninja_deps
+.ninja_log
+compile_commands.json
+*.o
+*.obj
+*.a
+*.so
+*.so.*
+*.dll
+*.exe
+*.pdb
+
+# Local credentials and webOS device profiles.
+.env
+.env.*
+!.env.example
+!.env.*.example
+.webos/
+novacom-devices.json
+*.pem
+*.key
+id_rsa
+id_ed25519
 
 # Local IDE project files
 .idea/
@@ -15,3 +53,11 @@ __pycache__/
 *.vcxproj.user
 CMakeUserPresets.json
 /cmake-build-*/
+
+# Temporary/OS files.
+*.tmp
+*.temp
+npm-debug.log*
+.DS_Store
+Thumbs.db
+Desktop.ini

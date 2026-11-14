@@ -134,12 +134,346 @@ a separately authorized single-picture trial; actual UTP admission remains unkno
 Record: `build/phase-2/utp-activation-0.1.4-20261114-001/record.json`;
 SHA-256 `0e424484a40c0cd1a6c83f6d0ec8a46083f233b103fed117189b72c66b8d793b`.
 
+## 0.1.4 first picture attempt — no native capture
+
+2026-11-14, 21:35 Athens / 19:35 UTC: owner confirmed presence, moving HDMI 4,
+remote/recovery access and authorized one bounded picture test. Glasshouse Home
+was visible before submission. Fresh file/core/payload bindings, strict modes,
+app/report absence and exact [1,1,1,1] coverage passed. No repeat activation or
+file-mode change. One normal SAM submission at 19:35:26.603 UTC was acknowledged
+79 ms later (host monotonic log rounded to 80 ms); stock utility exit0/no stderr,
+connection closed. The owner received the independent 27-second timer cue before
+the GO trigger. This is not independent machine proof of native exit by deadline.
+
+Owner initially said “it crashed,” then clarified a brief launch notification/
+flash with nothing appearing. No intended moving rectangle was observed. In the
+post-timer reply the owner reported app gone, normal HDMI-4 motion/sound/remote.
+A crash signal and actual native entry/exit are **unknown**, not confirmed.
+
+One authorized bounded read-only collector attempt subsequently exited 1 with
+`HDMI capture gate failed; no launch or TV writes performed.` No capture file or
+precise failed stage was preserved. This does **not** establish remote report
+absence, postlaunch file modes or process absence. Actual UTP execution, stop/
+close acknowledgments and hardware release remain unknown. No relaunch, host
+file/policy mutation, service restart or power action followed. Owner was told
+normal TV channel selection was allowed; current selected source is not presumed.
+
+Private evidence: `build/reports/hdmi-0.1.4-picture-20261114-001/` and the fixed
+one-shot runner under `build/phase-2/hdmi-picture-0.1.4-20261114-001/`.
+Launch observation SHA-256:
+`0bc39671b18225a56c0897f59d63606569a947252f45976cd7603cbbf0422588`.
+Preflight SHA-256:
+`ad5be336933ceb2206562131849314dacee8ec0dc1cef12129a73b26a98c756c`.
+Private launch payload remains unprinted and immutable. The later offline review
+finds valid requested arguments/fresh host timing and an unlocalized collector
+gate; it does not relabel the failed trial or claim a root cause.
+
+## 0.1.4 read-only postmortem — reports and parents absent
+
+2026-11-14, 22:07:42 Athens / 20:07:42 UTC: after saved-evidence checks and local
+synthetic collector acceptance tests, one owner-authorized read-only SFTP
+connection completed in **2.051 s** (30 s cap), then transport closed. No retry,
+app launch, HDMI/policy/mode operation, TV write/delete, boot or service restart.
+
+| Exact installed file | Stable metadata and SHA-256 |
+|---|---|
+| `multiview-hdmi-window` | `0755`, `1000:1000`, 44,724 bytes; `fcbef915cad619444dc0ad3867a56c2c83cdb928924a075a2b7cbce59383849f` |
+| `appinfo.json` | `0644`, `1000:1000`, 263 bytes; `11700d7aacf85c5b0447f668a76a1fd48bc87ff3b42ebed4c1e93119d7171e4c` |
+
+Both match the preserved package bindings; no mode correction needed. Own app
+executable was not found in the bounded proc-exe scan (no PIDs/other process data
+exported). These exact paths and their immediate parent directories each returned
+SFTP absent; no report content was available to read:
+
+- `/tmp/io.github.tpapaz.multiview.hdmiwindow/picture-0.1.4.json`
+- `/var/palm/jail/io.github.tpapaz.multiview.hdmiwindow/tmp/io.github.tpapaz.multiview.hdmiwindow/picture-0.1.4.json`
+
+This establishes **current absence**, not absence at the original collection or
+proof that native main never ran. No tmp/boot history or exit code/signal was
+collected. Loader/actual argv/clock rejection, reservation/setup outcome, past
+UTP execution, crash and hardware release remain **unknown**. The first collector's
+failed stage remains unknown; do not retrospectively assign it the missing-report
+gate. Grant disposition remains the last captured retained-loaded state; this
+postmortem did not query or change it.
+
+Private capture: `build/reports/hdmi-0.1.4-postmortem-20261114-001/capture.json`,
+SHA-256 `7cb0cf848b09b4f9a35387da20b7ba1c36a9c768143f0d3d5d133fa30bbc22fe`.
+Incrementally fsynced `stages.jsonl` matches final stage events; SHA-256
+`10a4396ed9dd104d79e74228440137ec5cd9b930fcfd4dee7c339fb25175d483`.
+Collector used: SHA-256
+`757bd7606afc46334d75b4ecb4e2da2bfad6bc9aa89b6c559b752d094c42df58`.
+Frozen source/test snapshots and local verification are in
+`build/phase-2/hdmi-postmortem-review-20261114-001/`. Original native/package,
+failed collector, reports and private launch authority pins remain unchanged.
+
+Local checks passed: `npm test`, `npm run lint`, `npm run test:controls`, and
+`git diff --check`. The review bundle's `check-docs.cjs` passed 46 Markdown files,
+460 local links, 131 unchanged runtime pins (excluding the two intentional test/
+lint wiring changes), retained hash references and privacy/tracking checks.
+`verification.json` binds the original pins, as-used collector and capture/stages.
+No native source change, ARM rebuild or new IPK; no active native/HDMI test.
+
+The single next task is the plan's offline inert native-entry/guard diagnostic
+review. No second collection, new package or TV diagnostic launch is authorized.
+
+## Glasshouse HDMI preview — owner observation
+
+After the attempt, owner reported a dashboard PiP showing HDMI 4 with sound in
+Glasshouse Home when that input is selected. No screenshot, installed source
+trace, app version or ownership evidence was collected. This is a useful single-
+input presentation lead; independent receiver allocation/dual HDMI remain unknown.
+No Glasshouse operation or Home-routing modification was performed for this finding.
+Subsequent upstream source analysis is recorded in the [HDMI evidence map](../research/c1-hdmi-interface-map.md#glasshouse-preview-source-and-owner-observation),
+separately from this owner observation; it does not identify the installed revision.
+
+## 0.1.5 inert diagnostic — realtime guard rejected
+
+2026-11-14, 22:33:53 Athens / 20:33:53 UTC: after owner-confirmed installation
+without opening, one explicitly authorized normal SAM diagnostic launch and
+collection completed on one connection in **10.225 s**, below the 30 s cap.
+Installed ELF/appinfo hashes matched the local 0.1.5 record: executable 23,708 bytes
+`0755`, appinfo 265 bytes `0644`, both `1000:1000`. Package/source pins are in the
+[build record](../build.md#inert-native-entry-diagnostic-015); original 0.1.4 pins
+and original/new private launch authority are preserved.
+
+Both diagnostic report paths and parents were absent before launch. One SAM
+request at 22:33:55.592 Athens was acknowledged; issue→dispatch 118 ms,
+issue→ack 220 ms, utility exit 0/no stderr. This utility status is not app exit.
+After the six-second native-cap wait, both exact aliases contained the same valid
+343-byte trace, parent `0700`/report `0600`, owned `5480:5000`:
+
+- `/tmp/io.github.tpapaz.multiview.hdmiwindow/entry-0.1.5.jsonl`
+- `/var/palm/jail/io.github.tpapaz.multiview.hdmiwindow/tmp/io.github.tpapaz.multiview.hdmiwindow/entry-0.1.5.jsonl`
+
+| Native trace event | Actual fixed outcome |
+|---|---|
+| Entry/reservation | `main_entered`, `reserved` |
+| Production parser | `picture_accepted` |
+| Boot read/match | `available`, `match` |
+| Boottime window | `within` |
+| Realtime window | `future` — absolute deadline minus TV realtime **greater than 3,000 ms** |
+| Production predicate | `allowed:false` |
+| Exit intent | `64`; actual exit code/signal remains **unknown** |
+
+Own app executable was absent in bounded before/after proc scans; transport close
+was observed. The existing launcher log was opened before submission, but its
+post-cursor size/type bound returned `changed_or_cap`; no log delta/projection was
+read or exported. Exact subcondition (change/truncation versus size cap) was not
+preserved. No rotated-log search or retry. Process absence/exit intent do not
+substitute for the missing independently correlated exit record.
+
+Owner confirmed picture, sound and remote remained usable, then described a gray
+LG loading overlay followed by TV channels resuming. The overlay's origin is
+unverified; it is not a crash classification or physical-input result. No client
+SDL/LS2/UTP call exists in this diagnostic. No HDMI/policy/mode/clock change,
+host TV-file write/delete, service restart, boot or repeat launch/collection.
+Only the diagnostic's own exclusive report/parent writes occurred on TV.
+
+**Interpretation:** this run verifies native entry, parser acceptance, readable
+matching boot authority and the boottime window, then an early realtime guard
+rejection. The host-issued epoch deadline and the TV realtime domain were not
+aligned for admission. Exact clock offset/cause is unknown. The same rejection
+in 0.1.4 would occur before report reservation/graphics/LS2/UTP, explaining absent
+output, but original runtime clocks/argv/exit were not captured: it remains a
+**candidate explanation**, not a retrospective root-cause proof. New binary,
+import set, installation and launch differ; original UTP execution remains unknown.
+
+Private evidence: `build/reports/entry-0.1.5-20261114-001/capture.json`, SHA-256
+`9bc115687aaffb7a0745af0b2f007d9e197b68b31456a84d49f05927b282c1f2`;
+`stages.jsonl`, SHA-256 `99f3008dcbb1673eb86a428e6bd657f1905a2ecd150f2ed04e462076e236508a`.
+Native trace SHA-256 `5bcacc4b133d84c9ed7bdb9083ba0233004870aa204ddee724c599d4a91c9ef0`.
+As-used runner SHA-256 `87aed11737087c17ec51699243ecb66ed3280e6f2fe6f663cff36a950b4baa21`.
+Frozen runner/projection/tests and verification:
+`build/phase-2/entry-diagnostic-run-20261114-001/`.
+
+Executed once, not a repeat instruction:
+`node scripts/run-entry-diagnostic.cjs --allow-one-inert-run build/reports/entry-0.1.5-20261114-001`.
+Local `--plan`, synthetic runner/trace tests, `npm test`, `npm run lint`, evidence
+pin/stage consistency and `git diff --check` passed. No new native build for this
+run; the previously packaged 0.1.5 was the tested executable.
+
 ## Current conclusion and archive
 
-0.1.4 has not executed on TV. Physical HDMI motion, actual caller admission,
-graphics/clock integration, hardware release and dual-port operation remain
-unknown. Phase 1 remains partial; IWC setter work is paused. The
-[current plan](current-plan.md) defines the next owner-attended HDMI-4 trial.
+The first requested 0.1.4 picture attempt failed with no validated native capture.
+Its physical HDMI motion, native entry/exit, actual caller admission, graphics/clocks,
+hardware release and dual-port operation remain unknown. The 0.1.5 inert run now
+verifies its own entry/parser/boot/uptime path and realtime guard rejection, with
+actual exit still unknown. Phase 1 is partial; IWC
+stays paused. The [current plan](current-plan.md) blocks another launch pending
+localized failure evidence; the completed read-only postmortem found both report
+aliases/parents absent and recovered no entry/exit outcome. Current work is the
+offline TV-derived realtime lease-authority review. Both three-second windows
+remain strict; no clock change, report clearing or repeat trial is authorized.
+[Artifact checks](../build.md#inert-native-entry-diagnostic-015).
 No completed test authorizes a repeat or a new TV operation. Raw reports/private
 identifiers and firmware stay under ignored build/dist; archived text preserves
 original evidence and earlier failed conclusions without relabelling them.
+
+## 0.1.6 inert diagnostic — both clock guards accepted
+
+2026-11-14 22:48:53 Athens / 20:48:53 UTC: after owner-confirmed installation
+without opening, one authorized connection and one normal SAM submission completed
+in 10.264 seconds. Installed 0.1.6 hashes, 0755/0644 modes and 1000:1000 owners
+matched. Own app absent before/after; fresh report slots absent before launch.
+TV read-only date sample succeeded. Sample-start to dispatch 179 ms, to ack 272 ms;
+SAM utility exit 0/no stderr. Transport close observed; no retry.
+
+Both host/jail aliases of entry-0.1.6.jsonl contained identical valid 341-byte
+traces: main_entered/reserved, picture_accepted, boot available/match, boottime
+within, realtime within, allowed true, exit intent 0. Both strict three-second
+guards remain unchanged. Parents 0700/reports 0600, owned 5480:5000.
+
+Actual exit code/signal remains unknown: the bounded launcher-log delta stopped
+at changed_or_cap without reading/exporting delta bytes. Exact subcondition was
+not retained. Owner saw a brief black screen while watching TV stations, then
+confirmed picture, sound and remote stayed usable. Visual-transition cause is
+unknown. No client graphics/bus/HDMI calls, policy/mode/clock changes, host TV-file
+mutation, restart or boot. Only the diagnostic's own report writes occurred.
+
+This verifies TV-derived authority passing both guards on this C1/03.53.45 at
+this capture. Original 0.1.4 failure cause and past UTP execution remain unknown;
+no physical HDMI or hardware-release claim. All original package/native-source
+pins remain unchanged. The current installed app is inert 0.1.6; no retry queued.
+
+Capture: build/reports/entry-0.1.6-20261114-001/capture.json
+SHA-256: 02fd99f09176faa857b6770fce4de2251c6fc3ecfd5d7d906009f6ce2ba699b0
+Stages SHA-256: b867012f05fea7e6c31e9d3565d020ca94c6384c91dcb0838f8a7e191d706c5e
+Native trace SHA-256: 67a0a5e070e78d1f8a6abc41b8966209b46e9a2e72152130878d106b22bdcafc
+Frozen runner/producer/validator/projection and verification:
+build/phase-2/entry-diagnostic-run-0.1.6-20261114-001/.
+Local --plan, producer/runner acceptance tests, trace/schema/hash, stage-log equality
+and original 0.1.4/0.1.5/0.1.6 source/package pins passed. No native rebuild.
+
+## 0.1.7 read-only installed binding and admission verification
+
+2026-11-14 23:10:41 Athens / 21:10:41 UTC: after owner-confirmed installation
+without opening, one authorized read-only connection completed in 4.275 seconds,
+transport close observed. Exact installed ELF/appinfo hashes match 0.1.7; sizes
+44,724/263 bytes, modes 0755/0644, owners 1000:1000. Generated pub/prv roles,
+public client entry and exact version-0.1.7 manifest linkage matched reviewed
+C1 shapes, root-owned 0644. Own app absent before/after; both exact host/jail
+picture-0.1.7.json slots absent. Stock luna-send bytes match the saved reference.
+
+Exactly two queryServicePermissions requests, stock utility default identity:
+own app and com.webos.service.utp.extinputs. Both succeeded without stderr.
+Returned nonempty maps pass exact overlay comparison against the saved denied
+baseline: only own-app membership and four exact method additions; coverage
+[1,1,1,1]. No native predictions used. This is returned-map coverage, not verified
+live-caller inheritance or actual UTP admission. No app launch, UTP call, clock
+sample, TV file/policy/mode change, boot, restart or retry.
+
+Evidence: build/reports/picture-admission-0.1.7-20261114-001/verification.json
+SHA-256 5af09275aad393acc1ee6a4163e606f4475439e25e4fe8f08c86af06a9a88e7e.
+Stages SHA-256 b8b12fd0b1aff794aa645852a2b1a2e64c9fec251a70b2103558d8de28abf640.
+Frozen collector and offline replay verification:
+build/phase-2/picture-admission-review-0.1.7-20261114-001/. Wire reply hashes
+are in the verification; normalized saved-map hashes are separately recorded.
+Offline map replay/stage equality pass. An intercepted local connection-failure
+replay retained its failed stage without importing a device module or connecting.
+
+Physical-runner review: current inert runner is unsuitable (six-second collection,
+inert version/schema/flags). Original physical runner uses host-epoch authority
+and old bindings. Neither is a current 0.1.7 launcher. The next task is to implement
+and validate the reviewed two-connection physical controller before requesting
+a picture trial; no launch occurred or is authorized by this result.
+
+## 0.1.7 physical picture trial — setup failed before acquisition
+
+2026-11-14: owner authorized one trial, reporting moving HDMI 4, remote and
+independent timer ready. Host evidence slot created 23:35:38.988 Athens /
+21:35:38.988 UTC; dispatch at host monotonic origin +3,786.531 ms. Fresh exact
+installed/generated bindings, own-app/report absence and narrow returned-map
+coverage [1,1,1,1] passed. One fresh TV-derived authority and one normal SAM
+submission were acknowledged. No retry. Both strict native guards unchanged.
+
+Connection A closed after 3.864 s. Connection B opened dispatch +27.010 s and
+closed after 2.800 s; report sampling began dispatch +27.150 s. Both connection
+caps passed. Two exact host/jail picture-0.1.7.json aliases yielded identical
+valid 384-byte reports: elapsedMs 527, status setup_failed, opened/selected false,
+stop/close acknowledgments false, acquisitionUncertain false, localCleanup true.
+Parent 0700/report 0600, owned 5480:5000. Own process absent after collection;
+installed ELF/appinfo contents/modes/owners still match. No host TV-file/policy/
+mode/clock change, restart, boot, signal or automatic input action.
+
+This establishes native entry, accepted initial parser/guard and successful report
+reservation, then failure within begin/window-ID setup before the UTP open path.
+The report/state-machine source supports no UTP exchange being attempted in this
+run; it is not an HDMI admission denial or hardware-support result. Exact failing
+substage is unknown: the second freshness check, SDL/window/renderer/geometry/
+export/focus, LS2 context/registration/name/attachment/disconnect setup, or final
+window-ID validation are not distinguished by this report. Local cleanup is
+self-reported, not hardware-release proof. Original 0.1.4 cause stays unknown.
+
+Owner reported something loaded and returned them to Home, then clarified they
+were watching a TV channel. Selected HDMI-4 viewing at submission was therefore
+not established; no advancing HDMI rectangle was confirmed. Do not infer this
+viewing context caused setup failure. Owner confirmed remote responsive and
+usual picture/sound usable afterward. No recovery/power operation was requested.
+
+Log collection stopped with the specific truncated_or_rotated category. No log
+delta/rotated file was read; actual exit status/signal and hardware release remain
+unknown. A return to Home is not a crash classification.
+
+Evidence: build/reports/hdmi-0.1.7-picture-20261114-001/capture.json
+SHA-256 f60f6b74c2f765a3d7ade537672bae17b2e58dc11535244d28d3183c72f6bd1a.
+Stages SHA-256 78f6bbe00bd5836ce67b1103b3c2200a054d5eb526e90ccc2eac2295fe124cfe.
+Native report SHA-256 e881649c55963dd26d64c0cf2cfe6b95ed01a8bc029266057b39f75b8d2e93d1.
+Frozen controller/IO/producer/validator and verification:
+build/phase-2/hdmi-picture-trial-0.1.7-20261114-001/. Original packages/sources,
+reports and private launch authority are preserved; this slot is now occupied.
+
+Local --plan passed before the run. Post-run report size/hash/schema, exact stage
+log equality, one-attempt/two-cap/+27-second ordering and original package/source
+pins passed. No new native build or host implementation change during this run.
+Next task: offline setup-stage diagnostic review before another active trial.
+
+## 0.1.8 setup-only diagnostic — named LS2 registration failed
+
+2026-11-15: owner authorized one bounded setup-only diagnostic while watching TV
+channels, remote/restoration access and independent timer ready. Host evidence
+slot created 00:07:14.393 Athens / 2026-11-14 22:07:14.393 UTC; dispatch at host
+monotonic origin +4,515.491 ms. Exact installed 0.1.8 ELF/appinfo hashes, sizes
+43,360/258 bytes, modes 0755/0644, owners 1000:1000 and generated registration
+bindings passed. Own app and both setup slots absent before launch. Zero UTP
+permission queries. One fresh TV-derived authority/normal SAM attempt acknowledged;
+both strict three-second guards unchanged. No retry.
+
+Connection A closed after 4.593 seconds. Collection connection B opened dispatch
++27.014 seconds and closed after 3.486 seconds; each below its separate 30-second
+cap. Both exact host/jail setup-0.1.8.jsonl aliases contained identical valid
+591-byte traces, reports 0600/parents 0700, owned 5480:5000.
+
+Verified trace: lease recheck passed; SDL initialization, display observation,
+window/renderer creation and dimensions match passed. Display, requested and
+actual window all 1920x1080. Render calls, export creation/ID-length/binding
+and focus wait passed (focus 0 → 1, cancel none). Context creation passed.
+LSRegisterPubPriv entered and returned failure. Handle-name, context attachment,
+disconnect handler and final window-ID validation were not reached. Context,
+export, renderer, window and SDL cleanup calls returned success; exit intent 1.
+Void-call success means the call returned, not proof of a hardware effect.
+
+Own app absent afterward; executable/appinfo hashes still matched. Log collection
+stopped at size_cap without reading/exporting the oversized delta or searching
+other logs. Actual exit status/signal and hardware release remain unknown. The
+trace does not record the underlying bus rejection reason. This setup-only
+binary has no UTP request path; no physical HDMI result. The earlier 0.1.7
+substage and original 0.1.4 cause are not retrospectively proven by this run.
+
+Owner saw LG Home while watching channels, then confirmed normal picture, sound
+and remote usable after returning through normal TV controls. No automated
+recovery/input switch, policy/mode change, power action or additional run.
+
+Evidence: build/reports/setup-0.1.8-20261115-001/capture.json
+SHA-256 1559cc78c841710e785478a1f59ee4e67072d0153e97f4209f0520dbc378ae11.
+Stages SHA-256 940eb801abec7435b4b9354e12fdb511e28411a886097cb33d4156a3a3422688.
+Native trace SHA-256 1a50642b511137e2eaa1c37c8e0683d26eb56339cda32d279563a78647814146.
+Frozen as-used host sources and offline verification:
+build/phase-2/setup-trial-0.1.8-20261115-001/. Capture preserves decoded trace
+outcomes/metrics and observed byte hashes; original report files remain on TV.
+Private launch authority is preserved in the original evidence directory.
+
+Local --plan passed before submission. Post-run stage-log equality, report size/
+schema/alias agreement, one-attempt/two-cap/+27-second ordering, eight validated
+host-source pins, five original package/binary pins and 40 native-source pins
+passed. No native rebuild/host implementation change. Single next task: offline
+named registration/identity review against saved bindings and working controls.
