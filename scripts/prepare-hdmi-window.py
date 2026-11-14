@@ -18,7 +18,7 @@ sdk = Path(args.sdk)
 source = root / 'native/phase2-hdmi-window'
 manifest = json.loads((source / 'appinfo.json').read_bytes())
 assert manifest['id'] == 'io.github.tpapaz.multiview.hdmiwindow'
-assert manifest['version'] == '0.1.3' and manifest['main'] == 'multiview-hdmi-window'
+assert manifest['version'] == '0.1.4' and manifest['main'] == 'multiview-hdmi-window'
 assert manifest['type'] == 'native' and manifest['requiredACG'] == []
 assert set(manifest) == {'id', 'version', 'vendor', 'type', 'main', 'title', 'icon', 'transparent', 'requiredACG'}
 version = manifest['version']
@@ -53,7 +53,7 @@ run('cmake', '--build', arm)
 binary = arm / manifest['main']
 run(sys.executable, root / 'scripts/verify-hdmi-window-abi.py', binary, output)
 # A real Linux stage preserves 0755/0644. Retain it; no cleanup/deletion command.
-stage = Path(tempfile.mkdtemp(prefix='multiview-hdmi-window-0.1.3-'))
+stage = Path(tempfile.mkdtemp(prefix='multiview-hdmi-window-' + version + '-'))
 for origin in [binary, source / 'appinfo.json', root / 'apps/probe-ui/icon.png']:
     target = stage / origin.name
     shutil.copyfile(origin, target)

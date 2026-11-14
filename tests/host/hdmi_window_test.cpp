@@ -59,20 +59,30 @@ struct PolicyFake final : PolicyPlatform {
 int main() {
     // Synthetic boot ID/clock only. Fresh boot-bound opt-in replaces unbounded opt-in.
     const std::string boot = "00112233-4455-6677-8899-aabbccddeeff";
-    const std::string guard = R"("launchBootId":")" + boot + R"(","launchStartByBoottimeMs":103000)";
+    const std::string guard = R"("launchBootId":")" + boot +
+        R"(","launchStartByBoottimeMs":103000,"launchStartByRealtimeMs":1700000003000)";
     const std::string fresh = R"({"acquireHdmi4":true,)" + guard + "}";
     assert(launch(fresh.c_str()));
     assert(launch((R"({"acquireHdmi4":true,"@system_native_app":true,"nid":"metadata",)" + guard + "}").c_str()));
     const char* clockArgv[]{"app", fresh.c_str()};
     const auto timed = parseLaunch(2, clockArgv);
-    assert(launchAllowed(timed, boot, 100000));
-    assert(launchAllowed(timed, boot, 102999));
-    assert(!launchAllowed(timed, boot, 103000)); // Equality is expired, no late start.
-    assert(!launchAllowed(timed, boot, 103001));
-    assert(!launchAllowed(timed, boot, 99999)); // Never admit a lease over three seconds ahead.
-    assert(!launchAllowed(timed, boot, -1));
-    assert(!launchAllowed(timed, "ffeeddcc-bbaa-9988-7766-554433221100", 100000)); // Reboot/replay.
-    assert(!launchAllowed(timed, "", 100000));
+    const long long issued = 1700000000000LL;
+    assert(launchAllowed(timed, boot, 100000, issued));
+    assert(launchAllowed(timed, boot, 102999, issued + 2999));
+    assert(!launchAllowed(timed, boot, 103000, issued)); // Equality is expired.
+    assert(!launchAllowed(timed, boot, 103001, issued));
+    assert(!launchAllowed(timed, boot, 99999, issued));
+    assert(!launchAllowed(timed, boot, -1, issued));
+    assert(!launchAllowed(timed, "ffeeddcc-bbaa-9988-7766-554433221100", 100000, issued));
+    assert(!launchAllowed(timed, "", 100000, issued));
+    // Regression: same UUID and matching uptime after a restart must not revive
+    // an old payload when the real clock has advanced beyond its issue window.
+    assert(!launchAllowed(timed, boot, 100000, issued + 3600000));
+    assert(!launchAllowed(timed, boot, 100000, issued + 3000));
+    assert(!launchAllowed(timed, boot, 100000, issued - 1)); // Clock skew/backstep.
+    assert(!launchAllowed(timed, boot, 100000, -1));
+    assert(!launch((R"({"acquireHdmi4":true,"launchBootId":")" + boot +
+        R"(","launchStartByBoottimeMs":103000})").c_str())); // Old format is inert.
     assert(dispatchAllowed(timed, 100000, false));
     assert(dispatchAllowed(timed, 116999, false));
     assert(!dispatchAllowed(timed, 117000, false));
@@ -89,11 +99,14 @@ int main() {
     assert(parseLaunch(1, nullptr).mode == Mode::Inert);
     for (const char* deadline : {"null", "true", "\"103000\"", "103000.0", "-1", "0", "9007199254740992"})
         assert(!launch((R"({"acquireHdmi4":true,"launchBootId":")" + boot +
-            R"(","launchStartByBoottimeMs":)" + deadline + "}").c_str()));
+            R"(","launchStartByRealtimeMs":1700000003000,"launchStartByBoottimeMs":)" + deadline + "}").c_str()));
+    for (const char* deadline : {"null", "true", "\"1700000003000\"", "1700000003000.0", "-1", "0", "2999", "9007199254740992"})
+        assert(!launch((R"({"acquireHdmi4":true,)" + guard +
+            R"(,"launchStartByRealtimeMs":)" + deadline + "}").c_str()));
     for (const char* invalidBoot : {"", "borrowed", "00112233-4455-6677-8899-AABBCCDDEEFF",
             "00112233-4455-6677-8899-aabbccddeefg", "00112233-4455-6677-8899-aabbccddee\\u0000"})
         assert(!launch((std::string(R"({"acquireHdmi4":true,"launchBootId":")") + invalidBoot +
-            R"(","launchStartByBoottimeMs":103000})").c_str()));
+            R"(","launchStartByBoottimeMs":103000,"launchStartByRealtimeMs":1700000003000})").c_str()));
     for (const auto* phase : {"baseline", "overlay", "removed", "picture-ready", "after-picture"}) {
         const auto text = std::string("{\"checkUtpAdmission\":\"") + phase + "\"}";
         const char* argv[]{"app", text.c_str()};

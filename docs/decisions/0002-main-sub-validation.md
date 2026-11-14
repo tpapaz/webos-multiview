@@ -4,8 +4,8 @@ Status: accepted for Phase 1. Date: 2026-11-11.
 
 Historical validation decision. Current priority is
 [decision 0003](0003-close-idle-work-resume-hdmi.md): screensaver work is closed
-for this scope and read-only HDMI discovery resumes. Earlier “next test”
-statements below retain their historical context; they are not current tasks.
+and physical HDMI research takes priority. [Status](../../STATUS.md) owns the
+current Phase 2 step. Earlier “next test” statements below are historical.
 
 The C1 03.53.45 staged tests establish a short, video-only combination:
 SMP A requests `main_video`, SMP B requests `sub_video`. The owner saw both

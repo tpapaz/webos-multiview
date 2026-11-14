@@ -34,7 +34,7 @@ Distinguish input selection, receiver activation, frame access, presentation
 placement/scaling, audio ownership and restoration. Exported symbols, successful
 compilation, two local clips or a display/scaler capture tap do not prove two
 live HDMI inputs. Keep verified, candidate, unknown, unsupported and unsafe-to-test
-findings distinct. [Current recovery gates](docs/research/c1-iwc-gates-after-lifecycle.md)
+findings distinct. [Current trial stop/restoration rules](docs/device-tests/current-plan.md#restoration-and-stop-rules)
 
 If only selected-HDMI plus an overlay proves possible, report that limitation.
 If a second physical-input path cannot be supported by evidence, publish the

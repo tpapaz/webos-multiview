@@ -92,17 +92,20 @@ Launch parseLaunch(int argc, const char* const* argv) {
     if (mode == Mode::Picture) {
         auto* boot = field(object.get(), "launchBootId", json_type_string);
         auto* deadline = field(object.get(), "launchStartByBoottimeMs", json_type_int);
-        if (!boot || !deadline) return {};
+        auto* realDeadline = field(object.get(), "launchStartByRealtimeMs", json_type_int);
+        if (!boot || !deadline || !realDeadline) return {};
         launch.bootId.assign(json_object_get_string(boot), json_object_get_string_len(boot));
         launch.startByBoottimeMs = json_object_get_int64(deadline);
+        launch.startByRealtimeMs = json_object_get_int64(realDeadline);
         if (!validBootId(launch.bootId) || launch.startByBoottimeMs <= 0 ||
-            launch.startByBoottimeMs > 9007199254740991LL) return {};
+            launch.startByBoottimeMs > 9007199254740991LL || launch.startByRealtimeMs < 3000 ||
+            launch.startByRealtimeMs > 9007199254740991LL) return {};
     }
     // Launcher metadata is allowed but never used as app/window/pipeline identity.
     json_object_object_foreach(object.get(), key, value) {
         if (!std::strcmp(key, mode == Mode::Picture ? "acquireHdmi4" : "checkUtpAdmission")) continue;
         if (mode == Mode::Picture && (!std::strcmp(key, "launchBootId") ||
-            !std::strcmp(key, "launchStartByBoottimeMs"))) continue;
+            !std::strcmp(key, "launchStartByBoottimeMs") || !std::strcmp(key, "launchStartByRealtimeMs"))) continue;
         if (!std::strcmp(key, "@system_native_app") && value &&
             json_object_get_type(value) == json_type_boolean && json_object_get_boolean(value)) continue;
         if (!std::strcmp(key, "nid") && value && json_object_get_type(value) == json_type_string &&
@@ -111,10 +114,12 @@ Launch parseLaunch(int argc, const char* const* argv) {
     }
     return launch;
 }
-bool launchAllowed(const Launch& launch, const std::string& bootId, long long boottimeMs) {
+bool launchAllowed(const Launch& launch, const std::string& bootId, long long boottimeMs, long long realtimeMs) {
     return launch.mode == Mode::Picture && validBootId(bootId) && launch.bootId == bootId &&
         boottimeMs >= 0 && launch.startByBoottimeMs > boottimeMs &&
-        launch.startByBoottimeMs - boottimeMs <= 3000;
+        launch.startByBoottimeMs - boottimeMs <= 3000 &&
+        realtimeMs >= 0 && launch.startByRealtimeMs > realtimeMs &&
+        launch.startByRealtimeMs - realtimeMs <= 3000;
 }
 bool dispatchAllowed(const Launch& launch, long long boottimeMs, bool cleanup) {
     // Progress ends at issue +17 s, cleanup dispatch at issue +22 s, including
@@ -137,12 +142,12 @@ const char* modeName(Mode mode) {
 }
 const char* reportFilename(Mode mode) {
     switch (mode) {
-    case Mode::Picture: return "picture-0.1.3.json";
-    case Mode::Baseline: return "admission-baseline-0.1.3.json";
-    case Mode::Overlay: return "admission-overlay-0.1.3.json";
-    case Mode::Removed: return "admission-removed-0.1.3.json";
-    case Mode::PictureReady: return "admission-picture-ready-0.1.3.json";
-    case Mode::AfterPicture: return "admission-after-picture-0.1.3.json";
+    case Mode::Picture: return "picture-0.1.4.json";
+    case Mode::Baseline: return "admission-baseline-0.1.4.json";
+    case Mode::Overlay: return "admission-overlay-0.1.4.json";
+    case Mode::Removed: return "admission-removed-0.1.4.json";
+    case Mode::PictureReady: return "admission-picture-ready-0.1.4.json";
+    case Mode::AfterPicture: return "admission-after-picture-0.1.4.json";
     case Mode::Inert: return nullptr;
     }
     return nullptr;

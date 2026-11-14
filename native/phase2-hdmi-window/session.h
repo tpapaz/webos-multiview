@@ -3,7 +3,7 @@
 
 namespace hdmi {
 constexpr char appId[] = "io.github.tpapaz.multiview.hdmiwindow";
-constexpr char appVersion[] = "0.1.3";
+constexpr char appVersion[] = "0.1.4";
 enum class Mode { Inert, Picture, Baseline, Overlay, Removed, PictureReady, AfterPicture };
 enum class Step { Open, Select, Stop, Close };
 enum class Delivery { Reply, NotSent, Uncertain };
@@ -24,10 +24,12 @@ struct Launch {
     Mode mode = Mode::Inert;
     std::string bootId;
     long long startByBoottimeMs = 0;
+    long long startByRealtimeMs = 0;
 };
 Launch parseLaunch(int argc, const char* const* argv);
-// Same-boot, at most three seconds remaining; no wall-clock/host-clock authority.
-bool launchAllowed(const Launch& launch, const std::string& bootId, long long boottimeMs);
+// Both clocks must be inside the three-second issue window. Boot UUID alone
+// is not a restart boundary on the observed C1. Clock disagreement rejects.
+bool launchAllowed(const Launch& launch, const std::string& bootId, long long boottimeMs, long long realtimeMs);
 bool dispatchAllowed(const Launch& launch, long long boottimeMs, bool cleanup);
 const char* modeName(Mode mode);
 const char* reportFilename(Mode mode);

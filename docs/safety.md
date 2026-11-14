@@ -2,60 +2,67 @@
 
 [Status](../STATUS.md) · [Current procedure](device-tests/current-plan.md) · [Contributor rules](../AGENTS.md)
 
-## Execution boundary
+## Authorization and scope
 
-The active work is Phase 2 HDMI acquisition/window research. Candidate 0.1.3 is
-locally packaged, not installed or TV-tested. **No TV operation or permission
-deployment is authorized by the current documentation/repository cleanup.**
-Past completed runs do not authorize repeats. Current evidence is in Status and
-the C1 journal; historical commands are references, not execution instructions.
+Status owns the latest dated TV state. A document, saved script, roadmap gate or
+completed authorization does not authorize a new device operation. This document
+authorizes no TV operation. Picture-mode launch requires explicit owner scope
+and the conditions in the current plan.
 
-Acquisition is active: the candidate's explicit picture mode opens a hardware
-session and selects HDMI 4. It can affect existing viewing. The default app is
-inert; admission-only modes make permission predictions without SDL or UTP target
-calls. A foreground app can still affect lifecycle/viewing. Do not describe an
-active opt-in as passive discovery or claim that denied admission left viewing
-unchanged.
+Permission coverage is not actual UTP admission. Installed-file verification is
+not app execution. The retained one-app/four-method grant must be reported as
+loaded pending separate cleanup, never as revoked. Do not repeat activation,
+removal, mode repair or a boot because an archived instruction says to do so.
+
+Acquisition is active: explicit picture mode opens a hardware session/selects
+HDMI 4 and can affect existing viewing. Admission-only modes make permission
+predictions without SDL/UTP target calls; even a foreground app can affect
+viewing/lifecycle. Never label acquisition passive or infer unchanged viewing
+merely from denied admission.
+
+## Device boundaries
 
 No flash/device-node writes, kernel modules, firmware patches, protection bypass,
 hooks/injection, critical service restarts, factory resets, arbitrary-command
 endpoints or unvalidated privileged Luna APIs. No automatic input switching during
-passive discovery. The separately prepared temporary app-specific policy adds
-only four methods to one app; no broad/borrowed grant, generated-role replacement
-or persistent system-policy change is authorized. Scope and staging/removal are
-owned by the current plan.
+passive discovery. Root-only operations must stay isolated and reviewed.
 
-## Bounds and restoration
+The reviewed grant adds only four exact methods to the own app/group. No broad
+all/private entitlement, borrowed identity, replacement generated role or new
+backend/pause grant. Existing generated-policy context is read, not appropriated.
+No new persistent system modification or permission/file deployment is authorized
+by source availability or by a local plan.
 
-Use explicit opt-in, fixed allowlists, payload/time bounds, cancellation, local
-cleanup and sanitized capture for active probes. Preserve evidence; never retry
-or infer ownership from an old/guessed ID. The expiring launch contract prevents
-late starts for the unmodified fixed producer's payload; actual device integration
-is untested. Do not bypass it with a direct root launch or old unbounded payload.
+## Bounds, failure and restoration
 
-Close acknowledgment, unregister, process absence and an alarm do not prove
-hardware release. Reports retain unknown outcomes. Do not restart ACB/compositor/
-UTP or add a backend pause grant as recovery. Owner restoration, physical access,
-safe shutdown and the single true-cold-cycle contingency are defined only in the
-current plan; standby is not proof of reset. Without owner acceptance and safe
-power access, acquisition is unsafe_to_test. Never interrupt updates or panel
-maintenance to satisfy a timer. Evidence collection must not delay owner recovery.
+Active probes require opt-in, fixed allowlists, payload/time bounds, cancellation,
+local cleanup, sanitized capture and accepted restoration access. Use only IDs
+returned by the current attempt. Preserve partial/failed outcomes; never infer
+ownership from an old ID or retry on uncertainty. Do not bypass expiring normal
+launch with a root ELF invocation, edited lease or old unbounded payload.
 
-## Privacy and retained controls
+Stop/close acknowledgments, unregister, process absence and alarms do not prove
+hardware release. Backend resource release is unbounded in saved evidence; no
+software reset is proven. Owner timing/UI recovery and contingency live only in
+the current plan. Collection never extends the owner timer or delays recovery.
 
-Export fixed allowlisted outcomes, numeric versions/counts and known categories.
-Never print/share credentials, tokens, serial/device/network identifiers, raw
-window/pipeline IDs, private boot/launch authority, arbitrary errors or unrestricted
-vendor logs. Raw stdout/stderr is not a sanitized report. Review reports before
-sharing; schema validation alone does not redact imported evidence.
+No routine cold boot, live-remove retry or service restart is part of the trial.
+Any emergency power recovery requires separate scope, safe physical access and
+no interruption of updates/panel maintenance. If the accepted contingency is
+unavailable, acquisition remains unsafe_to_test; do not improvise a reset.
 
-Keep machine reports immutable and human observations separate. Preserve private
-firmware, original reports/hashes and old IPKs in ignored `build/`/`dist/`; do not
-ship proprietary runtime libraries. Local checks/builds are not TV evidence.
+## Privacy and evidence
 
-The passive probe still requires its own metadata action and allowlisted export.
-Phase 1 uses synthetic clips and bounded lifecycle cleanup; historical protocols
-remain in the [build archive](archive/build-reference-2026-11-12.md) and
-[device-test originals](device-tests/archive). Screensaver and Glasshouse/Home
-work are closed/separate; no settings, fake-key loops, thermal changes or service
-restart are implied by those retained controls.
+Export fixed allowlisted outcomes/counts and known categories. Never publish or
+print credentials, tokens, SSH material, serial/device/network identifiers, raw
+window/pipeline/boot IDs, private launch authority or unrestricted vendor logs.
+Raw stdout/stderr is not a sanitized report; schema validation does not redact it.
+
+Machine reports remain immutable; owner observations remain separate. Preserve
+private firmware, original hashes and old IPKs in ignored build/dist. Do not ship
+vendor libraries or refetch saved evidence unnecessarily. Local tests/builds
+and static exports do not establish physical HDMI behavior.
+
+Phase 1 controls and their unresolved limits remain available as references.
+Screensaver and Glasshouse/Home are closed/separate; neither is a dependency of
+the single-picture milestone unless the owner explicitly reopens it.

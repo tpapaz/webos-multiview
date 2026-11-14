@@ -10,18 +10,19 @@ and `docs/device-tests/current-plan.md` (one current procedure). Do not create a
 Markdown file per run. Preserve original reports/hashes; archive exceptional
 historical detail and link to it only when needed.
 
-Current direction: **Phase 2 HDMI acquisition/window research**. The candidate
-is locally packaged; the next device step is separately scoped installation and
-admission-only validation, not HDMI acquisition. This file authorizes no TV run
-or permission deployment. Screensaver work is
-closed for this scope, with effective inhibition unknown; do not reopen it
-or the separate Glasshouse/Home topic without owner direction. Phase 1 is
-partially validated, not complete. Read `docs/handoff/hdmi-next-chat.md`,
-`docs/decisions/0003-close-idle-work-resume-hdmi.md`, the C1 journal, current test
-plan and build guide before preparing another experiment. Read archived Phase 1
-detail when the particular control is relevant. Preserve controls
-and local evidence. Build locally in the existing Linux SDK under WSL; no
-GitHub Actions (including on push), automatic commits or pushes.
+Current direction: **Phase 2 HDMI acquisition/window research**. The defining
+milestone is one physical HDMI picture, then independently live HDMI 1 + HDMI 2.
+Use Status for exact installed version, current captured grant disposition and
+readiness. Keep this file about contributor rules rather than a second handoff.
+No document or completed test authorizes a repeat, app/HDMI run, policy change,
+retrieval or power action. The current plan owns the one proposed trial.
+
+Do not repeat activation, mode correction or boot diagnostics as generic preflight.
+IWC setter work is paused; screensaver/Glasshouse work is closed/separate; Phase 1
+remains partial. Preserve original evidence/frozen helpers and packages. Read
+`docs/handoff/hdmi-next-chat.md`, the current plan, decision 0003 and build guide
+before preparing an experiment. Build locally in the existing WSL SDK; no GitHub
+Actions (including on push), automatic commit or push.
 
 ## Mission
 

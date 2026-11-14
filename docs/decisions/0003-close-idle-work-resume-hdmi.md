@@ -2,6 +2,11 @@
 
 Status: accepted by owner. Date: 2026-11-11.
 
+> Dated scope decision: closing idle work remains applicable. Its read-only
+> discovery step describes that stage; later owner-authorized acquisition
+> preparation/results are recorded in [Status](../../STATUS.md) and the
+> [current plan](../device-tests/current-plan.md). This record authorizes no probe.
+
 ## Decision
 
 Close the screensaver work item for the current research scope. This is a

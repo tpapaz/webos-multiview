@@ -1,6 +1,6 @@
 # Build, inspect and install
 
-> [Current status](../../STATUS.md) · [Documentation index](../README.md). This is a procedure/reference guide; device commands below are not authorization to repeat an experiment.
+> Archived build/control reference through 2026-11-12. Use [current build instructions](../build.md) and [Status](../../STATUS.md) for the active candidate. Commands and old next steps below describe their historical stage; they authorize no device operation.
 
 ## Passive probe and host checks
 

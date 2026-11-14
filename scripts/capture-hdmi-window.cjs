@@ -1,9 +1,10 @@
-// Future explicitly authorized read-only SFTP capture. Never launches or writes on TV.
+// Explicitly authorized read-only SFTP capture. Never launches or writes on TV.
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const {id, version, filename, validateReport, phaseAccepted} = require('./hdmi-window-report.cjs');
+const {id, version, filename, validateReport, predictionMatchesExpected} = require('./hdmi-window-report.cjs');
 const {launchPayload} = require('./hdmi-window-launch.cjs');
+const {validateGeneratedRole, validateGeneratedManifest} = require('./hdmi-window-installed-role.cjs');
 const root = path.resolve(__dirname, '..');
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const base = '/media/developer/apps/usr/palm/applications/' + id;
@@ -21,7 +22,8 @@ async function main(args) {
         const stat = fs.lstatSync(destination);
         if (!stat.isFile() || stat.size > 2048) throw Error('local report size');
         const report = validateReport(fs.readFileSync(destination), mode);
-        console.log(JSON.stringify({valid: true, phaseAccepted: phaseAccepted(report)}));
+        console.log(JSON.stringify({valid: true, predictionMatchesExpected: predictionMatchesExpected(report),
+            permissionReadiness: 'unknown'}));
         return;
     }
     if (!['--prepare', '--collect'].includes(action) || !destination ||
@@ -67,6 +69,7 @@ async function main(args) {
             try {
                 const opened = await call('fstat', handle);
                 if (!opened.isFile() || opened.size !== before.size || opened.mode !== before.mode ||
+                    opened.uid !== before.uid || opened.gid !== before.gid ||
                     opened.mtime !== before.mtime) throw Error('changed file');
                 const data = Buffer.alloc((procClock ? limit : before.size) + 1);
                 let count = 0;
@@ -81,8 +84,10 @@ async function main(args) {
                 const after = await call('fstat', handle);
                 if ((procClock ? count > limit : count !== before.size) ||
                     after.size !== before.size || after.mode !== before.mode ||
+                    after.uid !== before.uid || after.gid !== before.gid ||
                     (!procClock && after.mtime !== before.mtime)) throw Error('changed file');
-                return {data: data.subarray(0, count), mode: before.mode & 0o7777};
+                return {data: data.subarray(0, count), mode: before.mode & 0o7777,
+                    uid: before.uid, gid: before.gid};
             } finally { await call('close', handle); }
         }
         async function absent(name) {
@@ -104,25 +109,30 @@ async function main(args) {
         }
         const binary = await read(base + '/multiview-hdmi-window', 1024 * 1024);
         const manifest = await read(base + '/appinfo.json', 4096);
-        if (binary.mode !== 0o755 || hash(binary.data) !== local.binarySha256 ||
+        if (binary.mode !== 0o755 || manifest.mode !== 0o644 ||
+            [binary, manifest].some(file => file.uid !== 1000 || file.gid !== 1000) ||
+            hash(binary.data) !== local.binarySha256 ||
             hash(manifest.data) !== local.manifestSha256) throw Error('installed artifact');
         const policies = {};
         const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
         for (const side of ['pub', 'prv']) {
             const file = await read('/var/palm/ls2-dev/roles/' + side + '/' + id + '.json', 16384);
+            if (file.mode !== 0o644 || file.uid !== 0 || file.gid !== 0) throw Error('generated policy metadata');
             const role = JSON.parse(file.data);
-            if (!role.role || role.role.exeName !== base + '/multiview-hdmi-window' ||
-                role.role.type !== 'regular' || !equal(role.role.allowedNames, [id]) ||
-                !Array.isArray(role.permissions) || role.permissions.length !== 1 ||
-                role.permissions[0].service !== id || !equal(role.permissions[0].inbound, []) ||
-                !equal(role.permissions[0].outbound, ['*'])) throw Error('generated role mismatch');
+            validateGeneratedRole(role, side);
             policies[side] = hash(file.data);
         }
         const clientPolicy = await read('/var/luna-service2-dev/client-permissions.d/' + id + '.app.json', 4096);
+        if (clientPolicy.mode !== 0o644 || clientPolicy.uid !== 0 || clientPolicy.gid !== 0) throw Error('generated client metadata');
         const clientObject = JSON.parse(clientPolicy.data);
         if (Object.keys(clientObject).length !== 1 || !equal(clientObject[id], ['public']))
             throw Error('generated client mismatch');
         policies.client = hash(clientPolicy.data);
+        const generatedManifest = await read('/var/luna-service2-dev/manifests.d/' + id + '.json', 4096);
+        if (generatedManifest.mode !== 0o644 || generatedManifest.uid !== 0 || generatedManifest.gid !== 0)
+            throw Error('generated manifest metadata');
+        validateGeneratedManifest(JSON.parse(generatedManifest.data));
+        policies.manifest = hash(generatedManifest.data);
         const binding = {binarySha256: hash(binary.data), manifestSha256: hash(manifest.data), policies};
         if (!await processAbsent()) throw Error('app running');
         const relative = '/tmp/' + id + '/' + filename(mode);
@@ -135,12 +145,14 @@ async function main(args) {
                 binding, reportsAbsent: true, processAbsent: true, launchPerformed: false});
             if (mode === 'picture') {
                 // No remote write/launch. Clock authority is read LAST, never
-                // regenerated by a launch retry. A reboot between reads fails.
+                // regenerated by a launch retry. UUID equality is supplemental;
+                // the absolute expiry also rejects reused-ID stale payloads.
+                const issuedAtMs = Date.now();
                 const bootBefore = await read('/proc/sys/kernel/random/boot_id', 38, true);
                 const uptime = await read('/proc/uptime', 64, true);
                 const bootAfter = await read('/proc/sys/kernel/random/boot_id', 38, true);
                 const payload = launchPayload(bootBefore.data.toString('ascii'), uptime.data.toString('ascii'),
-                    bootAfter.data.toString('ascii'));
+                    bootAfter.data.toString('ascii'), issuedAtMs, Date.now());
                 check();
                 save(path.join(dir, 'launch.json'), payload); // Private host file, no ID output.
             }
@@ -162,7 +174,8 @@ async function main(args) {
             save(path.join(dir, 'capture.json'), {schemaVersion: 1, appId: id, appVersion: version,
                 mode, capturedAt: new Date().toISOString(), packageSha256: local.packageSha256,
                 binding, report, reportSha256: hash(bytes), reportLocations: locations,
-                phaseAccepted: phaseAccepted(report), processAbsentAtCapture: true,
+                predictionMatchesExpected: predictionMatchesExpected(report), permissionReadiness: 'unknown',
+                processAbsentAtCapture: true,
                 exitCode: 'unknown', exitedWithinOwnerDeadline: 'unknown', launchPerformed: false});
         }
         console.log('Read-only capture saved. No launch or TV writes performed.');

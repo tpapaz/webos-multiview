@@ -1,6 +1,6 @@
 // Acceptance rules for the fixed native report. No device connection or raw IDs.
 const id = 'io.github.tpapaz.multiview.hdmiwindow';
-const version = '0.1.3';
+const version = '0.1.4';
 const phases = ['baseline', 'overlay', 'removed', 'picture-ready', 'after-picture'];
 function filename(mode) {
     if (mode === 'picture') return 'picture-' + version + '.json';
@@ -64,9 +64,9 @@ function validateReport(bytes, mode) {
     }
     return r;
 }
-function phaseAccepted(r) {
+function predictionMatchesExpected(r) {
     if (!phases.includes(r.mode)) return false;
     const expected = ['overlay', 'picture-ready'].includes(r.mode) ? 1 : 0;
     return r.status === 'policy_checked' && r.policyAllowed.every(x => x === expected);
 }
-module.exports = {id, version, phases, filename, validateReport, phaseAccepted};
+module.exports = {id, version, phases, filename, validateReport, predictionMatchesExpected};

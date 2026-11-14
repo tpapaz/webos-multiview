@@ -1134,7 +1134,7 @@ package, simulator, app execution, hardware release or restoration test was run.
 The concrete proposal is **one bounded app cleanup, one owner UI viewing
 attempt, then one owner-operated true cold power cycle for a stuck/lost session**.
 The exact ordered procedure, budgets, prerequisites and outcome branches live
-only in the [current plan](../../device-tests/current-plan.md#restoration-route--proposal-for-one-owner-attended-trial).
+only in the [current plan](../../device-tests/current-plan.md#restoration-and-stop-rules).
 No new recovery executable, service endpoint, permission method or firmware
 file is needed for this decision.
 

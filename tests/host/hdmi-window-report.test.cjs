@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {id, version, phases, filename, validateReport, phaseAccepted} = require('../../scripts/hdmi-window-report.cjs');
+const {id, version, phases, filename, validateReport, predictionMatchesExpected} = require('../../scripts/hdmi-window-report.cjs');
 const bytes = r => Buffer.from(JSON.stringify(r) + '\n');
 const policy = (mode, allowed) => ({schemaVersion: 1, appId: id, appVersion: version, mode,
     elapsedMs: 20, status: 'policy_checked', localCleanup: true, callerReady: true,
@@ -10,12 +10,14 @@ const picture = {schemaVersion: 1, appId: id, appVersion: version, mode: 'pictur
     hardwareRelease: 'unknown', livePicture: 'unknown', restoration: 'unknown', dualHdmi: 'unknown'};
 for (const mode of phases) {
     const expected = ['overlay', 'picture-ready'].includes(mode) ? 1 : 0;
-    assert(phaseAccepted(validateReport(bytes(policy(mode, [expected, expected, expected, expected])), mode)));
-    assert(!phaseAccepted(validateReport(bytes(policy(mode, [1 - expected, expected, expected, expected])), mode)));
+    assert(predictionMatchesExpected(validateReport(bytes(policy(mode, [expected, expected, expected, expected])), mode)));
+    assert(!predictionMatchesExpected(validateReport(bytes(policy(mode, [1 - expected, expected, expected, expected])), mode)));
     assert(filename(mode).startsWith('admission-' + mode));
 }
 const denied = validateReport(bytes(policy('baseline', [0, 0, 0, 0])), 'baseline');
 assert.equal(denied.status, 'policy_checked'); // Target denial is a successful permission prediction.
+// Observed C1 baseline: valid queries do not establish a matching grant or readiness.
+assert(!predictionMatchesExpected(validateReport(bytes(policy('baseline', [1, 1, 1, 1])), 'baseline')));
 assert.deepEqual(validateReport(bytes(picture), 'picture'), picture);
 const invalid = (r, mode = r.mode) => assert.throws(() => validateReport(bytes(r), mode));
 for (const patch of [{pipelineId: 'private'}, {rawError: 'private'}, {appId: 'other'},
@@ -30,9 +32,9 @@ for (const patch of [{actualUtpCalls: 1}, {calls: 3}, {callerReady: false},
     {policyAllowed: [1, -1, 1, 1]}, {policyAllowed: [true, 1, 1, 1]}, {elapsedMs: 12000}])
     invalid({...policy('overlay', [1, 1, 1, 1]), ...patch});
 const failed = {...policy('baseline', [0, -1, -1, -1]), status: 'query_failed', calls: 2};
-assert(!phaseAccepted(validateReport(bytes(failed), 'baseline')));
+assert(!predictionMatchesExpected(validateReport(bytes(failed), 'baseline')));
 invalid({...failed, policyAllowed: [0, 0, -1, -1]});
 // A rejected open can still return an ID used for cleanup. Do not discard that evidence.
 validateReport(bytes({...picture, status: 'open_failed', opened: false, selected: false}), 'picture');
 validateReport(bytes({...picture, status: 'cleanup_failed', closeAcknowledged: false}), 'picture');
-console.log('HDMI report privacy, phase gates and cleanup uncertainty checks passed');
+console.log('HDMI report privacy, prediction expectations and cleanup uncertainty checks passed');

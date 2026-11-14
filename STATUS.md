@@ -1,61 +1,53 @@
 # Current status
 
-Updated 2026-11-13. Start here; historical next steps do not override this page.
-[Documentation index](docs/README.md) · [Roadmap](ROADMAP.md)
+Updated 2026-11-14. [Roadmap](ROADMAP.md) · [Documentation index](docs/README.md)
 
 ## Goal and result
 
-Build two independently live **HDMI 1 + HDMI 2** pictures on the TV's own
-hardware, then add movable PiP/split layouts and controls. Reference device:
-rooted LG OLED C1, firmware 03.53.45 / SDK 6.5.3. The owner last identified the
-connected source as HDMI 4.
+Show one live HDMI picture in our own window, then independently live
+**HDMI 1 + HDMI 2** using the TV's internal hardware. Reference: rooted LG OLED
+C1, firmware 03.53.45 / SDK 6.5.3. Last owner-confirmed source: HDMI 4.
 
-**No physical HDMI picture has been demonstrated in our app. Simultaneous HDMI,
-HDMI resizing and hardware restoration remain unknown.**
+**No physical HDMI picture has been demonstrated in our app.** Version 0.1.4
+has not executed on the TV; installed-file verification is not an app run.
 
-| Evidence | Result |
+## Latest verified state
+
+| Gate | Evidence and limit |
 |---|---|
-| Phase 1 local clips | Two main/sub surfaces advanced independently on TV, with B geometry and A continuity. Audio/repeatability/recovery remain partial; this does not prove HDMI. |
-| Earlier admission app 0.1.2 | Own registration and a query predicting denied target permission (`allowed:false`) verified on TV. No IWC setter ran. |
-| Stock utility and lifecycle controls | Root IWC listing and normal/EOF fake-worker cleanup passed on TV. These are supporting controls, not HDMI recovery tests. |
-| HDMI window candidate 0.1.3 | Locally ARM-built, host acceptance-tested, packaged, archive-inspected and direct-ABI checked. **Not installed, simulator-tested or TV-tested.** |
+| Local candidate | 0.1.4 built, host-tested, packaged and direct-ABI checked. [Artifact/contract](native/phase2-hdmi-window/README.md). |
+| Installation | Exact app/generated files, owners and modes pass; ELF `0755`, appinfo `0644`. No correction needed. [Readback](docs/device-tests/c1-journal.md#014-installed-files-and-modes-verified). |
+| Narrow permission coverage | At 20:05 Athens on 2026-11-14, one acknowledged held-manifest activation changed fresh maps from `[0,0,0,0]` to exactly `[1,1,1,1]`, only our app/four methods. Core/file bindings pass, app absent during checks, connection closed. [Result](docs/device-tests/c1-journal.md#014-narrow-permission-activation-and-coverage-verified). |
+| Grant disposition | Left loaded pending the picture trial and separately scoped cleanup. Manifest remains outside scan roots. Retained access is not revocation. |
+| Live input / hardware release | Actual UTP admission, graphics/clock integration, HDMI motion, restoration and simultaneous ports remain **unknown**. |
+| Earlier controls | Main/sub local clips and normal/EOF fake-worker controls have TV evidence. Phase 1 remains partial; none proves physical HDMI. [Journal](docs/device-tests/c1-journal.md). |
 
-[Actual TV journal](docs/device-tests/c1-journal.md) ·
-[Current artifact, hashes and contract](native/phase2-hdmi-window/README.md) ·
-[Saved HDMI findings](docs/research/c1-hdmi-interface-map.md)
+These are dated observations, not continuous monitoring. No repeat activation,
+mode repair, diagnostic boot or generic recovery campaign is next.
 
 ## One next task
 
-**Separately scope installation/readback and admission-only validation.**
-No TV operation or permission deployment is authorized by the current cleanup
-request. Follow the single [current procedure](docs/device-tests/current-plan.md).
+**One owner-attended HDMI-4 picture trial, when separately authorized.**
+Permission/configuration gates pass. Confirm moving HDMI-4 content, owner presence,
+remote/restoration access and acceptance of the contingency, then use the
+[current procedure](docs/device-tests/current-plan.md). It defines one expiring
+normal app-manager launch, the independent 27-second owner timer, visible motion
+inside the fixed rectangle, exit and restoration observations. This page
+and completed authorization scopes do not authorize a new TV operation.
 
-The two local control gaps are closed: saved rules support stock `luna-send`
-under its own default identity for both manifest operations, and the candidate
-rejects stale/different-boot acquisition payloads. The package includes neither
-policy nor an installer. The four-method policy is prepared locally only.
+The principal risks remain unproven backend release and the missing independent
+second-port path. A close acknowledgment or process exit never proves hardware
+release. Product controls follow concurrency proof.
 
-The remaining device gates are:
+## Closed and historical work
 
-- Verify installed ELF/manifest, generated roles/client policy and normal
-  launcher, boot-clock and report visibility in the actual app context.
-- Verify both administrative permission predictions, then app baseline → scoped
-  overlay → removed predictions, preserving generated policy and proving rollback.
-- Before a separate picture trial, obtain owner acceptance/access and a safe
-  procedure for the [restoration contingency](docs/device-tests/current-plan.md#restoration-route--proposal-for-one-owner-attended-trial).
+The old native allowed predictions remain `phaseAccepted:false`; a removal
+dispatch lost transport with receipt/execution/cause unknown. Later denied maps
+verified rollback independently. The unchanged-UUID verifier stays failed; it is
+not a reason for another boot. The old `0777` drift is superseded by correct
+0.1.4 modes. [Dated device history](docs/device-tests/archive/c1-hdmi-preparation-2026-11-14.md) ·
+[Technical investigation](docs/research/archive/c1-hdmi-admission-2026-11-14.md).
 
-A permission prediction is not actual UTP execution. A close acknowledgment or
-process exit is not hardware release; the candidate reports that outcome as
-unknown. No additional firmware retrieval or generic recovery work is queued.
-
-## Scope boundaries
-
-The first picture proposal is one fixed application-owned HDMI-4 window, then
-two distinct moving sources on HDMI 1 and HDMI 2. Product controls follow
-concurrency proof. The IWC preflight is paused; screensaver work is closed and
-Glasshouse/Home is separate. Retain Phase 1 controls and their unresolved limits.
-
-This documentation/repository cleanup made no TV run, power action or permission
-change. Past completed authorizations do not authorize repeats. Preserve saved
-firmware, original reports/hashes and earlier packages. Never commit or push
-automatically.
+No extra firmware retrieval, IWC preflight, screensaver/Glasshouse work or Phase 1
+repeat campaign is queued. Preserve all original reports, binaries and packages;
+never commit or push automatically.

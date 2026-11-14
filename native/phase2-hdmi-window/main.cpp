@@ -36,7 +36,7 @@ public:
         // A slow report reservation must not allow a stale start to touch SDL/LS2.
         if (graphics_) {
             const auto boot = hdmi::currentBootId();
-            if (!hdmi::launchAllowed(launch_, boot, hdmi::boottimeMs())) return false;
+            if (!hdmi::launchAllowed(launch_, boot, hdmi::boottimeMs(), hdmi::realtimeMs())) return false;
         }
         if (graphics_ && !beginGraphics()) return false;
         context_ = g_main_context_new();
@@ -221,7 +221,7 @@ int main(int argc, char** argv) {
     // Invalid/stale/other-boot opt-ins leave no report and do no graphics/IPC.
     if (picture) {
         const auto boot = hdmi::currentBootId();
-        if (!hdmi::launchAllowed(launch, boot, hdmi::boottimeMs())) return 64;
+        if (!hdmi::launchAllowed(launch, boot, hdmi::boottimeMs(), hdmi::realtimeMs())) return 64;
     }
     hdmi::Capture capture(mode);
     if (!capture.ready()) return 73; // Stale report or unavailable capture: zero SDL/LS2 calls.
