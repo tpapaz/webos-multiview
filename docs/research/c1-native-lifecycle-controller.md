@@ -5,14 +5,14 @@
 Prepared and locally tested 2026-11-12 for LG C1 03.53.45 / SDK 6.5.3.
 **Simulator-tested controller; ARM helper built and statically ABI-checked.
 Preparation involved no TV staging/execution.** The later owner-authorized
-[C1 normal control 001](../device-tests/c1-journal.md#native-normal) passed with
+[C1 normal control 001](../device-tests/archive/c1-first-picture-campaign-2026-11-15.md#native-normal) passed with
 confirmed cleanup. No app launch, existing permission change, LS2, geometry or
 crop operation occurred.
 
 ## Evidence and acceptance gate
 
 Use the [lifecycle-only plan](../device-tests/archive/c1-lifecycle-only-plan.md) and
-[native helper record](../../native/phase2-lifecycle/README.md). Existing Linux
+[Retired source: native helper record](archive/c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources). Existing Linux
 process tests establish fake-worker behavior locally; the retained ARM ABI
 record establishes compatibility with saved userspace files. Neither establishes
 C1 execution or independent recovery of HDMI geometry.
@@ -29,14 +29,14 @@ metadata, and test the loss acceptance and refusal paths locally.
 
 ## Fixed operation and lifetime
 
-- [Core controller](../../scripts/lifecycle-controller.cjs) accepts a connection
+- [Retired source: Core controller](archive/c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources) accepts a connection
   factory and durable report writer. No configurable command, URI, PID, remote
   directory, binary pin override or arbitrary case. Two fixed wrappers select
   normal control or control-channel loss.
-- [CLI](../../scripts/run-native-lifecycle.cjs) consumes the existing root SSH
+- [Retired source: CLI](archive/c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources) consumes the existing root SSH
   profile interface without exposing its contents. Import, help and invalid
   arguments never connect. Each fixed operation has an explicit live flag.
-- [Acceptance tests](../../tests/host/lifecycle-controller.test.cjs) use fake
+- [Retired source: Acceptance tests](archive/c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources) use fake
   SSH/SFTP clients and a fake clock; no subprocess or network operation.
 
 A future authorized run checks the local artifact/ABI record and reserves a new
@@ -134,7 +134,7 @@ The helper finished in 284 ms, launcher exited 0, no processes remained, and
 the stage was removed without host rescue. The owner confirmed normal viewing
 afterward; before/during viewing is unknown. See the linked record for hashes.
 The control-loss operation was locally validated below and subsequently passed
-one [owner-directed C1 run](../device-tests/c1-journal.md#native-control-eof).
+one [owner-directed C1 run](../device-tests/archive/c1-first-picture-campaign-2026-11-15.md#native-control-eof).
 App/jailer survival, downstream IWC ordering, hardware restoration and simultaneous
 HDMI remain unknown. No geometry/crop experiment is authorized or ready.
 

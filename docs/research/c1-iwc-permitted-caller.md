@@ -123,7 +123,7 @@ needed. The utility was only copied for offline inspection. Next work is the
 small fixed read collector and its local acceptance cases; device execution
 requires a later owner instruction.
 
-Follow-up: the [fixed host collector](c1-iwc-diagnostic-collector.md) is now
+Follow-up: the [fixed host collector](c1-iwc-research.md) is now
 implemented and locally tested against simulated SSH/SFTP and saved pins.
 No connection or device invocation occurred. Its explicit execution form is
 reserved for a later owner-authorized diagnostic read; no app rebuild/install

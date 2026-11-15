@@ -37,7 +37,7 @@ node scripts/collect-iwc-diagnostic.cjs --run-readonly build/phase-2/iwc-root-re
 Exit 0; console category `read_admission_passed`. Its one fixed remote command
 uses the actual stock `/usr/bin/luna-send`, default utility identity, `-n 1`,
 `-w 2000`, the IWC `listPublishedWindows` URI and `{"subscribe":false}`.
-See the [collector contract](../../research/c1-iwc-diagnostic-collector.md) for
+See the [collector contract](../../research/c1-iwc-research.md) for
 pins, bounds and failure criteria. IWC dynamic activation was possible, but
 provider process start was not separately measured.
 

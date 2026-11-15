@@ -1,5 +1,5 @@
 // Project only fixed own-app launcher facts; never retain raw log text/IDs/argv.
-const {id} = require('./entry-diagnostic-report.cjs');
+const {id} = require('./physical-candidate-contract.cjs');
 const knownKeys = ['acquireHdmi4', 'launchBootId', 'launchStartByBoottimeMs',
     'launchStartByRealtimeMs', '@system_native_app', 'nid'];
 function project(bytes) {

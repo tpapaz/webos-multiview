@@ -19,7 +19,10 @@ retrieval or power action. The current plan owns the one proposed trial.
 
 Do not repeat activation, mode correction or boot diagnostics as generic preflight.
 IWC setter work is paused; screensaver/Glasshouse work is closed/separate; Phase 1
-remains partial. Preserve original evidence/frozen helpers and packages. Read
+remains partial. Preserve current prototype dependencies/IPK and original private
+evidence/frozen inputs. Superseded standalone diagnostics may be retired after
+checking current imports, recording useful findings and validating the prototype;
+do not keep old implementations solely for historical purposes. Read
 `docs/handoff/hdmi-next-chat.md`, the current plan, decision 0003 and build guide
 before preparing an experiment. Build locally in the existing WSL SDK; no GitHub
 Actions (including on push), automatic commit or push.

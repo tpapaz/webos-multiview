@@ -205,7 +205,7 @@ check only firmware-specific ABI, policy and behavior against saved evidence.
 ## Candidate full-view reset contract
 
 Current gate assessment after the authorized root reads is in the
-[2026-11-12 target/baseline/recovery review](c1-hdmi-target-baseline-recovery-review.md).
+[2026-11-12 target/baseline/recovery review](c1-iwc-research.md).
 The bounds and reset operation below remain proposals, not permission to run
 geometry or evidence of successful restoration.
 
@@ -215,7 +215,7 @@ Reference remains LG C1 03.53.45 / SDK 6.5.3. Run 002 of owner-launched 0.1.2
 registered its own named public handle and captured `returnValue: true` /
 `allowed: false` for the first list-method permission query (the report records
 the parsed result, not the raw reply). It made no IWC listing call. See the
-[device/capture record](../device-tests/c1-journal.md#admission-app).
+[device/capture record](../device-tests/archive/c1-first-picture-campaign-2026-11-15.md#admission-app).
 
 Plan for this follow-up: reuse that report, installed caller declarations and
 saved C1 hub trace; inspect the exact method-group decision; read bounded API
@@ -366,7 +366,7 @@ remote recovery; do not automatically launch/switch the stock app.
 
 ## Remaining work and validation
 
-The [admission-only implementation](../../native/phase2-admission/README.md)
+The [Retired source: admission-only implementation](archive/c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources)
 now implements this contract and passes local fake-transport acceptance tests.
 Its ARM ELF now passes static checks against the complete 17-file runtime
 dependency closure, and the IPK is packaged and archive-verified. It has not

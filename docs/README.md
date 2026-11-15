@@ -1,56 +1,48 @@
 # Documentation index
 
-Start with [Status](../STATUS.md). Each current fact/procedure has one owner.
-Dated records preserve earlier evidence; their old blockers/next steps do not
-override Status or authorize any TV operation.
+Start with [Status](../STATUS.md). Current behavior has one owner; archived
+outcomes do not authorize a new TV operation.
 
-## Current documents
-
-| Document | Owns |
+| Document | Purpose |
 |---|---|
-| [Status](../STATUS.md) | Latest verified state, limits and the single next task. |
-| [Roadmap](../ROADMAP.md) | Product phases and acceptance criteria. |
-| [Current test plan](device-tests/current-plan.md) | Setup correction readiness, evidence limits and stop/restoration rules. |
-| [C1 journal](device-tests/c1-journal.md) | Compact actual TV outcomes, with links to original detailed evidence. |
-| [HDMI candidate](../native/phase2-hdmi-window/README.md) | Fixed native acquisition/launch/report contract and canonical artifact hashes. |
-| [Scoped policy](../native/phase2-hdmi-window/policy/README.md) | Own app/four-method policy, checker semantics and offline replay. |
-| [HDMI evidence map](research/c1-hdmi-interface-map.md) | Consolidated technical findings and remaining unknowns. |
-| [Build guide](build.md) | Existing local toolchain, reproducible checks and private-evidence prerequisites. |
-| [Repository layout](repository-layout.md) | Source/control ownership, Git exclusions and local artifact retention. |
-| [Handoff](handoff/hdmi-next-chat.md) | Reading order and continuation conventions; no duplicate chronology. |
+| [Status](../STATUS.md) | Verified first-picture result, limits, current artifact and one next task. |
+| [Roadmap](../ROADMAP.md) | Product phases and acceptance gates. |
+| [Prototype contract](../native/phase2-hdmi-candidate-0.1.12/README.md) | Current actions, native/report/witness/runner contract and exact artifacts. |
+| [Research map](research/c1-hdmi-interface-map.md) | Causal findings and independent second-path research gaps. |
+| [Device journal](device-tests/c1-journal.md) | Actual lifecycle/physical outcomes and evidence hashes; concise earlier summary. |
+| [Device disposition](device-tests/current-plan.md) | Consumed grant, bounds, restoration and next offline scope. |
+| [Build guide](build.md) | Offline checks, toolchain and current prototype build. |
+| [Layout/retention](repository-layout.md) | Shared production code, optional controls and private evidence. |
+| [Policy contract](../native/phase2-hdmi-window/policy/README.md) | Exact own-app/four-method grant, checker and saved-map semantics. |
 | [Contributor rules](../AGENTS.md) / [safety](safety.md) | Stable scope, privacy and device restrictions. |
+| [Handoff](handoff/hdmi-next-chat.md) | Reading order and continuation conventions. |
 
-## Retained research and controls
+## Technical references
 
-These are references, not scheduled work. Their record banners distinguish past
-validation stages from current readiness. Preserve source, tests and artifacts.
+- [Prior art/licensing](research/prior-art.md) and [pinned source lock](research/source-lock.json).
+- [Browser architectures](research/webos-browser-architecture.md); Glasshouse's
+  [HDMI source](research/c1-hdmi-interface-map.md#glasshouse-preview-source-and-owner-observation)
+  is complementary, not a replacement native prototype or concurrency proof.
+- [SMP/NDL presentation](research/c1-smp-ndl-resource-path.md).
+- [Paused IWC route](research/c1-iwc-research.md): technical ownership/caller/reset
+  limits, with obsolete collectors and synthetic harnesses retired.
+- [Closed idle work](research/c1-native-screensaver-interface.md), [idle path](research/c1-app-idle-path.md).
+- [Scope decisions](decisions/0003-close-idle-work-resume-hdmi.md),
+  [main/sub decision](decisions/0002-main-sub-validation.md), [probe-first decision](decisions/0001-probe-first.md).
 
-| Topic | Sources |
-|---|---|
-| Browser architectures | [Six-project source review](research/webos-browser-architecture.md): own-surface/media techniques; later [Glasshouse source finding](research/c1-hdmi-interface-map.md#glasshouse-preview-source-and-owner-observation) adds a concrete HDMI/tuner media-element client, with own-app/concurrency limits. |
-| Prior art / licensing | [Audit](research/prior-art.md), [pinned source lock](research/source-lock.json). |
-| Local media | [SMP/NDL routing](research/c1-smp-ndl-resource-path.md); actual main/sub results and limits are in the journal. |
-| Earlier admission runner | [Contract](../native/phase2-admission/README.md); registration/query evidence, no IWC setter. |
-| Lifecycle controls | [Native helper](../native/phase2-lifecycle/README.md), [controller](research/c1-native-lifecycle-controller.md); fake-worker controls, not HDMI recovery. |
-| IWC read-only / recovery studies | [Collector](research/c1-iwc-diagnostic-collector.md), [local model](research/c1-iwc-local-recovery-model.md), [process harness](research/c1-iwc-local-process-harness.md), [supervisor review](research/c1-iwc-supervisor-design-review.md). |
-| Paused stock-window route | [Remaining IWC gates](research/c1-iwc-gates-after-lifecycle.md), [ownership](research/c1-iwc-ownership-recovery.md), [admission/reset](research/c1-iwc-admission-reset-plan.md), [caller](research/c1-iwc-permitted-caller.md), [baseline review](research/c1-hdmi-target-baseline-recovery-review.md). These are not extra UTP trial prerequisites. |
-| Closed idle work | [Native interface](research/c1-native-screensaver-interface.md), [idle path](research/c1-app-idle-path.md); effective inhibition remains unknown. |
-| Decisions | [Probe first](decisions/0001-probe-first.md), [main/sub validation](decisions/0002-main-sub-validation.md), [close idle/resume HDMI](decisions/0003-close-idle-work-resume-hdmi.md). Dated decisions, not current execution queues. |
+## Evidence archives
 
-## Archives and private evidence
+- [First-picture development](research/archive/c1-first-picture-development-2026-11-15.md):
+  exact saved LS2/SDL/helper analysis, rejected hypotheses and development provenance.
+- [First-picture campaign](device-tests/archive/c1-first-picture-campaign-2026-11-15.md):
+  detailed dated outcomes and original hashes for retired diagnostics.
+- [Acquisition/backend traces](research/archive/c1-hdmi-investigation-2026-11-12.md)
+  and [admission/cleanup traces](research/archive/c1-hdmi-admission-2026-11-14.md).
+- [Earlier device records](device-tests/archive) preserve Phase0/1 and specific
+  preparation/lifecycle observations. They are references, not an execution queue.
 
-- [HDMI investigation through 2026-11-12](research/archive/c1-hdmi-investigation-2026-11-12.md): acquisition/backend traces and original provenance.
-- [Admission/cleanup investigation through 2026-11-14](research/archive/c1-hdmi-admission-2026-11-14.md): exact hub branches, mode/boot findings and superseded hypotheses.
-- [Detailed HDMI preparation outcomes](device-tests/archive/c1-hdmi-preparation-2026-11-14.md): the full retrieval, baseline, interrupted rollback, preservation and 0.1.4 verification/activation campaign.
-- [Earlier device records](device-tests/archive): Phase 0/1, admission, IWC listing and lifecycle originals, linked from the compact journal.
-- [Historical build guide](archive/build-reference-2026-11-12.md) and [old handoff](handoff/hdmi-history-2026-11-12.md): retained commands/context, not current instructions.
-
-Ignored build/dist contain private firmware/assembly, raw reports, owner
-observations, boot/launch bindings, ABI records and packages. They are not shipped
-by a repository push. Public hashes identify local evidence; they do not make
-those inputs available to a fresh clone. Do not refetch unnecessarily or publish
-credentials, profiles/network identifiers, raw IDs or vendor logs.
-
-The local documentation audit/snapshots are under
-`build/docs-consolidation-20261114/`. Source/artifact/report integrity is checked
-separately from Markdown links; a documentation cleanup is not a TV test.
+Raw firmware/assembly, reports, private authority, frozen as-used snapshots and
+ABI/build receipts remain local under ignored build. Current IPK is under dist.
+Do not publish credentials, raw identifiers or vendor logs; do not refetch saved
+inputs. Superseded source is absent from the active tree; local cleanup snapshots
+provide rollback without maintaining historical runtime implementations.

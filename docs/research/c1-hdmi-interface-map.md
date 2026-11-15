@@ -1,133 +1,66 @@
 # C1 HDMI evidence map
 
-Updated 2026-11-15. LG OLED C1, firmware 03.53.45 / SDK 6.5.3.
-[Status](../../STATUS.md) · [Current procedure](../device-tests/current-plan.md) ·
-[Physical contract](../../native/phase2-hdmi-picture/README.md)
+LG OLED C1 / firmware03.53.45 / SDK6.5.3. [Status](../../STATUS.md) ·
+[Device results](../device-tests/c1-journal.md) · [Current prototype](../../native/phase2-hdmi-candidate-0.1.12/README.md)
 
-This page owns mechanisms, provenance and technical limits. Dated TV outcomes
-belong in the [journal](../device-tests/c1-journal.md), readiness in Status.
-Detailed older traces remain in the [acquisition investigation](archive/c1-hdmi-investigation-2026-11-12.md)
-and [admission investigation](archive/c1-hdmi-admission-2026-11-14.md).
+## Verified result and limits
 
-## Findings and limits
+**One physical HDMI-4 picture with continuous motion in our app-owned centered
+window is verified once, with audible sound reported.** Own live-caller
+open/select/stop/close were accepted; local cleanup returned; termination was
+independently observed. The owner confirmed restored picture/sound/remote with
+no recovery action. [Actual result and hashes](../device-tests/c1-journal.md#0112-physical-hdmi-4--moving-picture-and-sound).
 
-| Boundary | Supported finding and limit |
+| Boundary | Established / remaining limit |
 |---|---|
-| Acquisition/window | Stock frontend exports its own window and passes its ID to UTP open before selection. [Static trace](archive/c1-hdmi-investigation-2026-11-12.md#the-missing-client-side-connection). Our physical picture remains unverified. |
-| Receiver allocation | Cached sessions support adoption/rebinding; they do not prove independent allocation. [Trace](archive/c1-hdmi-investigation-2026-11-12.md#cached-session-eligibility-and-failed-close--2026-11-12). |
-| Admission | Last returned 0.1.7 maps show exact [1,1,1,1] coverage. Live-caller UTP admission remains unknown; 0.1.8 performs no UTP-map query. [Verification](../device-tests/c1-journal.md#017-read-only-installed-binding-and-admission-verification). |
-| Historical predictions | Original native allowed predictions did not prove a grant: saved hub has empty-data allow branches. Preserve their failed acceptance. [Trace](archive/c1-hdmi-admission-2026-11-14.md#why-the-all-allowed-baseline-does-not-establish-a-grant). |
-| Installed files | 0.1.8 exact executable/appinfo/generated bindings passed, including 0755/0644. No mode repair is queued. [Capture](../device-tests/c1-journal.md#018-setup-only-diagnostic--named-ls2-registration-failed). |
-| Cleanup/release | Returned close/local cleanup cannot prove hardware release. Backend bookkeeping may remove IDs after failure; resource wait is untimed. [Release](archive/c1-hdmi-investigation-2026-11-12.md#hdmi-backend-implementation-and-release-failure--2026-11-12), [routing/wait](archive/c1-hdmi-investigation-2026-11-12.md#stop-routing-resolved-and-downstream-release-boundary--2026-11-12). |
-| Concurrency | Independently live HDMI 1 + HDMI 2 is unknown; no independent second receiver/presentation path is established. |
+| Window and acquisition | Own exported1920x1080 SDL surface, centered960x540 destination, UTP NormalWindow open bound to its exported window, then select HDMI4. Owner observed advancing video in that box. |
+| Admission | Exact narrow four-method permission coverage and accepted calls from our own named handle passed in this attempt. Exported symbols or permission predictions alone were insufficient. |
+| Cleanup/termination | Stop/close acknowledged, local cleanup returned, launch-bound parent-death witness observed termination, app absent and owner controls restored. Numeric exit status/alarm cause/hardware release remain unknown. |
+| Audio | Sound was audible during the trial. Independent mixer ownership, routing and audio selection are not established. |
+| Concurrency | Independently live HDMI1+HDMI2 remains unproven. Neither a second port selection nor two IP clips would establish it. |
+| Repeatability | One short successful physical run; sustained stability and cross-firmware behavior are untested. |
 
-## First-picture failure boundary
+## Current implementation and causal findings
 
-The original 0.1.4 attempt produced only a launch flash. The old collector
-collapsed several gates into one error and retained no failed stage. Subsequent
-read-only collection found both report aliases and parents absent at capture;
-that cannot establish their state at launch. Native entry, delivered argv/jailed
-clocks, reservation/setup, actual UTP execution and exit reason remain unknown.
-[Attempt](../device-tests/c1-journal.md#014-first-picture-attempt--no-native-capture),
-[postmortem](../device-tests/c1-journal.md#014-read-only-postmortem--reports-and-parents-absent).
-Saved-input production-parser/local-collector replays passed offline; originals
-are in build/phase-2/hdmi-picture-failure-review-20261114-001/.
+- [Physical contract](../../native/phase2-hdmi-candidate-0.1.12/README.md) binds
+  lifecycle/picture actions, schema2 trace and version/action/launch-bound witness.
+- [Adapter](../../native/phase2-hdmi-dispatch/adapter.h) owns registration, SDL,
+  four stable callback slots and copied synchronized replies. App submissions and
+  cancellations run on the GLib context owner.
+- [Dispatcher](../../native/phase2-context-dispatch/dispatcher.h) pumps the
+  app-owned context during SDL startup and quit, and joins before own unregister/
+  unref. The unpumped diagnostic took20.027 s in SDL_Init; the corrected setup
+  diagnostic took68 ms. Exact vendor helper branches remain unobserved.
+- Named LS2 public/private handles can share transport. A different-context
+  attach is rejected, not silently migrated. Registration success did not prove
+  the old collision hypothesis. [Exact saved disassembly and review](archive/c1-first-picture-development-2026-11-15.md#ls2glib-context-and-sdl-lifecycle-review).
+- [Session core](../../native/phase2-hdmi-picture/session.cpp) selects only HDMI4
+  and stops/closes only an ID returned by this attempt. acquisitionUncertain
+  intentionally remains true after open dispatch; acknowledgments cannot prove
+  backend release.
+- [Host runner](../../scripts/run-physical-candidate.cjs) composes the bounded
+  controller in normal PowerShell. A stripped persistent child environment caused
+  one preconnection failure; the other earlier connection failure is unknown.
+  Do not equate those with native app failures.
 
-0.1.5 reached native code and rejected the host-derived realtime lease. This
-provides a candidate explanation for 0.1.4, not retrospective cause proof. The
-0.1.6 inert run accepted TV-derived deadlines. 0.1.7 then reported setup_failed
-before acquisition without its exact substage. 0.1.8 identifies its own returned
-registration failure; it cannot retrospectively establish the older substage.
-Actual exit and a crash remain unknown; a return to Home is not a crash diagnosis.
+## Independent second-path research
 
-## Strict TV-derived launch authority
+The next task is saved-evidence tracing, not another first-picture run or package.
+For HDMI1+HDMI2, identify separately allocated input/receiver state and independently
+bindable presentation windows. The saved backend supports cached-session adoption/
+rebinding; that does not prove a second allocation. Trace creation, port ownership,
+resource arbitration, stop/release and output binding before proposing a dual
+experiment. A later actual proof needs two distinct moving sources advancing
+simultaneously without input switching/freezing.
 
-The native parser/predicate requires both realtime and boottime inside strict
-three-second issue windows, before reservation and again before SDL/LS2. A reused
-boot identifier/uptime cannot revive an expired absolute deadline while realtime
-advances; simultaneous clock reset remains a limit. Both guards are unchanged.
+Primary saved traces:
 
-The [current producer](../../scripts/tv-launch-authority.cjs) brackets uptime and
-fixed read-only date +%s with matching boot IDs. Realtime deadline is TV seconds
-x1000 +3000; whole-second flooring shortens the lease by up to one second. Sampling
-and dispatch must finish within 2000 host-monotonic milliseconds, independently
-of TV clocks. One authority allows one attempted submission, even on uncertainty.
-Unsupported/failed/stale samples fail closed, without host epoch fallback or clock
-setting. [Verified inert result](../device-tests/c1-journal.md#016-inert-diagnostic--both-clock-guards-accepted).
-
-The shared physical/setup controller uses one monotonic origin and two separately
-capped connections, closing A before opening B no earlier than dispatch +27 s.
-Report aliases/parents are read before post-binding gates, capped at 2 KiB each;
-partial/conflicting/unreadable findings and mode mismatches survive. Bounded log
-failure categories are retained, but reopening a pathname cannot prove continuity
-or actual wait status. No automatic retries or broader log search.
-
-## Registration identity and smallest correction
-
-**Verified on this C1:** 0.1.8 returned false from LSRegisterPubPriv after context
-creation. Display/request/window were all 1920x1080; renderer/export/focus checks
-passed. Later handle-name/attachment/disconnect/window-ID checks were not reached.
-Cleanup calls returned, exit intent 1; log gate size_cap left actual exit unknown.
-[Actual trace](../device-tests/c1-journal.md#018-setup-only-diagnostic--named-ls2-registration-failed).
-
-**Verified offline bindings:** saved generated public/private roles allow our
-exact executable and app name; client and version-0.1.8 manifest hashes matched
-preflight. The saved public-role shape at
-build/phase-2/hdmi-installed-context-20261114-001/pub-role.json includes our name
-and empty name. This does not prove the live bus loaded the expected role or that
-the requested name remained free. No permission/identity repair is inferred.
-
-**Verified static mechanism:** saved SDL library SHA-256
-`d3358bab5342c947b5e1f32373b5929b65030628ff8b88e054488dabb3629c58`
-Wayland VideoInit calls 0x83a60 at 0x83bd8. That routine resolves its indirect call
-at 0x83aba to HLunaServiceCall through global slot 0xc939c and requests getConfigs.
-The slot is populated from the exact HLunaServiceCall symbol at 0x11da2–0x11db0.
-The helper SHA-256
-`f9b06012588a799ecf99b8cd0528a09fd77178238321cb2fef12bf9d5b8ac782`
-exports HLunaServiceCall at 0x7681 (Thumb), which calls bridge instance() and,
-if needed, MakeBridge(). MakeBridge reads HApp_GetCurrentAppID at 0x6d18, then
-attempts named private/public registration at 0x6d4c/0x6d86 before its vendor
-anonymous fallback branches. These are existing vendor paths, not app fallbacks.
-
-Saved LS2 SHA-256
-`e731f7ab993de5a29bf5e33b83c51eb86f87e45499701bcfe30ba6cb295e1e5b`
-_LSRegisterCommon looks up an existing named transport at 0xb38c–0xb390 and checks
-its same-bus handle at 0xb4c6–0xb4d0. An occupied slot goes to the duplicate-name
-error branch (0xb518–0xb53c, signed code -1028). Distinguish its separate invalid-
-permissions branch (code -1027). 0.1.8 captured neither code; the actual rejection
-reason remains unknown. REA export identity Evidence
-`ev_4dfa15f7cac033dab9c9bf3ed0af871640c0e8e235d1130b3d061e3962dd5a12`
-corroborates helper exports; call paths above are manual saved/fresh SDK disassembly
-analysis, not decompiler or runtime observations.
-
-**Candidate cause:** our physical startup calls beginGraphics before its own named
-public registration (native/phase2-hdmi-picture/main.cpp:41–44); SDL's helper may
-already own that same public name. The admission control registers without SDL
-(native/phase2-admission/main.cpp:39). Working endurance uses anonymous public
-registration (native/phase1-endurance/native-veto.h:25); that cannot replace our
-explicit named UTP caller contract. The exact helper runtime branch, live role
-state and 0.1.8 LSError remain unknown.
-
-**Smallest reviewed correction:** [patch](../../native/phase2-hdmi-picture/registration-before-graphics.patch)
-registers, checks the exact own name, attaches the app-owned context and installs
-disconnect handling before graphics. Both strict guards, geometry, deadlines,
-ordinary caller API, acquisition and cleanup are unchanged. No borrowed helper
-handle, proxy identity, role changes, anonymous app fallback or retry.
-
-Patch applied only in build/offline-registration-review-20261115-001/source.
-The real begin() body was compiled into a controlled host model: old ordering
-fails when graphics claims the name; corrected ordering passes; each registration
-setup failure stops before graphics, stale guard stops all startup, graphics
-failure stops progression, and policy-only startup does not create graphics.
-This models the identified mechanism; it does not replay the unavailable TV error.
-ARM build, 96 direct imports/nine original DSOs and both existing native CTests
-passed. Validation/provenance, fresh disassembly and REA export are preserved in
-that review directory. Its isolated ELF SHA-256 is
-`e2d8813b1f236e728387210cd5b011865e8a3d808989d754b01d5ec4695af653`.
-No IPK/version was produced and no TV operation occurred. Original native source,
-packages, report slots and private authority are unchanged. A later fresh setup
-artifact needs this order plus fixed sanitized registration-error categories;
-Status owns that next task, not this technical record.
+- [Frontend window-to-UTP binding](archive/c1-hdmi-investigation-2026-11-12.md#the-missing-client-side-connection).
+- [Cached session eligibility and failed close](archive/c1-hdmi-investigation-2026-11-12.md#cached-session-eligibility-and-failed-close--2026-11-12).
+- [Backend release failure](archive/c1-hdmi-investigation-2026-11-12.md#hdmi-backend-implementation-and-release-failure--2026-11-12) and [downstream resource wait](archive/c1-hdmi-investigation-2026-11-12.md#stop-routing-resolved-and-downstream-release-boundary--2026-11-12).
+- [Policy/cache admission analysis](archive/c1-hdmi-admission-2026-11-14.md).
+- [Paused IWC route](c1-iwc-research.md): stock publication control is not an
+  independent receiver and is not a prerequisite for the direct UTP path.
 
 ## Glasshouse preview source and owner observation
 
@@ -174,35 +107,17 @@ not a claimed fix for the failed native run. The source shows the HDMI request;
 allocation, plane ownership, hardware release and independent-port capacity remain
 **unknown**. There is no evidence that Glasshouse preview caused our failure.
 
-## Policy lifetime and cleanup
 
-Saved hub caches are process-local and replayed by same-process configuration
-reload; startup rescans configured manifest directories. A suffix-only rename
-inside a scan root is insufficient. These are static findings, not a guaranteed
-cleanup API. [Exact addresses and hashes](archive/c1-hdmi-admission-2026-11-14.md#prepared-correction-route--startup-cache-and-two-file-modes).
+## Provenance, policy and retained evidence
 
-The original manifest was preserved outside scan roots; post-boot maps restored
-the original denied semantics. That independently verifies rollback at that capture,
-without upgrading the failed UUID gate or the interrupted live-removal report.
-The latest activation from that held path is verified, so the current recorded
-disposition is **grant retained loaded pending trial/separate cleanup**. No file
-move, repeat activation, hot remove, config reload or routine boot is queued.
-Permission cleanup and HDMI restoration are distinct outcomes.
+The [source lock](source-lock.json) and [prior-art audit](prior-art.md) own upstream
+revisions/licensing. The [scoped policy](../../native/phase2-hdmi-window/policy/README.md)
+adds exactly four methods to our own app. Its loaded disposition is not silently
+changed or claimed revoked by this cleanup. No TV/policy action is authorized.
 
-## Browser research
-
-The six-browser [source review](webos-browser-architecture.md) found useful own-
-surface/media techniques, but no new HDMI/tuner ingress or second receiver path
-within those six repositories. The later Glasshouse finding above adds a concrete
-HDMI/tuner media-element client as a complementary candidate lead, without
-establishing a second receiver or requiring a browser port/root launcher.
-
-## Evidence location
-
-Saved firmware/assembly, original reports, private boot bindings and earlier
-packages remain under ignored `build/` and `dist/`; do not publish or refetch them.
-The archives retain exact paths, provenance, hashes and analysis limits. Upstream
-reuse/licensing boundaries remain in [prior art](prior-art.md),
-[the source lock](source-lock.json) and the pinned browser review.
-No export, successful compilation, decoder session or local-clip result proves
-simultaneous physical HDMI support.
+The [development archive](archive/c1-first-picture-development-2026-11-15.md)
+preserves saved-library addresses/hashes, rejected hypotheses and correction
+analysis. The [journal archive](../device-tests/archive/c1-first-picture-campaign-2026-11-15.md)
+preserves dated observations. Private firmware/assembly, original raw reports,
+launch authority and frozen inputs stay under ignored build; the working IPK stays
+in dist. Never publish/refetch them as part of documentation cleanup.

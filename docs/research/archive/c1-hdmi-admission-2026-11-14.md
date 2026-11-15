@@ -20,10 +20,10 @@ Historical next steps in that record describe their original stage.
 | Can close success prove release? | **No:** UTP and backend bookkeeping can remove IDs after a returned backend failure. Outer acknowledgments do not prove hardware release. | [Backend failure](c1-hdmi-investigation-2026-11-12.md#hdmi-backend-implementation-and-release-failure--2026-11-12) |
 | What does stop do? | Saved unmodified UTP routes dispatch `stop`, with no pause alias; the saved HDMI backend registers no stop. **Unsupported by saved dispatch/registration**, with effective live overrides unknown. Close independently requests release; pause retains ownership and is not a fallback. | [Stop and resource wait](c1-hdmi-investigation-2026-11-12.md#stop-routing-resolved-and-downstream-release-boundary--2026-11-12) |
 | Is cleanup bounded in hardware? | **Unknown:** the resource client has an untimed wait. Client cancellation/alarms bound local work, not backend release. | [Release boundary](c1-hdmi-investigation-2026-11-12.md#stop-routing-resolved-and-downstream-release-boundary--2026-11-12) |
-| Is narrow admission feasible? | **Current coverage verified:** fresh denied baseline then one acknowledged held-manifest add and exactly `[1,1,1,1]`, only own app/four methods. Grant retained loaded, manifest outside scan roots. Actual UTP admission untested. | [0.1.4 activation](../../device-tests/c1-journal.md#014-narrow-permission-activation-and-coverage-verified), [earlier rollback](#prepared-correction-route--startup-cache-and-two-file-modes) |
+| Is narrow admission feasible? | **Current coverage verified:** fresh denied baseline then one acknowledged held-manifest add and exactly `[1,1,1,1]`, only own app/four methods. Grant retained loaded, manifest outside scan roots. Actual UTP admission untested. | [0.1.4 activation](../../device-tests/archive/c1-first-picture-campaign-2026-11-15.md#014-narrow-permission-activation-and-coverage-verified), [earlier rollback](#prepared-correction-route--startup-cache-and-two-file-modes) |
 | Who can administer that manifest? | Stock `/usr/bin/luna-send`, default own identity without `-m`/`-a`: both exact predictions and add acknowledgment verified on C1. Remove lost transport without acknowledgment; later independent denied maps verify rollback, not that dispatch. | [Interrupted transaction](#narrow-policy-activation-and-interrupted-removal), [static caller evidence](c1-hdmi-investigation-2026-11-12.md#administrative-caller-and-expiring-launch--2026-11-12) |
 | What correction is prepared? | **Preservation and denied maps verified.** No further boot requirement. New 0.1.4 package is prepared locally with absolute expiry; installed 0.1.4 files/modes pass, so correction is skipped. | [Startup/cache and mode evidence](#prepared-correction-route--startup-cache-and-two-file-modes), [current procedure](c1-hdmi-admission-2026-11-14.md#prepared-correction-route--startup-cache-and-two-file-modes) |
-| Does the installed candidate still match? | **0.1.4 installed/read-only verified:** exact ELF/appinfo/icon, generated roles/client/versioned linkage, expected owners and modes. ELF0755/appinfo0644; app absent, connection closed. No repair needed. Earlier 0.1.3 mode drift remains historical/unknown cause. | [0.1.4 installed audit](../../device-tests/c1-journal.md#014-installed-files-and-modes-verified), [historical mode findings](#read-only-reconciliation-and-installed-mode-drift) |
+| Does the installed candidate still match? | **0.1.4 installed/read-only verified:** exact ELF/appinfo/icon, generated roles/client/versioned linkage, expected owners and modes. ELF0755/appinfo0644; app absent, connection closed. No repair needed. Earlier 0.1.3 mode drift remains historical/unknown cause. | [0.1.4 installed audit](../../device-tests/archive/c1-first-picture-campaign-2026-11-15.md#014-installed-files-and-modes-verified), [historical mode findings](#read-only-reconciliation-and-installed-mode-drift) |
 | Can a delayed queued launch acquire later? | **0.1.4 guard locally tested:** absolute expiry plus ≤3-second uptime window; UUID alone is insufficient on observed C1. Old payloads rejected, matching reused-ID/uptime with expired real time rejected. Clock reset/skew limits remain; picture integration untested. | [Expiry proof and ABI check](c1-hdmi-investigation-2026-11-12.md#administrative-caller-and-expiring-launch--2026-11-12), [baseline record](../../device-tests/archive/c1-hdmi-preparation-2026-11-14.md#hdmi-window-013-installed-verification-and-baseline) |
 | How is a stuck/lost session restored? | **Owner contingency only:** bounded client cleanup → one UI attempt → one safe true cold cycle. Usable recovery is untested; no bounded software reset is established. | [Restoration evidence](c1-hdmi-investigation-2026-11-12.md#stuck-or-lost-session-restoration-decision--2026-11-12), [current procedure](../../device-tests/current-plan.md#restoration-and-stop-rules) |
 | Can HDMI 1 and HDMI 2 advance independently? | **Unknown.** No second independent receiver/presentation path or concurrent physical-input result is established. | [Missing second-picture connection](c1-hdmi-investigation-2026-11-12.md#what-remains-missing-for-a-second-independently-live-picture) |
@@ -38,10 +38,10 @@ Its exclusive tmp report does not exclude replay after tmp is cleared.
 
 0.1.4 adds `launchStartByRealtimeMs`, produced from host time before proc sampling.
 Both three-second clock windows must pass before report reservation and graphics:
-[producer](../../../scripts/hdmi-window-launch.cjs),
-[native parser/predicate](../../../native/phase2-hdmi-window/session.cpp),
-[clock reads](../../../native/phase2-hdmi-window/launch-clock.h),
-[entry checks](../../../native/phase2-hdmi-window/main.cpp).
+[Retired source: producer](c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources),
+[Retired source: native parser/predicate](c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources),
+[Retired source: clock reads](c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources),
+[Retired source: entry checks](c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources).
 Regression tests reject reused UUID plus matching uptime with expired real time.
 Clock skew/failure rejects; simultaneous wall-clock reset into the old window
 remains a limitation. This is launch freshness, not a guaranteed unique boot
@@ -93,7 +93,7 @@ to original baseline, no owned group/rules and `[0,0,0,0]`, pass that phase.
 
 The two mode targets are supported independently by the saved installed audit
 (`0755` ELF, `0644` appinfo) and package staging at
-[`prepare-hdmi-window.py:60`](../../../scripts/prepare-hdmi-window.py#L60).
+[Retired source: `prepare-hdmi-window.py:60`](c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources).
 Current content hashes/UID/GID are pinned by state/metadata captures. Restore
 appinfo first and ELF last with validated open handles, preserving contents,
 `1000:1000` ownership, size/mtime, every directory and generated policy. The actor
@@ -323,11 +323,11 @@ Its preserved ARM disassembly establishes:
 | Serialize the Boolean | `0x436bc`, `0x436ec–0x436f0`, `0x43744–0x43748` use the helper result for `allowed`; success of parsing is separately `returnValue:true`. |
 
 The candidate requests the exact own app name and the four intended URIs
-([`main.cpp:44`](../../../native/phase2-hdmi-window/main.cpp#L44),
-[`main.cpp:114`](../../../native/phase2-hdmi-window/main.cpp#L114),
-[`session.cpp:204`](../../../native/phase2-hdmi-window/session.cpp#L204)). Its parser
+([Retired source: `main.cpp:44`](c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources),
+[Retired source: `main.cpp:114`](c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources),
+[Retired source: `session.cpp:204`](c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources)). Its parser
 requires a Boolean `allowed` and records that field, rather than `returnValue`
-([`session.cpp:224`](../../../native/phase2-hdmi-window/session.cpp#L224)). The provider
+([Retired source: `session.cpp:224`](c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources)). The provider
 roles and API declarations use the same dotted `com.webos.service.utp.extinputs`
 service; a URI spelling error is not supported by these artifacts.
 

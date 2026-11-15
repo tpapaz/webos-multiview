@@ -59,4 +59,4 @@ This observation is saved separately as `baseline-owner-confirmation.json`.
 It supplements the earlier unknown context without changing the original report.
 Publisher/port agreement and numerical logical dimensions remain unverified by
 the exported machine report. See the
-[read-only gate review](../../research/c1-hdmi-target-baseline-recovery-review.md).
+[read-only gate review](../../research/c1-iwc-research.md).

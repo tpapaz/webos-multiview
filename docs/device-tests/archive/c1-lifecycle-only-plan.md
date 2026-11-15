@@ -4,7 +4,7 @@
 
 Prepared 2026-11-12 for LG C1 03.53.45 / SDK 6.5.3.
 Originally a device test plan. The subsequent
-[native helper](../../../native/phase2-lifecycle/README.md) is built, locally tested
+[Retired source: native helper](../../research/archive/c1-first-picture-development-2026-11-15.md#retired-diagnostic-sources) is built, locally tested
 and statically ABI-checked. Owner-authorized
 [normal control 001](c1-lifecycle-normal-001.md) and
 [control-loss 001](c1-lifecycle-control-loss-001.md) have now passed on C1;
@@ -24,10 +24,10 @@ Saved basis:
 
 - [Root read 002](c1-iwc-root-read-002.md): root listing works, one HDMI-app
   publication; owner confirmed normal HDMI 4 picture/motion/sound.
-- [Host process harness](../../research/c1-iwc-local-process-harness.md): 13/13
+- [Host process harness](../../research/c1-iwc-research.md): 13/13
   Linux fake-process cases passed. Report SHA-256
   `cfa267064a2fbfb47358b57ffa22298244826777007717b191157dfd8aab0679`.
-- [Supervisor review](../../research/c1-iwc-supervisor-design-review.md): local
+- [Supervisor review](../../research/c1-iwc-research.md): local
   process serialization is separate from downstream IWC/hardware ordering.
 
 ## Minimal artifact and scope

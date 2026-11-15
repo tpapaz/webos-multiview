@@ -1,24 +1,24 @@
 # webOS MultiView
 
-Research toward independently live **HDMI 1 + HDMI 2** in movable PiP or split
-screen using a rooted LG TV's internal hardware. Reference: LG OLED C1,
-firmware 03.53.45 / SDK 6.5.3. **Simultaneous HDMI remains unproven.**
+A root-assisted LG webOS prototype researching independently live **HDMI1+HDMI2**
+in movable PiP or split screen using the TV's hardware.
 
-Start with [Status](STATUS.md) for the current finding and single next task.
+**First milestone achieved:** version0.1.12 displayed continuously moving physical
+HDMI-4 video in our own centered window, with sound, on LG OLED C1/03.53.45.
+Cleanup, independent termination and owner restoration were observed. This is
+one short single-input result; simultaneous HDMI remains unproven.
 
-- [Documentation index](docs/README.md): technical contracts and evidence.
-- [Roadmap](ROADMAP.md): phases and acceptance gates.
-- [Current test plan](docs/device-tests/current-plan.md): scope and stop rules.
-- [Build guide](docs/build.md): local checks and existing toolchain.
-- [Repository layout](docs/repository-layout.md): active code, retained controls and disposable files.
-- [Contributor rules](AGENTS.md) / [safety](docs/safety.md): device and privacy restrictions.
+Start with [Status](STATUS.md) for the next task and device authorization state.
 
-The setup-only 0.1.8 diagnostic identified a returned named LS2 registration
-failure after window/export/focus checks passed. An offline startup-order
-correction is locally validated as a candidate; its device behavior remains
-unknown. No physical HDMI picture is verified in our app. Direct UTP remains the
-research path; Glasshouse's HDMI media source is a complementary reference.
+- [Prototype contract](native/phase2-hdmi-candidate-0.1.12/README.md).
+- [Research map](docs/research/c1-hdmi-interface-map.md).
+- [Build and checks](docs/build.md).
+- [Device journal](docs/device-tests/c1-journal.md) and [current disposition](docs/device-tests/current-plan.md).
+- [Docs index](docs/README.md), [roadmap](ROADMAP.md), [source layout](docs/repository-layout.md).
+- [Contributor rules](AGENTS.md) / [device safety](docs/safety.md).
 
-`npm test`, `npm run lint` and `npm run test:controls` run local checks. Native
-builds use the existing WSL SDK. Private evidence and original IPKs remain under
-ignored build/dist. No TV run, GitHub Actions, automatic commit or push is queued.
+Run npm test and npm run lint for the current prototype's offline host checks.
+Native tests/builds use the existing WSL SDK. Optional earlier local-media/passive
+controls use npm run test:controls. No TV run, automatic commit/push or GitHub
+Actions is queued. Private firmware/reports/authority and generated IPKs stay out
+of Git. The working IPK remains under ignored dist.

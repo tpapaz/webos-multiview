@@ -1,4 +1,4 @@
-#include "../../native/phase2-hdmi-window/session.h"
+#include "../../native/phase2-hdmi-picture/session.h"
 #include <cassert>
 #include <cstdio>
 #include <vector>

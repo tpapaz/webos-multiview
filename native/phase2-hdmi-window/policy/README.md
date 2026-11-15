@@ -26,7 +26,7 @@ manifest is held at
 `/var/luna-service2/multiview-hdmi-window/hdmiwindow-utp.manifest.removed-20261114-001.json`,
 outside scan roots. Its historical filename does **not** mean it is unloaded.
 Latest authorized activation loaded that exact file and verified exact coverage;
-the grant is retained pending trial/separate cleanup. [Actual result](../../../docs/device-tests/c1-journal.md#014-narrow-permission-activation-and-coverage-verified).
+the grant is retained pending trial/separate cleanup. [Actual result](../../../docs/device-tests/archive/c1-first-picture-campaign-2026-11-15.md#014-narrow-permission-activation-and-coverage-verified).
 
 No LG/generated policy replacement, role/service, inbound endpoint, wildcard,
 borrowed caller, broad all/private or bus-admin grant is added. App requiredACG

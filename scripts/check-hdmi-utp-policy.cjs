@@ -43,7 +43,7 @@ for (const [key, kind] of Object.entries(references)) {
     sameMembers(policy.manifest[key], [`/var/luna-service2/multiview-hdmi-window/hdmiwindow-utp.${kind}.json`],
         'Only owned overlay payload paths');
 }
-const app = JSON.parse(fs.readFileSync(path.join(root, 'native/phase2-hdmi-window/appinfo.json'), 'utf8'));
+const app = JSON.parse(fs.readFileSync(path.join(root, 'native/phase2-hdmi-candidate-0.1.12/appinfo.json'), 'utf8'));
 assert.equal(app.id, appId);
 assert.equal(app.main, 'multiview-hdmi-window');
 sameMembers(app.requiredACG, [], 'Root overlay must not turn into broad app metadata grants');

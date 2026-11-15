@@ -627,7 +627,7 @@ These are deterministic host fakes, not firmware execution or HDMI evidence.
 
 Both host and ARM builds used the existing Ubuntu WSL SDK with CMake/Ninja and
 the existing warnings-as-errors configuration. Commands are in the
-[candidate build contract](../../../native/phase2-hdmi-window/README.md#local-build-and-acceptance-checks).
+[candidate build contract](../../build.md#offline-host-checks).
 Host build directory: `build/phase-2/hdmi-window-host-contract-20261112`;
 `ctest --test-dir` passed `hdmi-window-acceptance` (1/1). ARM build directory:
 `build/phase-2/hdmi-window-arm-contract-20261112`. Current ELF:

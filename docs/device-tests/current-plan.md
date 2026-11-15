@@ -1,77 +1,91 @@
-# Current C1 setup diagnostic review
+# C1 0.1.12 first physical picture verified; trial complete
 
-[Status](../../STATUS.md) · [Journal](c1-journal.md) · [Diagnostic contract](../../native/phase2-setup-diagnostic/README.md)
+[Status](../../STATUS.md) · [Journal](c1-journal.md) ·
+[0.1.12 contract/artifact pins](../../native/phase2-hdmi-candidate-0.1.12/README.md)
 
-## Objective and authorization
+## Objective and current disposition
 
-One physical HDMI picture in our own window, then independently live HDMI 1 +
-HDMI 2. Direct UTP remains the acquisition/window research path. Glasshouse's
-HTML HDMI source remains a complementary reference; no browser replacement.
+**One physical HDMI-4 picture is verified once in our app-owned centered window,
+with continuous motion and audible sound**, on LG OLED C1 / firmware 03.53.45.
+Independently live HDMI 1 + HDMI 2 remains the defining unproven objective.
+Direct UTP stays selected; Glasshouse's HTML HDMI source remains complementary.
 
-The owner-authorized one-shot 0.1.8 setup-only run and collection are complete.
-Installed 0.1.8 was machine-verified before submission and remained hash-bound
-afterward. There is no authority for another connection, retrieval, launch,
-HDMI operation, permission/mode/clock change, boot, service restart or retry.
-Preserve all packages, reports, native sources and private launch authority.
+The owner authorized exactly one physical HDMI-4 attempt, installed/admission
+checks and scheduled collection, no retries. That grant is consumed. Both
+connections are closed. No further TV connection, query, run, retry, installation,
+permission/mode change, restart or power action is authorized. The current
+0.1.12 IPK is unchanged; retain it as the first-picture control.
 
-## Current result and single next task
+## Verified physical outcome
 
-Both exact setup aliases contain identical valid traces: LSRegisterPubPriv
-returned false. Display/request/window all 1920x1080; renderer, geometry, export
-creation/ID/binding and focus passed. Context creation passed; later LS2 name,
-attachment/disconnect and final window-ID checks were not reached. Cleanup calls
-returned; exit intent 1. The rejection reason and actual exit code/signal remain
-unknown. The bounded log gate was size_cap; do not broaden retrieval.
-[Actual outcome and evidence pins](c1-journal.md#018-setup-only-diagnostic--named-ls2-registration-failed).
+- Owner started with HDMI 4 playing moving video, Glasshouse preview closed and
+  remote/timer ready. One SAM attempt acknowledged; prompt submission cue delivered.
+- Installed/generated/utility bindings, four fresh picture aliases, app absence,
+  two exact narrow permission maps and prior same-artifact/same-boot lifecycle
+  evidence passed. Post-run ELF/appinfo still matched.
+- Owner explicitly confirmed **continuously moving HDMI-4 video in the centered
+  box** and separately reported audible sound. After collection, normal picture,
+  sound and remote were usable with **no recovery action needed**.
+- Identical valid **588-byte app traces**, identical valid **204-byte launch-bound
+  witnesses**. Open/select/stop/close acknowledged; observation8,003 ms; local
+  cleanup returned, no retained owner, exit intent0. Final issue age9,453 ms.
+  Termination independently observed; app absent at collection.
+- Connections closed in **4.568/3.370 s**; collection connection opened at
+  dispatch+**27.003 s**. Foreground normal PowerShell controller remained attached.
+  No retries or extra reads; log size_cap stopped further log work.
 
-Offline identity review is complete. Saved SDL/helper startup attempts the same
-app-name registration before our explicit call, providing a candidate collision
-mechanism. The smallest reviewed patch moves our own named registration/name/
-attachment/disconnect checks before graphics. It passed controlled host replay,
-ARM build and direct ABI in an isolated copy; original sources/IPKs are unchanged.
-[Evidence and limits](../research/c1-hdmi-interface-map.md#registration-identity-and-smallest-correction).
+This proves a short single-port moving-picture result and reported sound. It does
+not establish independent dual HDMI, long-term stability, audio-routing ownership,
+numeric process exit status, signal/alarm cause or hardware release.
+acquisitionUncertain is intentionally retained after any dispatched open even
+when stop/close acknowledge; it is not an observed failure in this result.
+Actual owner timer start was not separately confirmed.
 
-Single next task: prepare a fresh setup-only diagnostic with this startup order
-and closed sanitized registration-error categories, then validate it locally.
-The actual 0.1.8 rejection code was not recorded; no confirmed cause or new TV
-authorization follows from the offline review. A successful generated-file check
-does not prove live bus registration. No permission-map change is proposed.
+[Actual outcome and hashes](c1-journal.md#0112-physical-hdmi-4--moving-picture-and-sound).
+Capture/stages/private launch authority/map replies/raw aliases/owner observation:
+build/reports/picture-0.1.12-20261115-001/.
+Frozen as-used inputs, bounded host observations and saved-evidence validation:
+build/phase-2/picture-trial-0.1.12-20261115-001/.
 
-Do not alter geometry based on the superseded mismatch hypothesis: this trace
-matched 1920x1080. Do not weaken either strict three-second guard. A returned
-registration failure with cleanup/exit intent is not proof of a crash; earlier
-0.1.7 substage and original 0.1.4 cause remain unknown. No HDMI result/release proof.
+The earlier [lifecycle-only trial](c1-journal.md#0112-lifecycle-trial--cleanup-and-independent-termination-observed)
+remains original prerequisite evidence. Two earlier host failures stay preserved;
+they were not native TV executions. No build/package/source change was needed.
 
-## Completed bounded procedure and reusable limits
+## Preservation disposition
 
-The dedicated scripts/run-setup-diagnostic.cjs was locally validated before use;
---plan remains a local artifact check. Its live flags are not a repeat grant.
-The consumed run used one fresh TV-derived authority and one normal SAM attempt.
+The current IPK, 43 candidate source pins, prior lifecycle and current physical
+reports/authority remain exact. All 21 older IPKs matched immediately before the
+trial. The owner subsequently confirmed intentionally removing the older HDMI
+IPKs: 11 paths absent at post-run audit, 274 other unique pins matched and no
+changed contents. Do not recreate them. They are unnecessary for the current
+candidate/next research; exact historical package reinstall/replay is no longer
+available for those versions. Retain their original hashes and saved reports.
 
-- Connection A: maximum 30 seconds; exact executable/appinfo hashes, modes and
-  owners, generated pub/prv roles/public client/versioned manifest, saved stock
-  utility hash, own-process absence and both fresh setup slots. No UTP permission
-  query or acquisition. One submission, then close; no refresh/retry on uncertainty.
-- With transport closed, wait until dispatch +27 seconds. Connection B: maximum
-  30 seconds; exact two setup aliases and parent metadata, 2 KiB/report, own-app
-  process state, executable/appinfo hashes/metadata and existing bounded own-app
-  log projection (at most 64 KiB delta). No prior/rotated/recursive log search.
-- Preserve sanitized outcomes including failure. Distinguish absent, empty,
-  invalid, partial, valid, unreadable and conflicting traces. Mode mismatches
-  cannot hide report findings or trigger repair. A report/process absence/reopened
-  log path cannot establish actual wait status or hardware release.
+## Single next offline task
 
-Observed connections closed after 4.593 and 3.486 seconds; B opened dispatch
-+27.014 seconds. Both strict native guards accepted; no UTP path. The owner saw
-LG Home while watching channels, then confirmed picture/sound/remote usable.
-No further TV test is queued. Existing inert/physical runners have different
-version/report/timing contracts and must not substitute for this setup runner.
+Trace an **independent second HDMI acquisition/presentation path** using saved
+sources and firmware, toward simultaneously live HDMI 1 + HDMI 2. A second port
+selection on the existing path would not prove concurrency. Preserve 0.1.12 as
+this working single-picture control. No speculative package, repeat probe,
+replacement browser or generic activation/boot diagnostic is queued.
+
+For any proposed second-path experiment, first identify the evidence for an
+independent allocation and separately bindable window, its limits, and the
+smallest useful discriminator. Two distinct moving sources and fresh owner scope
+will be required for an actual concurrency claim. No next TV procedure is
+currently authorized.
 
 ## Restoration and stop rules
 
-Any future active test requires its own explicit owner scope, remote/restoration
-access and independent timer. Native cleanup may affect only resources owned by
-that attempt; no guessed session IDs or automatic input switching. Cancellation,
-transport uncertainty and missing termination evidence stop progression without
-retry. No routine power/restart/permission/mode repair. The owner may return to
-normal channels through normal TV controls; this is not another experiment.
+Both strict three-second guards, issue+17-second progression, one-second focus,
+32-event bound, native 22-second immediate-exit alarm, 100 ms worker sub-bounds,
+issue+25-second witness outer bound, two 30-second connection caps, dispatch+27 s
+collection and all report/log limits remained unchanged. App cap2KiB/witness cap256.
+Retain these bounds for any later separately reviewed proposal.
+
+Keep normal PowerShell execution attached through collection and deliver the
+submission cue promptly. Fresh exclusive slots, current artifact/boot/admission
+checks, owned-ID cleanup and explicit post-run restoration remain required.
+Missing/conflicting/partial evidence or impaired restoration stops progression;
+no automatic retry, extra/late read, deadline widening, service restart or power
+action. Collection must never postpone normal remote/Home restoration.
