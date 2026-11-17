@@ -212,6 +212,79 @@ Continuing requires readable files from this build. The archive and inspection
 receipts are in `build/phase-2/g4-03.11.20-offline/`. No TV access or active
 test occurred.
 
+### G4 03.11.20 search for readable stock files
+
+The firmware catalog's US entry matches the saved EPK SHA-256. It identifies
+the image as `03.11.20.01`, OTA ID `HE_DTV_W24O_AFABATAA`, webOS
+`9.1.0-48 (ombre-oeta)`. The UK and contributed entries have the same EPK
+hash. These entries supply release metadata and packaged updates. The nearby
+community firmware study explicitly lists the G4/O24 as unextracted.
+[Catalog metadata](https://tv.slada.sk/processed_fw.json) · [Firmware study, G4 row](https://github.com/josippapez/dts_restore_plus/blob/cae1a97f2ee8aa3ea8d37f3ca5fd7919db16e802/webos25/docs/FIRMWARE-COMPATIBILITY.md#older-generations-webos-22--23--24-c2--c3-and-the-realtek-b2--b3)
+
+LG lists five open-source disclosures for `OLED77G4WUA`. The nearest notice
+by date is `OSSNotice-6948_webOS 24 O_2.0_240724.html`, catalog record
+`511783`. It names `lib32-com.webos.service.videooutput`. The notice gives
+neither a firmware identifier tying that component to `oeta-48` nor a stock
+Multi View caller or HDMI load handler. [LG exact-model source catalog](https://opensource.lge.com/product/list-data?keyword=OLED77G4WUA&schType=1)
+
+The first disclosure source archive was readable through EOF. The second and
+third transfers ended early (1,080,515,111 of 3,925,163,125 bytes and
+1,080,512,181 of 5,038,420,275 bytes respectively). Only their available
+prefixes were inspected. The second contains a complete nested GStreamer
+source ZIP labelled webOS 9.0.0. In the third, LG's Chromium 108 browser role
+lists `com.webos.avconnector.*` with outbound access to
+`com.webos.service.multiviewcontroller`, `com.webos.service.utp.extinputs`
+and `com.webos.service.videooutput`. This identifies services to look for in
+a readable G4 image. The permission list specifies no method, HDMI port, sink
+or event order. The archive suffixes remain unexamined. Local evidence:
+`build/phase-2/g4-03.11.20-offline/lg-oss-6948/browser-role.json`, lines 50–57,
+and `index-1.json` through `index-3.json`.
+
+The local workspace and download archives yielded only the previously saved
+G4 update and its receipts. Searches of the public webOS Brew native API,
+sample and app repository trees also yielded no matching stock pair.
+[Native API tree](https://github.com/webosbrew/tv-native-apis/tree/052b449aceabe3aa0eb5e90d02f3b11b4608a000) · [Samples](https://github.com/webosbrew/samples/tree/e95eed3afa7896894f811b84d8e9e277e9e2b74c) · [App repository](https://github.com/webosbrew/apps-repo/tree/8d4495b93edf34c3827a5877baf07814ecf56eb6)
+
+| Repository | What it establishes for this app |
+|---|---|
+| webos-userland | ACB declares an external-input player type, a media ID setter and a MAIN/SUB setter. Its linker script maps the setter to `dummy`. The names are useful when inspecting a real client. The header does not map SUB to HDMI 2's `SUB0` or establish call order. [ACB header](https://github.com/webosbrew/webos-userland/blob/00a5f8721e15d5c10030b99b2f3e73e0c527bcce/include/appswitching-control-block/AcbAPI.h#L10-L56) · [Linker stub](https://github.com/webosbrew/webos-userland/blob/00a5f8721e15d5c10030b99b2f3e73e0c527bcce/src/AcbAPI.lds#L18-L24) |
+| starfish-media-pipeline-api | The ACB sample selects MAIN. Its direct-media sample supplies elementary-stream data. Neither sample loads a second physical HDMI port. [ACB sample](https://github.com/webosbrew/starfish-media-pipeline-api/blob/3287b9a97268f931ee8e820aecf35f13b8cf202f/sample/src/acb_sample.cpp#L32-L45) · [Stream payload](https://github.com/webosbrew/starfish-media-pipeline-api/blob/3287b9a97268f931ee8e820aecf35f13b8cf202f/sample/src/StarfishDirectMediaPlayer.cpp#L72-L88) |
+| SDL-webOS | The SDL2 Wayland backend exports an existing surface and receives its compositor-assigned window ID. The prototype already uses transparent export and rectangle placement. The export and generic property calls contain no physical-port acquisition or first-scaler selection. [SDL implementation](https://github.com/webosbrew/SDL-webOS/blob/aa478daf3fc38fc70a3da8ddc0e09fb1ab367459/src/video/wayland/SDL_waylandwebos_foreign.c#L123-L159) · [Protocol](https://github.com/webosbrew/SDL-webOS/blob/aa478daf3fc38fc70a3da8ddc0e09fb1ab367459/wayland-protocols/webos-foreign.xml#L53-L80) |
+| native-toolchain | Its CMake recipe imports a Buildroot SDK sysroot for cross-compiling native apps. It provides the compiler-side environment for headers and libraries. Its inputs do not identify an installed G4 image or either stock component. The project's existing WSL SDK remains the build path. [Sysroot recipe](https://github.com/webosbrew/native-toolchain/blob/730dbd680cc319935655b1b04c2d80fcb62fdb22/sysroot/CMakeLists.txt#L1-L21) · [Project build guide](../build.md) |
+
+An older LG Chromium 53 external-input client provides a readable comparison.
+It binds the external-input ID to ACB and waits for the matching ACB load task
+before switching the port. Its switch request carries input and port identifiers.
+That client shows no sink setter, and the callback reports ACB state. The
+matching G4 caller, connector's sink assignment and first scaler request
+remain **unknown**. [Initialization](https://github.com/webosose/chromium53/blob/54c144dac6d3d0744792b18629f19a313df797c4/src/media/blink/webos/extinput_pipeline.cc#L82-L115) · [Switch payload](https://github.com/webosose/chromium53/blob/54c144dac6d3d0744792b18629f19a313df797c4/src/media/blink/webos/extinput_pipeline.cc#L151-L183) · [Callback](https://github.com/webosose/chromium53/blob/54c144dac6d3d0744792b18629f19a313df797c4/src/media/blink/webos/extinput_pipeline.cc#L319-L326)
+
+#### Chromium 108 connector follow-up
+
+The saved disclosure prefix contains the browser role and ends in
+`chromium108/src/content/browser/web_contents/`. Of the 57,159 tar member
+headers read, none falls under `chromium108/src/media/`. The complete
+Starfish 9.0.0 SDK inside that prefix has 21,147 tar entries. Its inventory
+showed no matching stock client, controller or HDMI loader. The SDK archive
+was read as data. A search of 5,614 source and configuration files in the
+disclosure's complete nested GStreamer ZIP found none of the seven checked
+connector, switch, or scaler identifiers. The private receipts are
+`chromium108-prefix-coverage.json`, `starfish-sdk-inventory.json`, and
+`gstreamer-connector-search.json` in
+`build/phase-2/g4-03.11.20-offline/lg-oss-6948/`.
+
+The G4 image's catalog entry identifies Chromium `108.0.5359.211`. The
+32 public OSE Chromium 108 submission tags report `108.0.5359.217`. At the
+checked OSE revision, `MediaPlayerNevaFactory` returns
+`kMediaPlayerTypeNone` for `service/webos-external`. Its supported branches
+construct a UMS player or an optional camera player. This source ends before
+any HDMI port or scaler request.
+[G4 catalog](https://tv.slada.sk/processed_fw.json) · [OSE version](https://github.com/webosose/chromium108/blob/431ed1c647b24f2337a5883e8011a0c4da73e710/src/chrome/VERSION) · [Factory dispatch](https://github.com/webosose/chromium108/blob/431ed1c647b24f2337a5883e8011a0c4da73e710/src/media/neva/webos/media_player_neva_factory_webos.cc#L30-L70)
+
+**Unknown.** HDMI 2's first scaler choice requires the retail Multi View
+caller and its physical HDMI load handler for this O24 build. The archive
+transfers were left spent. No TV access or active tests occurred.
+
 ## SDK boundary for the C1 investigation
 
 Checked 2026-11-11 after the owner's SDK question. LG's public

@@ -1,6 +1,6 @@
 # Current status
 
-Updated 2026-11-17. [Roadmap](ROADMAP.md) · [Docs](docs/README.md) · [Current procedure](docs/device-tests/current-plan.md)
+Updated 2026-11-18. [Roadmap](ROADMAP.md) · [Docs](docs/README.md) · [Current procedure](docs/device-tests/current-plan.md)
 
 ## Verified milestone
 
@@ -88,8 +88,11 @@ playback. The saved construction trace stops at these boundaries.
 **Next evidence needed.** The G4 03.11.20 download is complete. Its secured O24
 update did not expose the stock Multi View caller or HDMI load handler to offline
 inspection. HDMI 2's sink at its first scaler request remains **unknown**.
-The next trace needs a readable filesystem or matching client and handler from
-this build. Keep the saved package for comparison. [G4 firmware receipt](docs/research/prior-art.md#g4-031120-offline-inspection).
+The exact-model disclosure identifies the browser connector's allowed services.
+The saved Chromium archive ends before its media source, and the public
+Chromium 108 OSE factory has no HDMI player. The trace now needs a readable
+stock client and HDMI handler from O24 `9.1.0-48 (ombre-oeta)`.
+[Chromium connector follow-up](docs/research/prior-art.md#chromium-108-connector-follow-up).
 
 The completed single executable capture remains:
 529,960 bytes, SHA2561f3a45553139881e2ca978352ae0c87e8654b571b0d439af131b5e2fa82c2d4e,
