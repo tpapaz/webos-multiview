@@ -12,6 +12,11 @@ __pycache__/
 *.py[cod]
 *.ipk
 *.report.json
+*.epk
+*.elf
+*.pak
+*.sqfs
+*.squashfs
 
 # Native/CMake outputs, including accidental in-source builds.
 CMakeFiles/

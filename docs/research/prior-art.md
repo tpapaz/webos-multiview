@@ -170,7 +170,7 @@ generation. Its independently live HDMI capability remains **unknown**.
 
 | Lead | Evidence and limit |
 |---|---|
-| 77-inch G4 (OLED77G4WUA, webOS 24) | **Verified/documented:** LG specifies Multi View with up to two HDMI inputs for this exact model. The 03.11.20 package has been inspected offline. The HDMI load route remains **unknown**. [Product specifications](https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv) · [Firmware inspection](#g4-031120-offline-inspection) |
+| 77-inch G4 (OLED77G4WUA, webOS 24) | **Verified/documented:** LG specifies Multi View with up to two HDMI inputs for this exact model. The 03.11.20 package has been inspected offline. The HDMI load route remains **unknown**. [Product specifications](https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv) · [Retail comparison](#retail-g4-comparison) |
 | `com.webos.app.multiview` and `com.webos.app.multiviewsettings` | **Identity leads:** the older ID appears in the public SAM configuration and a first-person webOS 3.8 report names a native executable with that basename. A later owner report identifies the second ID as the Multi View settings entry. The executable or service that loads the second HDMI on the G4 remains **unknown**. [SAM configuration](https://github.com/webosose/sam/blob/master/files/conf/sam-conf.json.in) · [Older executable report](https://gist.github.com/Informatic/1983f2e501444cf1cbd182e50820d6c1) · [Settings entry report](https://community.openhab.org/t/lg-web-os-issue-with-multiview-after-recent-major-webos-update/156098) |
 | `com.webos.service.multiviewcontroller` | **Reported from stock QML:** Glasshouse's G3 / webOS 9.2.2 source inspection follows LG Home's single-HDMI recent-input preview through App View. Its request carries the HDMI guest and a layout. The guest opens UTP with app/window IDs and selects the port. That evidence ends at one HDMI preview. The Dual PC Monitor request and the controller's sink assignment are **unknown**. [Stock G3 App View source report](https://rorygallagher2024.github.io/glasshouse/development/TV-RESEARCH/#lgs-recent-input-preview-g3-webos-922) |
 
@@ -183,67 +183,16 @@ matching loader, showing how the second physical port reaches its connector's
 first scaler decision. This comparison remains separate from C1 hardware
 verification. [Saved C1 construction trace](c1-hdmi-interface-map.md#can-hdmi-2-select-sub0-when-its-connector-is-created)
 
-### G4 03.11.20 offline inspection
+### Retail G4 comparison
 
-**Verified.** LG's US and Canadian OLED77G4WUA listings agree on the ZIP
-name, size and August 27, 2024 release date. The Canadian listing supplied the
-LG download link. One HTTPS GET returned HTTP 200 with zero redirects or
-retries. The saved ZIP contains one member. Reading it to EOF verified its
-ZIP CRC-32 (`858e8fb2`). The SHA-256 values below identify the local copies.
-[LG US listing](https://www.lg.com/us/support/product/lg-OLED77G4WUA.AUS?tab=1) · [LG Canada listing](https://www.lg.com/ca_en/support/product-support/cs-OLED77G4WUA.ACC/)
+LG documents Multi View with two HDMI inputs on the OLED77G4WUA. Its
+support page lists firmware 03.11.20. An offline comparison found a
+conditional secondary scaler path in this build. Whether a fresh HDMI 2
+session selects it before its first scaler request remains **unknown**.
+The comparison does not add a verified device result.
+[LG product specifications](https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv) · [LG firmware listing](https://www.lg.com/us/support/product/lg-OLED77G4WUA.AUS?tab=1)
 
-| Artifact | Bytes | SHA-256 |
-|---|---:|---|
-| `Software_File(Version_03.11.20).zip` | 1,859,391,821 | `0cd48602bfb061b8ee32b43f254b35398eb44d6c2c5edb3280e2b02015e7a26e` |
-| `lib32-starfish-global-secured-o24-oeta-48-03.11.20_prodkey_usb_V3_SECURED.epk` | 1,878,619,461 | `d81c112fadea573106fb8050bb56be562548fd0f97d806226c1dbfe9f1e29be9` |
-
-The EPK contains `9.1.0` at offsets `0x6b4` and `0x6c4`. Its package
-header has no clear `EPK3` magic at either known offset. A full raw-byte
-scan found no named Multi View client/controller, `switchExternalInput`,
-`SUB0`, scaler labels or SquashFS magic among the patterns checked. The
-two apparent ELF and ZIP signatures had invalid headers. The public EPK
-reader documents that secured EPK v3 extraction requires matching keys.
-[EPK header layout](https://github.com/openlgtv/epk2extract/blob/master/include/epk3.h#L87-L112) · [Reader format support](https://github.com/openlgtv/epk2extract#supported-formats)
-
-**Unknown.** The stock caller and handler could still be inside the secured
-payload. No readable call site ties the second physical port to its own
-connector or orders its sink assignment against the first scaler request.
-Continuing requires readable files from this build. The archive and inspection
-receipts are in `build/phase-2/g4-03.11.20-offline/`. No TV access or active
-test occurred.
-
-### G4 03.11.20 search for readable stock files
-
-The firmware catalog's US entry matches the saved EPK SHA-256. It identifies
-the image as `03.11.20.01`, OTA ID `HE_DTV_W24O_AFABATAA`, webOS
-`9.1.0-48 (ombre-oeta)`. The UK and contributed entries have the same EPK
-hash. These entries supply release metadata and packaged updates. The nearby
-community firmware study explicitly lists the G4/O24 as unextracted.
-[Catalog metadata](https://tv.slada.sk/processed_fw.json) · [Firmware study, G4 row](https://github.com/josippapez/dts_restore_plus/blob/cae1a97f2ee8aa3ea8d37f3ca5fd7919db16e802/webos25/docs/FIRMWARE-COMPATIBILITY.md#older-generations-webos-22--23--24-c2--c3-and-the-realtek-b2--b3)
-
-LG lists five open-source disclosures for `OLED77G4WUA`. The nearest notice
-by date is `OSSNotice-6948_webOS 24 O_2.0_240724.html`, catalog record
-`511783`. It names `lib32-com.webos.service.videooutput`. The notice gives
-neither a firmware identifier tying that component to `oeta-48` nor a stock
-Multi View caller or HDMI load handler. [LG exact-model source catalog](https://opensource.lge.com/product/list-data?keyword=OLED77G4WUA&schType=1)
-
-The first disclosure source archive was readable through EOF. The second and
-third transfers ended early (1,080,515,111 of 3,925,163,125 bytes and
-1,080,512,181 of 5,038,420,275 bytes respectively). Only their available
-prefixes were inspected. The second contains a complete nested GStreamer
-source ZIP labelled webOS 9.0.0. In the third, LG's Chromium 108 browser role
-lists `com.webos.avconnector.*` with outbound access to
-`com.webos.service.multiviewcontroller`, `com.webos.service.utp.extinputs`
-and `com.webos.service.videooutput`. This identifies services to look for in
-a readable G4 image. The permission list specifies no method, HDMI port, sink
-or event order. The archive suffixes remain unexamined. Local evidence:
-`build/phase-2/g4-03.11.20-offline/lg-oss-6948/browser-role.json`, lines 50–57,
-and `index-1.json` through `index-3.json`.
-
-The local workspace and download archives yielded only the previously saved
-G4 update and its receipts. Searches of the public webOS Brew native API,
-sample and app repository trees also yielded no matching stock pair.
-[Native API tree](https://github.com/webosbrew/tv-native-apis/tree/052b449aceabe3aa0eb5e90d02f3b11b4608a000) · [Samples](https://github.com/webosbrew/samples/tree/e95eed3afa7896894f811b84d8e9e277e9e2b74c) · [App repository](https://github.com/webosbrew/apps-repo/tree/8d4495b93edf34c3827a5877baf07814ecf56eb6)
+### Public sources for the comparison
 
 | Repository | What it establishes for this app |
 |---|---|
@@ -258,81 +207,6 @@ before switching the port. Its switch request carries input and port identifiers
 That client shows no sink setter, and the callback reports ACB state. The
 matching G4 caller, connector's sink assignment and first scaler request
 remain **unknown**. [Initialization](https://github.com/webosose/chromium53/blob/54c144dac6d3d0744792b18629f19a313df797c4/src/media/blink/webos/extinput_pipeline.cc#L82-L115) · [Switch payload](https://github.com/webosose/chromium53/blob/54c144dac6d3d0744792b18629f19a313df797c4/src/media/blink/webos/extinput_pipeline.cc#L151-L183) · [Callback](https://github.com/webosose/chromium53/blob/54c144dac6d3d0744792b18629f19a313df797c4/src/media/blink/webos/extinput_pipeline.cc#L319-L326)
-
-#### Chromium 108 connector follow-up
-
-The saved disclosure prefix contains the browser role and ends in
-`chromium108/src/content/browser/web_contents/`. Of the 57,159 tar member
-headers read, none falls under `chromium108/src/media/`. The complete
-Starfish 9.0.0 SDK inside that prefix has 21,147 tar entries. Its inventory
-showed no matching stock client, controller or HDMI loader. The SDK archive
-was read as data. A search of 5,614 source and configuration files in the
-disclosure's complete nested GStreamer ZIP found none of the seven checked
-connector, switch, or scaler identifiers. The private receipts are
-`chromium108-prefix-coverage.json`, `starfish-sdk-inventory.json`, and
-`gstreamer-connector-search.json` in
-`build/phase-2/g4-03.11.20-offline/lg-oss-6948/`.
-
-The G4 image's catalog entry identifies Chromium `108.0.5359.211`. The
-32 public OSE Chromium 108 submission tags report `108.0.5359.217`. At the
-checked OSE revision, `MediaPlayerNevaFactory` returns
-`kMediaPlayerTypeNone` for `service/webos-external`. Its supported branches
-construct a UMS player or an optional camera player. This source ends before
-any HDMI port or scaler request.
-[G4 catalog](https://tv.slada.sk/processed_fw.json) · [OSE version](https://github.com/webosose/chromium108/blob/431ed1c647b24f2337a5883e8011a0c4da73e710/src/chrome/VERSION) · [Factory dispatch](https://github.com/webosose/chromium108/blob/431ed1c647b24f2337a5883e8011a0c4da73e710/src/media/neva/webos/media_player_neva_factory_webos.cc#L30-L70)
-
-**Unknown.** HDMI 2's first scaler choice requires the retail Multi View
-caller and its physical HDMI load handler for this O24 build. The archive
-transfers were left spent. No TV access or active tests occurred.
-
-### Retail G4 extraction and call trace
-
-One offline `epk2extract -s -n -c` run on the saved G4 image completed in
-92.62 s with exit 0 and 312 successful signature checks. The tool identified
-EPK3, firmware `03.11.20.01`, and OTA ID `HE_DTV_W24O_AFABATAA`. The input
-SHA-256 matched the earlier receipt after the run. We built upstream
-`a0ccd8a4b4f48d05675a4cddd233f8780ee36767` in the existing WSL environment with
-workspace-local development dependencies. The build reported clock skew on
-the shared filesystem and produced the extractor successfully. Using
-`dpmeta.pak`, we carved four readable SquashFS partitions from `super.pak`.
-The `rootfs` SHA-256 begins `8f4a19c9ad577618`. The stock client and HDMI
-handler were recovered from that partition. The independent public catalog
-search found no matching readable artifacts in its checked coverage.
-[Extractor source](https://github.com/openlgtv/epk2extract/tree/a0ccd8a4b4f48d05675a4cddd233f8780ee36767) · [Public symbol inventory](https://github.com/webosbrew/dev-toolbox-cli/tree/2d5a7b6881850d825aa7fdc6c0b5e53c91dc40d3/common/data)
-
-| Stock artifact | Observed behavior |
-|---|---|
-| `com.webos.app.multiviewsettings/main.js` and O24 `multiview.json` | The configuration lists HDMI 1 and HDMI 2 in order under `recommendedAppsMulti.2screen` at lines 595–600. The UI builds ordered `appId` and `order` entries at bytes 716756 and 717131 and sends the list and mode to `multiviewcontroller/launchApps` at byte 705704. That request carries no sink. |
-| `/usr/sbin/multiviewcontroller` | The foreground-window callback binds the HDMI app's window at `0xd57e–0xd58a`. The binding callback maps the returned window to its port and stores the broadcast ID as the pipeline ID at `0xeb02–0xeb30`. The switch constructs `portId` and `pipelineId` at `0xe63a–0xe67c`. A separate `trackPipelineInfo` subscription observes the reported scaler resources at `0x1b094–0x1b0ea`. |
-| `libextinput-service.so.1.0.0` and `libelement-video-hdmi.so.1.0.0` | HDMI post-load reads Multi View information at `0x779c6`. The HDMI element separately emits `requestSubScaler` through `subScalerResource` at `0x373e4–0x373f8`, and the watcher handles it at `0x77d44`. These messages are distinct from the connector's first scaler acquisition below. |
-| `libav-connector.so.1.0.0` | A fresh video connector starts at type 2 (`0x18140–0x18144`). The side-by-side changed callback maps priority 1 to type 4 at `0x34630–0x34636`, calls `changeSink` at `0x3415c–0x34162` and then calls `tryConnect` on the same implementor at `0x342c2–0x342ce`. The normal window path writes the new type to the video connector at `0x21280`. |
-
-**Verified in the code.** `VideoConnector::_prepare` reads the current type
-at `0x18c28` and builds `MAIN_SCALER` for type 2 and `SUB_SCALER` for type
-4. `connect` calls prepare at `0x229d4` before `acquire` at `0x22a78`.
-Connection information has its own translation of a MAIN descriptor to
-`SUB0` for type 4 at `0x19f06–0x1a1f6`. Seeing that descriptor by itself
-cannot establish the type used by the first prepare.
-
-**Candidate and unknown.** The G4 has a conditional delay for the normal-TV
-HDMI path. `delayConnect` checks the source and feature flag at
-`0x1edf2–0x1ee12`. A matching side-by-side request sets the flag at
-`0x33ba2` and inhibits automatic connection at `0x33bb0`.
-`setRenderReady` can clear readiness bit `0x40` at `0x22066`.
-`tryConnect` requires status `0x7f` and an empty policy list. If HDMI 2's own
-connector receives the matched priority-1 callback before its first
-`_prepare`, and retains type 4, that request is `SUB_SCALER`. The fresh
-delay flag starts clear. The stock trace has yet to establish that binding,
-readiness and callback order always provide that condition. This is static
-evidence for the G4 package. The C1 and hardware concurrency remain
-unverified.
-
-Extraction, partition and selected-file receipts are under
-`build/phase-2/g4-03.11.20-offline/epk2extract-a0ccd8a/`. See
-`single-extraction/result.json`, `single-extraction/partitions/inventory.json`,
-`controller-trace/addresses.json` and `connector-timing-static/`.
-This work used the saved update once with zero retries. No TV access or
-active device tests occurred.
 
 ## SDK boundary for the C1 investigation
 

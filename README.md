@@ -79,7 +79,9 @@ you have a way to restore normal operation. Stop if the TV behaves unexpectedly.
 Follow the [device safety rules](docs/safety.md) and [current test procedure](docs/device-tests/current-plan.md).
 
 webOS MultiView is an independent homebrew project unaffiliated with LG
-Electronics. The software is provided as is, without express or implied
+Electronics. webOS is a trademark of LG Electronics. See the
+[publication rules](docs/safety.md#public-repository) for research material
+and third-party files. The software is provided as is, without express or implied
 warranties. Use it at your own risk. To the extent permitted by applicable law,
 the maintainers disclaim liability for device damage, data loss, or other
 losses arising from use of the project.

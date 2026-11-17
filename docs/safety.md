@@ -106,3 +106,14 @@ and static exports do not establish physical HDMI behavior.
 Phase 1 controls and their unresolved limits remain available as references.
 Screensaver and Glasshouse/Home are closed/separate; neither is a dependency of
 the single-picture milestone unless the owner explicitly reopens it.
+
+## Public repository
+
+Publish project source, reproducible host checks, and concise research findings
+with the model, firmware and observed result. Cite upstream sources and verify
+redistribution rights and attribution before adding third-party material.
+
+Keep firmware images, extracted stock files, detailed disassembly or
+decompilation, unredacted device logs, and research chat exports in local ignored
+storage. Check the files in a proposed commit for those items and for private
+device information. Preserve the original research records locally.
