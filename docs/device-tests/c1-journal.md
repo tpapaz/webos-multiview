@@ -487,3 +487,248 @@ All43 control source pins, ELF/IPK,201 preservation pins and prior evidence rema
 exact. No TV exec, device open/ioctl, app/acquisition/input/permission/service/
 power action or TV file write. No new picture/audio/remote restoration observation
 was requested or claimed. Return to saved-provider tracing without another read.
+
+### VAL capability JSON — bounded single-file collection
+
+**2026-11-17, LG OLED C1 / firmware03.53.45:** the owner-requested single read
+of /etc/palm/val/device-cap.json completed with the existing configured endpoint
+and saved TOFU pin. **243 raw bytes**, SHA256
+`408f13b13d2c30e1e51765c1b8e6a2dff7224410e8c4c47e057f28f00877b440`.
+Inventory SHA256
+`7efbdb1c7da68b5461aef78085d0cdcf0c6fafaa036e262a78390318ac1cca55`.
+
+One SSH connection, one SFTP subsystem, one read-only open, two reads including
+EOF, all15 permitted metadata calls, **342.206 ms**. Zero retries, links or forced
+closure. Three exact ancestors stayed directories; regular leaf/handle metadata
+matched before/open/after: mode0100644, uid0/gid0, size243, mtime1755576901.
+File handle close was confirmed; SFTP and SSH closure were confirmed. Pin and
+endpoint matched; TOFU remains without independent identity verification.
+No atomic-snapshot claim. Unchanged64KiB retained/65,537 observed-byte/two-read
+bounds,30 s outer/27 s work/3 s connect-operation/shared-cleanup bounds.
+
+Separate local strict UTF-8/object JSON interpretation passed without duplicate
+keys or unsupported plane names. Original array [MAIN,SUB0], unique byte-sorted
+names [MAIN,SUB0], no duplicates or extra ordinals. For the **saved provider**,
+MAIN ordinal0 pairs with software planeID44/video30; SUB0 ordinal1 with45/video31.
+This verifies advertised on-disk names; currently loaded config, independent HDMI
+receiver/scaler grants, hardware release, motion/audio and stability remain unknown.
+No vendor parser or device-node code executed.
+
+Raw/inventory: build/phase-2/hdmi-val-capability-evidence-20261117-001/.
+Frozen as-used16 reader/test/helper sources, request/preparation/trust bindings,
+one dispatch/result, post-bindings and offline verification:
+build/phase-2/hdmi-val-capability-run-20261117-001/verification.json.
+Native Windows owner-only ACL verification passed for raw, inventory and every
+as-used provenance path. All16 source pins,201 original preservation pins and585
+prior trace pins across14 trace trees matched; unchanged0.1.12 source/IPK/ELF,
+helpers, guards, saved trust receipt and original evidence are preserved.
+
+Checks: node scripts/collect-val-capability.cjs --plan passed offline;
+node tests/host/val-capability-reader.test.cjs passed87 cases, zero TV connections,
+credential reads or forbidden imports. The initial sandboxed suite stopped at its
+private ACL check; rerunning in required native Windows context passed. A local
+dispatch wrapper initially referenced an unexported helper; it was corrected
+before output reservation/transport construction, so this was not a remote
+attempt or retry. The validated reader itself was unchanged. The new private
+verify-local.cjs independently replayed raw hash/metadata/interpretation/closure
+and preservation checks with zero additional TV connections.
+Final npm run lint and git diff --check passed; repository consistency checked45
+documents/455 local links. Native/runtime rebuilds and prototype test repetition
+were not needed because production code, ELF/IPK and guards are unchanged.
+
+No TV exec/write, app/HDMI acquisition, installation, input/permission/service/
+power action, vendor initialization or device ioctl. No new picture/sound/remote
+observation was requested or claimed. One read-only collection is the entire TV
+scope of this task. Subsequent saved-evidence review identifies the factory reuse
+predicate and port-based cleanup limit in the
+[research map](../research/c1-hdmi-interface-map.md#captured-capabilities-and-ownership-discriminator).
+The [dual-source sequence](current-plan.md#review-only-dual-source-experiment)
+is a review-only draft; it has not run and is not a runnable candidate.
+
+### Media server descriptor — bounded absent-file result
+
+**2026-11-17, LG OLED C1 / firmware03.53.45:** one standing-permission inert
+read attempted exactly
+/usr/share/luna-service2/services.d/com.webos.media.service to ground the retail
+media-server executable for own-SUB0 sender/owner tracing. The candidate basename
+came from pinned LG OSE source; retail presence was not assumed.
+
+**Absent:** one SSH connection and SFTP subsystem, **zero content opens/reads**,
+9 metadata calls, **286.882 ms**. Four exact ancestor directories matched before
+and after the leaf-not-found result. Pin and endpoint matched; handles were never
+opened, SFTP/SSH closure confirmed, zero retries/forced closure. No raw descriptor
+exists and no content hash is claimed. Inventory SHA256
+`67427b51e87fc5c1d88ee3309ab70c7e7d29484d88da5e199a5ba2321a6b47a6`.
+
+Unchanged private reader limits:64KiB retained/65,537 observed bytes, two reads
+including EOF,18 metadata calls, zero links/one open;30 s outer/27 s work and3 s
+connect/operation/shared-cleanup bounds. No alternate descriptor lookup or
+executable collection followed. This establishes only that this exact file was
+absent; running com.webos.media identity and its actual registration path remain
+unknown. No media service query/selector/acquisition, TV exec/write, installation,
+input/permission/service/power change or device ioctl occurred.
+
+Private receipt: build/phase-2/hdmi-media-service-evidence-20261117-001/.
+As-used reader/runner/authority/result, exact transformations from the unchanged
+capability reader and accepted61-case synthetic suite:
+build/phase-2/hdmi-own-sub-contract-20261117-001/descriptor-read-003/.
+The suite passed in native Windows context with zero TV connections, credential
+reads or forbidden imports; owner-only capture ACL checks passed. Initial local
+ACL/generator refusals and an obsolete interpretation assertion failure are
+retained in acceptance-final.json; all occurred offline before dispatch.
+
+Subsequent saved-only review produced the
+[own-selector/evidence contract](../research/c1-hdmi-interface-map.md#own-sub0-selector-and-allocation-evidence-contract):
+fixed nested JSON-string payload; empty audio fields clear type; setter replies
+do not prove reconnection; shared elements can retain their first backend parent.
+A separate bounded process/executable-identity request is prepared but not run.
+Working0.1.12, helpers/guards, prior raw evidence and consumed grant disposition
+are unchanged. No new picture/sound/remote restoration observation was requested
+or claimed; the dual-source draft remains unrun and not runnable.
+Final local verification passed61 acceptance cases, six source identities/18
+excerpts,43 working source pins and201 original preservation pins. Owner-only
+ACL readback passed for the complete new evidence tree and absent-file capture;
+local ACL/manifest setup refusals and successive verifier sources are retained.
+Audit: build/phase-2/hdmi-own-sub-contract-20261117-001/verification.json.
+npm run lint and git diff --check passed (45 documents/460 local links). No native
+build or prototype test repeat was needed; production sources/IPK/ELF are unchanged.
+
+### Media executable identity — single bounded lookup
+
+**2026-11-17, LG OLED C1 / firmware03.53.45:** after the owner continued the
+prepared next task, the fixed pidof/readlink command ran once under standing
+read-only permission. The saved endpoint/TOFU pin matched. **Identified:** one
+allowed executable candidate path, retained privately; **23 stdout bytes**, zero
+stderr, exit0/no signal, **292.343 ms**. One SSH connection/exec channel, zero
+SFTP/target-file access, retries or forced closure. Channel and SSH closure were
+confirmed. No alternate process name, descriptor retry or automatic file capture.
+
+Raw stdout SHA256
+`188a7d781d2b9ee61b190fab95671a0a77ff6b79ffc8c361376f3c8d7f644b52`;
+inventory SHA256
+`aca6c62e01e21cc7997341e23b21c4d982f85c0accb5d668ef49a91e4e74316f`.
+Closed local bytes/hash/size and strict target interpretation exactly match the
+private receipt. No regular-file status, executable content hash, process birth
+identity or active loaded-byte identity follows from one procfs link read; PID
+reuse/exec/source races remain unknown. TOFU is not independently verified.
+
+Unchanged request bounds: one literal command,30 s outer/27 s work,3 s clipped
+connect/command/shared cleanup,1KiB stdout/1KiB stderr, one nonempty stdout line,
+cancellation and confirmed closure. The command rejects absent/multiple or
+nonnumeric process matches before its sole readlink and never opens/executes the
+target. Raw PID/path, endpoint, profile/key and unrestricted stderr were not
+printed. No app/HDMI acquisition, input switch, TV write, installation, service
+query, permission/service/power change or device ioctl occurred. No new owner
+picture/sound/remote restoration observation was requested or claimed.
+
+Raw streams/authority/receipt/post-bindings:
+build/phase-2/hdmi-media-identity-evidence-20261117-001/.
+Reader/dispatcher/preparation,74-case offline acceptance,11 frozen as-used
+source/request/helper pins and closed-local verification:
+build/phase-2/hdmi-media-identity-read-20261117-001/verification.json.
+The tests blocked real transport and credential reads; explicit Git Bash used
+stubbed pidof/readlink functions. Acceptance covered fixed request-byte binding,
+default/plan refusal, output/line/exit-code limits, late callbacks, cancellation,
+connect/command/shared-cleanup deadlines and native Windows owner-only ACLs.
+Pre-dispatch review fixed same-buffer request binding and late-close acceptance;
+initial local harness/occupied-receipt issues are retained in preparation.json.
+Only the final74-case suite passed for the frozen sources; no TV retry occurred.
+
+Local audit matched raw hashes/target/closure, all11 frozen pins,43 working source
+pins and201 original preservation pins; private ACLs passed. Unchanged0.1.12
+source/IPK/ELF, original evidence, helpers and guards are preserved. No native
+build/package or active trial. The separate exact inert-file request is prepared:
+build/phase-2/hdmi-media-identity-read-20261117-001/executable-request.json,
+SHA25625885dd02bc8da537c1b507e4323745f763000dd5214308c6e8b42c66008568b.
+It binds this actual private path; its reader is not implemented/validated, no
+executable bytes were retrieved and the dual-source draft remains not runnable.
+Final npm run lint and git diff --check passed (45 documents/463 local links).
+Prototype tests/native builds were not repeated because production sources,
+guards and the working ELF/IPK are unchanged.
+
+### Media executable — single bounded inert-file capture
+
+**2026-11-17, LG OLED C1 / firmware03.53.45:** the owner explicitly requested
+implementation/validation followed by the one capture. The request-bound
+observed private path was read once with the existing endpoint and saved TOFU
+pin. **529,960 bytes**, SHA256
+`1f3a45553139881e2ca978352ae0c87e8654b571b0d439af131b5e2fa82c2d4e`.
+Inventory SHA256
+`1cd8bb41e060072ba241326613366e1fa35612a63b3b2b566ae4343405870b5f`.
+
+One SSH/SFTP connection, one read-only regular-file open, **ten reads including
+EOF**, all12 metadata checks, **452.084 ms**. Zero links, exec channels, retries
+or forced closure. Two exact ancestor directories and initial/opened/after leaf
+metadata matched: mode0100755, uid0/gid0, size529960, mtime1757741406. File handle
+close, subsystem and SSH closure were confirmed. Raw/hash/size/EOF/metadata and
+owner-only local ACLs independently passed; SFTP equality is not an atomic/inode
+snapshot. TOFU remains without independent identity verification.
+
+The unchanged request retained32MiB/64KiB/513-read/12-metadata bounds,
+30s outer/27s work and3s clipped connect-operation/shared cleanup. Source capture
+and interpretation are separate: only after complete closed raw verification,
+local header bytes recognized ELF32 little-endian, ET_DYN(type3), ARM(machine40),
+version1 and52-byte declared header. Full ELF validity, ABI closure, service role,
+active loaded-byte equality and hardware ownership remain unknown. No vendor
+loader/parser/code or target executable was run; no media-service query.
+
+Raw/authority/inventory/header/post-bindings/dispatch:
+build/phase-2/hdmi-media-server-evidence-20261117-001/.
+As-used reader/dispatcher/header source, exact recorded derivation,87-case
+acceptance and independent verification:
+build/phase-2/hdmi-media-server-read-20261117-001/verification.json.
+The synthetic suite passed with zero real transport imports or credential reads;
+it covered the exact32MiB EOF/growth/read514 boundaries, metadata changes,
+callback-time/cleanup deadlines, cancellation, immutable request-byte binding,
+separate valid/invalid header outcomes and native Windows private ACLs. One
+inherited delay fixture was corrected from12×2s to12×2.5s to reach the27s cutoff;
+the first offline failure is preserved and the reader was unchanged by that fix.
+
+All18 frozen source/request/helper pins,43 working source pins and201 original
+preservation pins matched. Working0.1.12 source/IPK/ELF, guards, trust receipt and
+original evidence remain exact. No TV write, app/HDMI acquisition, input switch,
+installation, permission/service/power change or device ioctl. No fresh owner
+picture/sound/remote observation was requested or claimed. No native build,
+package or active trial. A subsequent saved-byte first pass bound registered
+setSink to its selector/privateCommand fallback and trackResourcesStatus to
+subscriber registration/observer state. It used zero further TV connections or
+service calls. [Exact instructions and unresolved ownership gates](../research/c1-hdmi-interface-map.md#saved-media-server-selector-and-observer-handlers)
+and private trace verification:
+build/phase-2/hdmi-media-server-trace-20261117-001/verification.json.
+A further offline pass bound the manager objects, registration's generated-ID
+to actual sender-service mapping, associated-record fan-out and cached owner
+selector replay. A false setSink reply can coexist with forwarding. Exact
+manager virtual implementations and association validation remain outside the
+saved executable.14 excerpts/22 literals/two record vtables/two singleton imports,
+owner-only ACLs and201 preservation/43 working pins passed; zero further TV
+connections or service calls. [Mechanisms and provider gap](../research/c1-hdmi-interface-map.md#manager-bindings-selected-records-and-owner-replay).
+Private verification: build/phase-2/hdmi-media-owner-trace-20261117-001/verification.json.
+No active experiment; do not repeat completed capture or identity discovery.
+
+### ResourceManager mapping lookup — connect timeout
+
+**2026-11-17, LG OLED C1 / firmware 03.53.45.** The single lookup attempt
+ended with `connect_timeout` at the 3-second connect deadline, with
+**3,062.681 ms** total elapsed including cleanup. The saved reader requested
+SSH shutdown and recorded the client close event without forced teardown.
+The receipt has no confirmed host-key or endpoint match. Zero exec channels,
+SFTP subsystems or retries. Both streams are empty and no command exit was
+recorded. The capture remained incomplete and interpretation was skipped.
+The provider path remains **unknown**. The lookup is **spent**.
+
+Private receipts and empty streams are preserved in
+build/phase-2/hdmi-resource-provider-evidence-20261117-001/.
+Local verification matched the request/command bindings, receipt sizes and
+SHA256 links, both empty stream hashes, 26 original/frozen pin pairs and
+201 preservation pins. The capture directory and its seven files passed the
+owner-only ACL check. The frozen reader confirms that the SSH closure flag
+comes from the client close event in this path. No exec channel existed to close.
+
+| Saved evidence | SHA256 |
+|---|---|
+| inventory.json | `7d7c71796519441162aad30ad20471c92ae04f4918fff9597f7f7b2734b02364` |
+| dispatch-result.json | `76b9d32aec7ed04d0dc7eae51e0751d6cb6f316c88d477b2fddc2af423ccec10` |
+| stdout.bin and stderr.bin (each) | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+
+Verification used local files only. No retry, new TV connection, library read
+or active experiment followed.

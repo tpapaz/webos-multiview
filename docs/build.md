@@ -63,7 +63,7 @@ metadata, strict local JSON/plane interpretation and shared cleanup deadline wit
 synthetic transport only. It blocks real profiles/keys and transport imports;
 native Windows context is required for private-output ACL acceptance. Its --plan
 checks saved request/control/evidence pins locally. No TV connection or ELF/IPK
-build is needed for this reader. [Readiness and exact scope](device-tests/current-plan.md#prepared-capability-file-read--offline-only).
+build is needed for this reader. [Completed read and exact scope](device-tests/current-plan.md#completed-capability-file-read).
 
 Native acceptance requires CMake/Ninja, json-c and GLib in the existing Ubuntu
 WSL environment. Use fresh output directories for the entry/trace/witness and

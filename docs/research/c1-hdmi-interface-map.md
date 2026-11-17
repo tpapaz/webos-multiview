@@ -71,8 +71,8 @@ flowchart LR
 ~~~
 
 The graph shows traced calls/configuration; it is not a diagram of proven
-independent live receivers. Receiver ownership, actual capability order and
-isolated release remain the unresolved gates.
+independent live receivers. On-disk MAIN/SUB0 order is now captured below;
+active-loaded identity, receiver ownership and isolated release remain unresolved.
 
 ### Saved inputs and address convention
 
@@ -193,7 +193,7 @@ Saved instructions/excerpts and constructor/literal checks:
 | K identity | `.init_array` slot `0x23594` → Thumb `0x84a1`. Initializer `0x84a0` uses GOT base `0x23c7c`, slot `0x23fe8` relocated to pluginInfo `0x241d8`. Calls `0x852c/0x853a/0x8548` through helper `0x8474` set strings `0x11f20`, `0x124bc`, `0x12480`. | Name **video-sink**, empty description, version **1.0.0**. Exports alone were insufficient; initializer argument/data flow establishes the name. |
 | Grant byte versus source routing | H createPlugin reads incoming byte `0x3684e`, stores it on the outgoing stack `0x3689c`, calls typed constructor `0x368d0`. Constructor forwards it at `0x35e20/0x35e60` to Base's previously traced `+0xec` field. K does the same at `0x9782/0x97d0/0x9804`, then `0x9258/0x9294`. | This is the **PI_PORT grant selector**, not an established physical jack or presentation plane. PI_PRIDX is separate factory metadata; it is not this constructor argument. No grant-selector → hardware-port or scaler translation is demonstrated in these paths. |
 | Logical input label | H `0x35ee8–0x35ef4` switches on PipelineInputType's word at `+4`; codes8–12 map to labels1–5 via `0x36538/0x36542/0x3654c/0x35f0a/0x3652e`, stored at object `+0x184`. | A logical label is separate from the driver index below. Five accepted enum codes do not establish five physical C1 connectors. |
-| Actual driver port | H setHwPort reads JSON **port** (literal `0x482d4`) at `0x38126–0x38132`, stores integer **k** at object `+0x188`, publishes it under **elementPortHw** (`0x49034`, put at `0x37ffa`). It allocates HdmiVideoControl at `0x3802c–0x38042`. Control reads k and adds1 at `0x4070a–0x40714`; driver constructor call `0x40738` stores this value at driver `+0x14` (`0x34164`). | Driver port = **k + 1**, where k is the service's setHwPort/model videoIndex value. This is not a proven function of PI_PORT or PI_PRIDX. The model's HDMI-jack → k table values remain unsaved/unknown. |
+| Actual driver port | H setHwPort reads JSON **port** (literal `0x482d4`) at `0x38126–0x38132`, stores integer **k** at object `+0x188`, publishes it under **elementPortHw** (`0x49034`, put at `0x37ffa`). It allocates HdmiVideoControl at `0x3802c–0x38042`. Control reads k and adds1 at `0x4070a–0x40714`; driver constructor call `0x40738` stores this value at driver `+0x14` (`0x34164`). | Driver port = **k + 1**, where k is the model input-map value delivered through setHwPort; videoIndex selects the table. This is not a proven function of PI_PORT or PI_PRIDX. The model's HDMI-jack → k table values remain unsaved/unknown. |
 | Acquisition endpoint | H opens fixed **/dev/video12** (literal `0x48570`) at `0x33964–0x3396e`, flags2. Connect reads stored driver port at `0x3382e`, invokes ioctl **0xc0045627** at `0x3383c`. Relocation of vtable `0x619e4` names v4l2_hdmi_connect; control reaches it at `0x3ebfc`. | Actual character node81:9 matches sysfs/platform **hdmi20_v4l2**. Saved kernel code distinguishes per-file handles, global input readback and per-port activation below; receiver isolation remains unknown. No device open or hardware ioctl was performed during driver research. |
 | Sink sourcePort | K `_start` obtains previous linked-element information with selector255 (`0x9a40/0x9cae`). It reads **elementPortHw** (`0x120a4`) at `0x9cba`, converts at `0x9cc0`, stores `+0x1e8` at `0x9cc6`, emits JSON **sourcePort** at `0x9b50–0x9b76`. | Presentation sourcePort = **k**, the upstream hardware index. It is not an evidenced read of the sink's own grant byte. K source mapping uses primary3 → HDMI (`0x8628–0x8638`); primary4 is AVD (`0x8640–0x8652`), whose extra attribute is av. |
 | Default presentation | K emits **sink:MAIN**: value literal `0x11fb0`, creation `0x9b90`, put `0x9bae`; JSON reaches AVProxy::setRenderReady at `0x9c20`. A forwards unchanged at `0x5f62–0x5f68`; C wrapper `0x1f3c2–0x1f3c6`, implementor `0x1a9c6`. C initializes current/prior video types to2 at `0x12092–0x12094`; `_prepare` selects MAIN_SCALER at `0x12df8/0x1300a`. | Ordinary construction supplies a MAIN request and defaults to MAIN_SCALER. A second window or grant does not itself select SUB. This is a resource-arbitration boundary, not a free sink. |
@@ -260,6 +260,174 @@ cleared:
 | Where does allocation happen? | R acquire/tryAcquire wrappers set true/false at `0xa754/0xa75c`; `_acquire` sends **connectionId/resources** (`0x9b74–0x9ba8`) to `/acquire` or `/tryAcquire` (`0x9c02–0x9c0e`, `0xa124–0xa134`) through UMS sendMessage (`0x9d9c–0x9dae`). I reaches LSCallOneReply at `0xaa36`. R builds a connection-keyed waiter, calls **std::condition_variable::wait** at `0x9e38`, copies the received result string at `0x9ecc–0x9ed2` and returns the waiter Boolean (`0x9ede`, return `0x9f58`). | Client requests resources; the media service chooses grants/arbitration. This generic client does not establish the physical meaning of HDMI resource indices. No finite local acquire wait was found on the inspected path; tryAcquire uses the same client wait despite its different server method. Keep existing process guards. |
 | What counts as completion or policy action? | R acquireCompleteResponse reads **state/connectionId** (`0x1076e/0x1079e`) and passes Boolean plus the full message to informWaiter (`0x10826`). commandResponse checks returnValue/state and can inform failure at `0x10ef4`. informWaiter finds the waiter by supplied connection key, writes Boolean/result at `0x778a/0x7792` and notifies at `0x779a`. policyActionResponse parses action/connectionId/resources, invokes installed policy callback (`0xff96–0xff9e`) and sends its response at `0xffac–0xffba`. | Completion is correlated to a resource session. The client transports the server's result; it does not demonstrate a second physical receiver or a non-preempting grant. Policy/preemption behavior is delegated to the installed callback/server, not eliminated by a second client object. |
 | Does release success prove hardware release? | R release sends **connectionId/resources** to `/release` (`0xa7dc/0xa802/0xa87c`, send `0xa8ce`), then returns serialization flag (`0xa908`). unregisterPipeline sends `/unregisterPipeline` at `0x97b4` and sets local state at `0x97b8–0x97bc`. finalize wakes a waiter with failure at `0x7950`. Destructor stops UMS and calls untimed pthread_join (`0x764a/0x7654`); no unregisterPipeline call appears in this destructor. | Release and unregister dispatch are not release receipts. Server disconnect cleanup, actual resource/hardware release and bounded teardown remain unknown. No active release/reset was attempted during this research. |
+
+### Own SUB0 selector and allocation evidence contract
+
+**Verified static / candidate protocol, 2026-11-17.** A/C/R retain the hashes
+above; E/G/K retain the earlier source identities. Full-body review and18
+source/hash-bound excerpts are preserved in
+build/phase-2/hdmi-own-sub-contract-20261117-001/{selector-findings.json,reviewed/}.
+No vendor code or selector was executed. This fixed70-byte body describes the
+candidate avconnector privateCommand grammar, **not a dispatch-ready app API**:
+
+```json
+{"key":"setSink","payload":"{\"videoSink\":{\"type\":\"sub_video\"}}"}
+```
+
+| Contract boundary | Exact saved evidence | Required interpretation / refusal |
+|---|---|---|
+| Grammar and type | R0x113aa/0x113e4 converts key/payload separately with asString; A0x6c72 compares setSink and0x6c92 forwards the payload string. C0x1ced0 parses it using schema literal{} at0x2194c; videoSink/type reaches changeSink at0x1d1ea–0x1d20c. sub_video at0x231bc maps to type4 at0x1854e–0x1857c. | payload is a JSON **string containing JSON**, not a nested object. Candidate contract accepts only the fixed videoSink/type body; no arbitrary method/type/extra-field input. |
+| Empty-field hazard | C0x1cffc checks audioSink presence; serialized{} at0x1d31a clears audio type0 at0x1d362–0x1d366; empty string rejoins via0x1d378–0x1d384. Empty videoSink clears video/surface through0x1d24e–0x1d306. | Omit audioSink and streamType; do not use empty objects/strings as filler. Omission avoids the explicit clear branch but does not guarantee unchanged audio hardware during disconnect/reacquire. |
+| Readiness and result | A initialized byte+0x71 is set at0x6eb6 before validation0x6eba, connector initialize0x6ed0 and resource register0x7114. C0x1d614–0x1d61a checks getStatus(1); airplay takes queued work0x1d6ae, other types reach0x1d6e4. C0x1d0ca calls tryConnect(0), then0x1d0ce returns1 without using that result. A and R also discard callback/setter results. | Initialized/delivered/parsed/true means neither completed SUB selection nor granted resources. Require independent post-completion ownership/grant/sink evidence; no setter-reply acceptance. |
+| Selection ordering | K's ordinary _start supplies MAIN before setRenderReady0x9c20; C type4 is the conditional MAIN→SUB0 override0x13c3e–0x13c6e. V0x702d0 can disconnect an existing MAIN binding. | **Risk inferred from these calls:** applying SUB after B has already connected MAIN can first displace A. A runnable proposal needs an evidenced non-displacing preparation point before B's first lower MAIN connect, or a supported SUB-first construction route. Neither ordering is established here. |
+| Backend parent enters the element | G gibb-load.asm0x255a2 passes PipelineBase+96 to E::Base::open at0x255c0. E libelement-base.so.1.0.0.disassembly.asm0x1a41e–0x1a48c appends that string in a48-byte pipelineInfo record at Base+12/end+16. | The backend PipelineBase ID is separate from our logical UTP returned ID. A current-attempt join is required; do not substitute either ID or infer a join from appId alone. |
+| Shared element can retain its first parent | E0x1a50a/0x1a510 creates a share handle/checks isShared; the shared branch skips plugin _open, unshared calls slot+16 at0x1a55c. K video-sink.asm0x8c38–0x8c44 copies the **first** pipelineInfo string into K+0x1c4. K0xae8a–0xaecc passes it to Builder+24; A0x5848–0x5854 stores A+0x74. | setAppWindowInfo does not set or override this parent through a pipelineId JSON key. Reuse can preserve an earlier parent. Refuse ownership claims when the first/current context and reuse disposition cannot be joined to this attempt. |
+| Child owner versus command target | A0x710a–0x7114 registers class avconnector with app string and reserved=false;0x712e–0x7148 sends A+0x74 as parent through setOwnerPipeline. R stores returned child connectionId at+0x1c; its command service suffix is generated separately at0x7aa2–0x7ab4. | Require logical UTP ID→backend ID→first/current element context→child resource connectionId→accepted owner association→exact command service. Same-app matching, guessed suffixes and window IDs cannot supply this chain. No borrowed owner or C++ address/pointer calls. |
+| Resource observation lead | R trackResourcesStatus0xc5fc constructs connectionId at0xc65e–0xc684, appends /trackResourcesStatus literal0x15210 at0xc6ba–0xc6bc, and subscribes at0xc714. C acquire0x1b644 returns child allocation data separately. | This is a concrete **candidate subscription**, not a proven passive server handler or usable grant getter. Do not call it based on its name. Server behavior, filtering, output and permission must be traced first. |
+
+The evidence contract keeps submission, logical allocation, hardware behavior and
+release separate:
+
+| Evidence required per A/B slot | Acceptance / unknown boundary |
+|---|---|
+| Own logical and backend identities | Returned by this attempt and joined through actual records; raw IDs stay private. Public traces use A/B slots, finite outcomes and counts. Missing, old or ambiguous associations remain unknown and stop progression. |
+| Element and child ownership | Classify fresh/adopted/reused, preserve first/current parent and accepted child-owner association, and bind the intended command target. A generated service or a second shared_ptr alone is insufficient. |
+| Receiver and presentation grants | Record actual VHDMIRX resource type, grant selector/PRIDX, child MAIN_SCALER/SUB_SCALER completion and policy/preemption disposition. Unequal logical grants do not establish exclusive physical receivers. A missing receipt is unknown, not inferred from cached occupancy/planeIDs. |
+| Source and sink binding | Require current HDMI sourcePort/model-map provenance and distinct named MAIN/SUB0 bindings after completion. A reply or same-sink replacement is insufficient. |
+| Behavior and cleanup | Independently advancing physical sources together, then A continuity after B-only stop/close, then normal restoration. These establish observed coexistence/isolation only; physical release/reacquisition, audio ownership and stability remain separate unknowns. |
+
+**Missing transport evidence:** these client bodies do not establish a safe
+outward-facing UTP selector or own-child lookup. The captured server wrappers
+below narrow the delivery path, but their selected-record/owner join and ordering
+before B's first presentation connection remain unresolved. Eventual delivery to
+some client does not settle either gate.
+LG's [OSE registration template](https://github.com/webosose/umediaserver/blob/af89f8ac3355027a90d7b299a78fb6fab9b6ffca/files/sysbus/com.webos.media.service.in#L1)
+and [ResourceManagerClient source](https://github.com/webosose/umediaserver/blob/af89f8ac3355027a90d7b299a78fb6fab9b6ffca/src/resource_manager/ResourceManagerClient.cpp#L114)
+are pinned at af89f8ac3355027a90d7b299a78fb6fab9b6ffca, Apache-2.0; inspected
+privately, no upstream code copied into the application. That older counterpart
+lacks the saved C1 privateCommand/setOwnerPipeline paths; it cannot substitute
+for the retail server body or prove retail API/permission behavior.
+
+The one bounded read of the OSE-style descriptor path was **absent**; all
+connections closed, zero content opens/reads, no retry/alternate lookup or
+executable collection. [Actual record](../device-tests/c1-journal.md#media-server-descriptor--bounded-absent-file-result).
+This establishes absence of that exact file, not absence of com.webos.media.
+The separate fixed process/executable-identity lookup subsequently completed
+once: one SSH/exec channel,23 stdout bytes, zero stderr, exit0,292.343 ms and
+confirmed closure. [Actual record and raw hashes](../device-tests/c1-journal.md#media-executable-identity--single-bounded-lookup).
+Closed stdout and the receipt agree on one allowed private executable candidate
+path. No target-file bytes or metadata were read. The procfs observation is not
+an atomic process birth identity, regular-file proof or active loaded-byte hash.
+As-used sources/74-case acceptance and local verification:
+build/phase-2/hdmi-media-identity-read-20261117-001/verification.json.
+
+The separately bounded inert-file request then completed once after87 offline
+operational/header acceptance cases. Saved input:
+build/phase-2/hdmi-media-server-evidence-20261117-001/media-server.elf,
+**529,960 bytes**, SHA256
+`1f3a45553139881e2ca978352ae0c87e8654b571b0d439af131b5e2fa82c2d4e`.
+[Actual metadata/EOF/closure and receipt hash](../device-tests/c1-journal.md#media-executable--single-bounded-inert-file-capture).
+One SSH/SFTP connection/open, ten reads including EOF,12 stable metadata checks,
+452.084 ms; no exec/retry/forced closure. Original observed path remains private.
+
+Separate closed-local-byte header inspection recognized ELF32 little-endian,
+ET_DYN(type3), ARM(e_machine40), ident/ELF version1, declared header52 bytes.
+This is **retrieved inert evidence with a recognized header**, not full ELF
+validity, ABI closure, verified service role or equality with active loaded
+bytes. The earlier procfs lookup and file read were separate scopes; replacement,
+process exec/reuse and mapping identity remain unresolved. No vendor loader,
+parser, initialization or code was executed.
+As-used sources/header reader/acceptance and independent raw/hash/metadata/ACL/
+preservation verification:
+build/phase-2/hdmi-media-server-read-20261117-001/verification.json.
+
+### Saved media-server selector and observer handlers
+
+**Verified static / candidate delivery, 2026-11-17.** M is the529,960-byte saved
+media-server.elf with SHA256 above. Addresses below are ARM32 ELF virtual
+addresses with Thumb bits cleared, not runtime addresses or app constants.
+Private evidence: build/phase-2/hdmi-media-server-trace-20261117-001/.
+findings.json, seven reviewed excerpts, SDK readelf/objdump output and
+verification.json bind16 literal calculations and two registered callbacks to M.
+The owner-body excerpt is explicitly unresolved. REA export evidence was saved
+and its target cleared; deep native providers were unavailable. No vendor code,
+service method or further TV connection was used.
+
+| Boundary | Exact saved instructions | Result and remaining limit |
+|---|---|---|
+| Registered setSink | Constructor0x23d3c; setSink literal0x74618 at PC0x25c36/pool0x26390. Pool0x26398 resolves via GOT0x90ffc, relocation23, to Thumb thunk0x68361. addEventHandler0x25c56; thunk0x68360 branches at0x68368 to setSinkCommand0x48c38. | This is a registered wrapper in M, beyond an exported name. Effective active registration, bus policy and permission for the own app are unknown. |
+| Outer selector grammar | setSinkCommand0x48c38–0x4978c requires mediaId and avSink; key accesses0x48d28/0x48e2c, mediaId asString0x48e74 and avSink JGenerator0x48ea4. | The server serializes avSink; the downstream private command carries a string. Logical UTP IDs cannot be substituted for the unresolved mediaId join. |
+| Selection and fallback | server+32/slot200 virtual call0x48ec2; nonzero branches0x491ba. Zero path calls server+28/slot12 at0x48ed6; record traversal+360/+368 at0x49044–0x491b6 and lookup again0x490a8. | Virtual targets, record meaning and selection/fan-out are unresolved. This cannot yet establish delivery only to the new attempt's own second child. |
+| Private-command forwarding | key/payload/setSink literals bound through pools0x496b8–0x496c0. Selected record string+80 gains /privateCommand at0x49132–0x49152; UMSConnector::sendMessage0x49170 uses a null callback. | A fallback builds the known key=setSink/string-payload body and sends it to a selected record's command service. Sending supplies no downstream reconnection/grant receipt. |
+| Registered resource observer | trackResourcesStatus literal0x7486c at PC0x26756/pool0x27230; pool0x27238→GOT0x90df8→Thumb thunk0x68529, relocation23. addEventHandler0x26778 has explicit bus enum0; thunk0x68528 branches0x68530→handler0x5c404. | The handler exists statically. Enum0's bus/policy meaning and own caller eligibility remain unmapped; do not infer public availability. |
+| Observer side effects and reply | Handler0x5c404–0x5cb38 reads connectionId at0x5c604–0x5c622, calls server+28/slot12 at0x5c642; addSubscriber0x5c6b6 uses resourcesStatus_+id and sets record byte+200 at0x5c6c6. Response built0x5c6de–0x5c746, sent0x5c768. | It registers a subscriber and sets observer state. Reply fields include available/resources/subscribed/updateResourcesStatus/returnValue; resources is initialized through the string constructor from literal "{}". This acknowledgement is not a fresh grant list or a plain getter. Actual updates, unsubscribe and cleanup remain untraced. |
+
+**Candidate outer shape inferred from parsing and forwarding**, not a runnable
+request or accepted own-session identity:
+
+```json
+{"mediaId":"<unresolved own backend/resource join>","avSink":{"videoSink":{"type":"sub_video"}}}
+```
+
+The avSink object above is serialized into the privateCommand payload string;
+the fixed inner body remains unchanged. No command-service suffix, borrowed ID,
+policy grant or live call is proposed. The later ownership pass below resolves
+the manager object bindings, registration target and cache replay. Exact manager
+virtual implementations remain outside the saved executable. unregisterPipeline
+0x55dfc(size1212) and getActivePipelines0x5304c(size4768) remain unreviewed leads.
+
+### Manager bindings, selected records and owner replay
+
+**Verified static / ownership acceptance unknown, 2026-11-17.** Same M source/hash;
+new private audit: build/phase-2/hdmi-media-owner-trace-20261117-001/.
+inventory.json, findings.json,14 excerpts and verification.json preserve the
+object bindings, typed record layout, registration/owner/reset wrappers and
+reply dataflow.22 literals, two record-vtable bindings and two singleton imports
+are checked against raw M bytes. An independent review corroborated these paths.
+All work was offline: zero TV connections, service calls or vendor execution.
+
+| Question | Exact M evidence | Conclusion and limit |
+|---|---|---|
+| Which manager supplies each virtual call? | ResourceManager::instance(Config) PLT0x18df4/import GOT0x90a10 is called0x24212 and stored server+28 at0x24216. PipelineManager::getInstance PLT0x1889c/import GOT0x9084c is called0x24218 and stored server+32 at0x24220; both imports are R_ARM_JUMP_SLOT22. | setSink0x48ec2 is **PipelineManager vptr byte offset200**; fallback0x48ed6/0x490a8 is **ResourceManager vptr offset12**. Object identity is resolved. Exact function name/address/body and effective dynamic provider are unresolved; do not label offset12 a verified named findConnection function from the older OSE header. |
+| What is the returned record layout? | Typed map-copy0x67514 allocates472-byte nodes, constructs key at node+16 at0x6752a–0x67544, installs BasePolicyValue and resource_manager_connection_t vptrs at node+40 at0x6755e/0x6758e. Pool0x680a8+effective PC0x67546 yields GOTbase0x90804; pool0x680b0→GOT0x90cec→record vtable0x8fde0, relocation23. | The resource record begins at node+40, so node+120 is record+80. This layout is instruction-bound; it is not borrowed from the differing OSE struct. |
+| Where does the target service originate? | registerPipeline0x54f64 requires type/appId, generates a resource connection ID and calls RM offset16 at0x5537c. After success, getSenderServiceName0x55398 and addRoute0x553aa precede connection-tree search0x55672–0x556ec and sender assignment to node+120 at0x556ee–0x556f4. Reply returns connectionId at0x558b4/0x558c2. | The saved registration wrapper binds the generated resource ID's record+80 to the actual registering message sender. A guessed suffix, appId or logical UTP ID is unnecessary and insufficient. This does not authenticate a later owner request or prove active registration. |
+| Which records get setSink fallback? | Returned record's tree uses header/end+360, begin+368 and count+376.0x49044–0x491b6 iterates its string IDs, calls RM offset12 for each at0x490a8 and sends to that returned record+80/privateCommand at0x49170. | **Associated-record ID fan-out**, with no avconnector/type filter in this loop. Candidate children, not verified authorized child membership: insertion/removal and validation are in unresolved manager code. Earlier+376 is a tree count, not an ownership flag. No promise of exactly one target follows. |
+| Is selection retained? | Key setSink resolved at0x48fc2; tree rooted at record+404/header+408 is searched, serialized avSink assigned at0x49030–0x49036 or inserted through0x49414–0x4941a. | The fallback retains a selector string before forwarding. Cached adoption/replay must be separated from new selection and fresh hardware acquisition. |
+| What happens on owner association? | setOwnerPipelineCommand0x4b564 passes supplied connectionId/ownerConnectionId to RM offset64 at0x4b808. On success: owner lookup0x4b81c, cached setSink search record+404 at0x4b826–0x4b8a0, supplied child lookup0x4b8ba.0x4b8d0–0x4b99c builds key/payload, child+80 supplies service0x4b9c0, append0x4b9e6 and null-callback send0x4ba04. | **Cached selector replay after successful association** is implemented in M. This is a candidate preparation seam before child association, not a proven pre-MAIN ordering route. Missing cache/record or replay failure does not alter the association Boolean stored0x4b80a and used0x4bc02. The wrapper's inspected calls have no direct sender-to-owner comparison; provider checks and caller policy remain unknown. |
+| Can a false selector reply mean no change? | PM result stored stack+116 at0x48ec4; only other access is0x491d4, passed to createRetObject0x491dc. That helper constructs JValue(bool)0x2b8c6 and puts returnValue0x2b8e8. Fallback send success and failure/log branches rejoin0x4918a and iterate. | **No.** Initial PM false can coexist with selector caching and zero/one/many forwarded messages, while the outer returnValue remains false. Neither false nor true is a no-action, reconnection or grant receipt. Do not retry based on that reply. |
+| Does reset establish release? | resetOwnerPipelineCommand0x4bff4 passes both supplied IDs to RM offset68 at0x4c294; its result flows0x4c29c→0x4c2ca into the reply. | Only an association operation is established at this boundary. Membership removal, validation, resource effects and hardware release require the missing implementation and behavioral evidence. No reset was called. |
+
+**Saved-evidence limit:** bounded inventory used rg over build/dist filenames
+ending .elf or .so[.digits]:51 candidates,42 parsed ELF32 little-endian dynamic
+symbol tables, nine unparsed files retained as explicit exclusions. No parsed
+artifact defined either manager singleton or manager vtable; no matching manager
+SONAME was found. This is not a search of all extensionless/embedded artifacts or
+runtime mappings. M's DT_NEEDED lists libresource_mgr.so.1 and
+libums_pipeline_mgr.so.1; these are provider candidates, not proven symbol
+resolution, absolute paths or active-loaded identities. Their exact vtable
+entries cannot be reconstructed from M's indirect calls. The older nonvirtual
+OSE class declarations cannot supply this retail ABI.
+
+The smallest missing bodies are **ResourceManager offsets12/16/64/68** (lookup,
+registration, association acceptance and ID-tree insertion/removal), then
+**PipelineManager offset200** for the primary selector path. The
+[single passive mapping lookup](../device-tests/c1-journal.md#resourcemanager-mapping-lookup--connect-timeout)
+is spent after an SSH connect timeout. No command ran, so the loaded mapping and
+provider file path remain unknown. Establishing provider identity still requires
+an evidenced path and ELF symbol/vtable linkage. The DT_NEEDED candidates alone
+leave singleton/vtable resolution open.
+Remaining saved-body work can correlate replay with A initialize and K::_start,
+but cannot replace the missing owner-validation implementation.
+
+The runtime join still needs this attempt's logical UTP→backend→first/current
+element context→child resource ID→accepted owner association→sender service.
+First-parent retention under element sharing remains a direct contradiction to
+inferring that join from same-app or distinct UTP IDs. Pre-MAIN ordering,
+effective caller permission, actual grant/update/release semantics, concurrent
+frames and isolated hardware release remain unknown. The existing five-path
+assessment and review-only dual-source draft remain in force, with no runnable
+trial. Do not repeat capture/identity/lifecycle work, guess a target or call a
+selector/subscription/reset to compensate for this static boundary.
 
 ### TVRM grant-to-receiver mapping
 
@@ -553,8 +721,8 @@ is the corrected source-bound report; original findings remain immutable.
 |---|---|---|
 | VAL implementation boundary | Constructor0x6afb2 calls imported VAL::getInstance and stores service+12 at0x6afb6. Lower video interface is its pointer+4. ELF dynamic tag at0x9f6e4 names **libval-starfish.so.1**. | Lower virtual implementations reside outside this service body and are resolved in the saved VAL provider below. A SONAME does not establish an absolute runtime path or active loaded identity. |
 | HDMI source descriptor | sourcePort key/unsigned-char parser0x6fad6/0x6fae0 stores a byte at stack+123. HDMI comparison0x6fee4 selects0x6feee–0x6fef8: kind word **2**, descriptor byte+5=sourcePort **k**. The earlier VDEC branch0x6fd86–0x6fd92 uses kind3 and byte+4=1. | This service passes k unchanged; HDMI acquisition separately uses k+1. VAL HDMI2 is not kernel VSC kind3/6, UTP primary3 or a receiver grant. The VAL provider trace below now grounds that conversion. |
-| Named sink and numeric ID | VAL video slot+52 returns a vector of36-byte capability records at0x6afda/0x6b062. Constructor copies each name from record+4 and indexes constant table0x8374c **[0,1,2,3]** by ordinal i (0x6b06c–0x6b076,0x6b1e8–0x6b222). That value reaches VideoSink+28 at0x6b0c4/0x6b0d6. getVideoSink0x659a0–0x659d6 matches names in108-byte records. Init explicitly looks up MAIN/SUB0 at0x6a4ca/0x6a4f2. | Sink ID follows the provider list's ordinal and compiled table. The actual C1 list/order is unsaved: MAIN=0 and SUB0=1 are not established by these bytes. Runtime capability names/order must remain separate from HDMI sourcePort and TVRM indices; do not hardcode this table into a portable app. |
-| Actual lower connect | V0x6fdd8–0x6fdea calls VAL video virtual slot+8: r1=sink+28, r2/r3=source descriptor words, stack argument0 and separate output-planeID pointer at stack+124. Response planeID reads that output at0x70476–0x70488. A successful lower result precedes active flag/cache updates at0x6ff2c. | A named presentation context and HDMI source are separate arguments. The output planeID is not an independently allocated HDMI receiver. V contains no grounded VSC node/control construction along this call boundary; its virtual target is missing. |
+| Named sink and numeric ID | VAL video slot+52 returns a vector of36-byte capability records at0x6afda/0x6b062. Constructor copies each name from record+4 and indexes constant table0x8374c **[0,1,2,3]** by ordinal i (0x6b06c–0x6b076,0x6b1e8–0x6b222). That value reaches VideoSink+28 at0x6b0c4/0x6b0d6. getVideoSink0x659a0–0x659d6 matches names in108-byte records. Init explicitly looks up MAIN/SUB0 at0x6a4ca/0x6a4f2. | Sink ID follows the provider list's ordinal and compiled table. Captured on-disk names now derive MAIN=0/SUB0=1 for this saved provider; current loaded configuration is unknown. Runtime capability names/order remain separate from HDMI sourcePort and TVRM indices; do not hardcode this table into a portable app. |
+| Actual lower connect | V0x6fdd8–0x6fdea calls VAL video virtual slot+8: r1=sink+28, r2/r3=source descriptor words, stack argument0 and separate output-planeID pointer at stack+124. Response planeID reads that output at0x70476–0x70488. A successful lower result precedes active flag/cache updates at0x6ff2c. | A named presentation context and HDMI source are separate arguments. The output planeID is not an independently allocated HDMI receiver. V delegates VSC construction/control to the saved VAL target resolved below; active-loaded identity remains unknown. |
 | Same-sink replacement | Active sink+32 at0x6fdc0–0x6fdc6 branches to0x702cc: doDisconnectVideo at0x702d0, notify sink update, clear old client's connected byte at0x70320 and reset context, then0x70336 rejoins the same sink's connect at0x6fdca. The disconnect result is not checked on that replacement branch. | Two MAIN requests can replace one binding. This is a concrete shared-sink explanation, not a second allocation or per-window ingress. Distinct named sink objects remain a candidate only until lower receiver/scaler eligibility is proved. |
 | Context and sender bookkeeping | getClientInfo0x65c64 searches context at client+16 in200-byte records. Connect stores current client context at sink+36 (0x6ff76–0x6ff7e), source string at client+64, sink name at client+40 and sourcePort at client+112. doRegister parses context/appId. ClientStatus::add(JsonRequest) calls LSMessageGetSenderServiceName at0x6a214 and tracking add at0x6a2c6; its wrapper calls this add at0x6a38c. onClientIsDisconnected calls doDisconnect at0x6f840. | Context/sender-disconnect linkage is real; it is not evidence that a PI_PORT/TVRM receiver/scaler is independently granted to this sink. Exact per-method policy, grant owner and active caller identity remain unknown. Connect's context lookup occurs after lower connect succeeds, so response/bookkeeping is not transactional release proof. |
 | Disconnect and cache ordering | Context-bearing doDisconnect compares lengths and bytes against the sink's current context at0x6eeec–0x6eefc and0x6f1c2–0x6f1d2. doDisconnectVideo0x65324–0x65344 clears active/cache fields before calling VAL video slot+12 with sink ID. It can then disable dual mode for a SUB name. | Requested-context matching is distinct from hardware ownership. Cleared service state can precede lower failure; it cannot prove hardware release or isolation from another owner. No release test was run. |
@@ -575,7 +743,7 @@ hardware behavior are not established by this static pass.
 | Boundary | Exact supporting evidence | Meaning / contrary limit |
 |---|---|---|
 | Concrete implementation | L initialize0x156b8–0x156c8 allocates156 bytes, calls val_video_impl constructor and stores VAL+4. L0x1e0c2–0x1e0ce installs vtable0x40e68+8 through GOT0x414cc relocation. Slots8/12/32/52/88/92 bind connect0x1e89c, disconnect0x1ea7c, setDualVideo0x1b880, getVideoPlanes0x1dd1c, occupancy0x1bc20/0x1bc84. L0x1e300–0x1e308 installs V4l2vsc vtable0x40324+8 through GOT0x4153c; slot0 binds setConnect0x150f4. | Constructor assignments, relocations and callers bind the default implementation; exported names alone are not the evidence. Runtime substitution remains unknown. |
-| Capability names and IDs | L getConfigFilePath0x15866–0x15886 builds **/etc/palm/val/device-cap.json** from literals0x2a804/0x2a814/0x2a818. DeviceCapability defaults MAIN (0x13112/0x1313c), optionally parses planes at0x133a4–0x133bc. parsePlanes0x12f3c inserts unique names into a std::less string tree, clearing the default for an accepted array; ctor0x1e18a–0x1e1fc enumerates sorted names into36-byte records with ordinal IDs. getVideoPlanes0x1dd1c copies that vector. | The service ordinal table and VAL ordinal agree. Actual config is unsaved; do not assert MAIN=0/SUB0=1. That follows only if the advertised sorted list begins MAIN,SUB0. Missing/invalid config can retain only default MAIN. |
+| Capability names and IDs | L getConfigFilePath0x15866–0x15886 builds **/etc/palm/val/device-cap.json** from literals0x2a804/0x2a814/0x2a818. DeviceCapability defaults MAIN (0x13112/0x1313c), optionally parses planes at0x133a4–0x133bc. parsePlanes0x12f3c inserts unique names into a std::less string tree, clearing the default for an accepted array; ctor0x1e18a–0x1e1fc enumerates sorted names into36-byte records with ordinal IDs. getVideoPlanes0x1dd1c copies that vector. | Captured supported planes [MAIN,SUB0] derive ordinals0/1. This joins the service/VAL ordering for the saved provider, conditional on loading those bytes. Missing/invalid config can retain only default MAIN; current loaded state was not queried. |
 | Plane IDs and node handles | L0x1e200–0x1e220 supplies software planeIDs44/45. L0x1e23a–0x1e27e makes at most two SinkInfo records, pairing those with capability ordinals; ctor0x1e3b0–0x1e3b8 calls vscOpen per ordinal. L0x138e2/0x1392c resolve /dev/video30/31 at0x29184/0x29194; open uses flags2, stores fd+4 and sink+8. Other ordinals fail. | A capability list, returned planeID and distinct VSC fd are presentation bookkeeping, not independently allocated HDMI receivers. Constructor does not check vscOpen's return in this loop. Actual node identity/presence was not re-queried. |
 | HDMI port and mode conversion | L convertConnectInfo0x1bf14–0x1bf1e maps VAL kind2 to VSC kind3;0x1bf58–0x1bf5c copies descriptor byte+5=k into payload byte+4. Modes0/1/2/3 become payload word+8=1/2/3/4 (0x1bf52–0x1bfc2). L connect0x1e9f6–0x1ea12 sends nonzero-sink/mode0 window properties {1,2,2}, then0x1ea18 rejoins0x1e8e4 with mode unchanged. | HDMI sourcePort k stays zero-based here; the separate HDMI acquisition driver receives k+1. SUB does not force a shared route through this special case. Neither sink ID nor output planeID is a receiver grant. |
 | Actual control and corrected route | L0x15128–0x15138 sends12-byte CONNECT_INFO ID0x0098290c on the sink's fd. Helper0x13810 optionally locks a process mutex and issues ioctl0xc0185648 (S_EXT_CTRLS), one ext control of size12, payload pointer. Image+0x664d90 passes the node-derived window to vsc_set_input. **Image+0x66a03c CSEL NE selects nodeWindow when field!=2; field2 keeps2.** Image+0x66a248–0x66a258 constructs DE source6 and duplicates port k. | Normal service mode0→field1→node route0/1, rather than common route1. The prior private kernel report reversed this condition; preserved raw bytes/report are unchanged and this correction supersedes that interpretation. Compiled route0/aux fields now have a concrete caller bridge. Active HAL/MCU82 behavior remains unknown. |
@@ -591,16 +759,64 @@ combination of two nodes, planeIDs44/45, cache values or success replies proves
 simultaneous HDMI. Keep all addresses/IDs as firmware evidence, never app constants;
 broad webOS support needs runtime capability discovery and qualified adapters.
 
+### Captured capabilities and ownership discriminator
+
+**Verified raw capture / separate local interpretation, 2026-11-17:** the single
+read of /etc/palm/val/device-cap.json retained243 bytes, SHA256
+`408f13b13d2c30e1e51765c1b8e6a2dff7224410e8c4c47e057f28f00877b440`.
+[Actual bounds, metadata, closure and inventory hash](../device-tests/c1-journal.md#val-capability-json--bounded-single-file-collection).
+Raw/inventory: build/phase-2/hdmi-val-capability-evidence-20261117-001/;
+as-used pins and independent local replay:
+build/phase-2/hdmi-val-capability-run-20261117-001/verification.json.
+Strict UTF-8/object JSON and unambiguous supported planes passed. Original array
+order is [MAIN,SUB0], with no duplicate names; unique byte-sorted names are the
+same, no extra ordinals. No vendor parser or device node was executed/opened.
+
+| Advertised name | Derived ordinal | Saved-provider software planeID | Saved-provider VSC node / normal mode0 route |
+|---|---|---|---|
+| MAIN |0 |44 | /dev/video30 /0 |
+| SUB0 |1 |45 | /dev/video31 /1 |
+
+The **names are verified on disk**; the associations are **candidate runtime
+mapping for the saved provider**, using L0x1e18a–0x1e27e and the corrected
+Image+0x66a03c. They are not observed active handles/grants, exclusive receivers
+or evidence of the configuration loaded into the running service. No application
+should bake this C1 table or firmware addresses into its cross-model API.
+
+**Verified static reuse predicate:** G's saved
+`build/phase-2/hdmi-second-path-offline-20261115-001/gibb-factory-existing.asm`
+compares resource types at ELF0x1e980–0x1e98a and existing record byte+36 against
+requested PipelineResource+28 at0x1e98c–0x1e994. A match returns the existing
+shared pointer at0x1ea2c–0x1ea36. Sibling gibb-factory-create.asm stores request+28
+into record+36 at0x1f4e6–0x1f4ea. These inspected comparisons do not include
+sourcePort k, window, app or sink name. Different logical UTP sessions/ports
+therefore do not exclude element reuse. Different grant selectors exclude this
+particular match, not every other sharing path. The G hash is in the saved-input
+table; the new verification receipt pins both unchanged excerpts.
+
+**Ownership/release limit:** H forwards the grant byte to Base at0x35e20/0x35e60,
+but driver activation0x3383c carries separately mapped k+1. VAL's12-byte payload
+carries source/port/route without that grant or owner. The inspected bodies do
+not establish a grant→exclusive physical receiver bridge. Image+0x73a2d4/0x73a308
+sets/clears a per-port activation byte without a file-owner check/refcount in
+that path; Image+0xb31798–0xb317a0 closes the V4L2 file handle and returns success
+without deactivation. Exact saved bodies:
+hdmi-hdmi20-owner-trace-20261117-001/raw/{HDMI21_HAL_Rx_Set_V4l2PortActivate,v4l2_hdmi20_release}.full.asm.
+Different-port cleanup is a candidate for isolation; borrowed/reused same-port
+cleanup cannot be called isolated. Even a cleared flag is not physical hardware
+release: the saved main-thread consumer gates part of the no-input path.
+
 | Plausible path | Supporting / contradicting evidence; unknown | Cheapest discriminator, acceptance/stop and practical effort |
 |---|---|---|
-| Independent allocation | L0x138e2/0x1392c plus corrected Image+0x66a03c permit distinct node routes; K's compiled main/aux selectors differ. Against proof: no receiver owner/grant in the12-byte payload, active lower acceptance unknown, capability list unsaved. | First resolve device-cap.json (one small inert file). Accept only the actual advertised sink mapping, then separately owned receiver/sink pairs; stop on absence of a second sink or shared/preempted ingress. Configuration check minutes once a bounded reader exists; remaining ownership work hours or further evidence. No active acquisition. |
-| Cached adoption/rebinding | Earlier UTP adoption remains verified; L0x1e8cc adds a separate cached-success path. Contrary to fresh binding: no port comparison/control/output write on that branch. | Existing register-flow discriminator is sufficient for this path. Accept cached retention only; stop counting success as allocation or changed-port binding. Completed offline, no lifecycle rerun. |
-| One shared receiver with port switching | VSC connect carries a requested port, while ownership/global HDMI selection remain unresolved. Against proving a singleton: normal node routes0/1 and compiled main/aux fields differ. | Trace eligible HDMI ingress feeding those routes after capability resolution. Accept a shared limit only from shared receiver ownership/preemption evidence; stop before selectors or speculative hardware calls. Hours offline or new passive evidence. |
-| Several windows on the same source | Independent window handles and cached planeIDs can coexist with a single selected input; cached success need not apply a new port. Against inevitability: the real new-connect payload carries k separately per node. | Inspect actual sink/port/owner bindings before any future trial; eventual acceptance requires both distinct moving sources advancing together and isolated release. Stop on same-source reuse/replacement. No replacement browser or prototype change. |
+| Independent direct UTP allocation | Captured MAIN/SUB0, L0x138e2/0x1392c, corrected Image+0x66a03c, distinct LINK banks and compiled route0/aux fields support it. T's free-bit choice0x4a158–0x4a240 and configured VHDMIRX2 support logical eligibility. Against proof: grant→exclusive ingress and active HAL/MCU acceptance remain unknown; ordinary K0x9b90 requests MAIN. | Bind own SUB0 selection and returned receiver/MAIN_SCALER/SUB_SCALER grant/reuse provenance before implementation. Accept independent allocation only with fresh non-preempting pairs plus both distinct sources advancing together; stop on reuse, contention or absent SUB. Several hours of host evidence/contract work, then one separately reviewed bounded active attempt; device success unknown. |
+| Cached adoption/rebinding | Boot adoption, G0x1e98c match and L0x1e8cc cached success are concrete. M0x49030 caches selection and0x4ba04 replays it on owner association. Contrary to fresh allocation: VAL cached success does not compare port or issue a control/output write; window binding reuses its proxy. | Existing saved predicates discriminate the possibility. Classify adoption/reuse/replay explicitly; neither replies nor distinct session IDs establish allocation. False M setSink replies can still follow fan-out. Completed wrapper tracing; membership implementation remains external, no lifecycle rerun. |
+| One shared receiver with port switching | H0x3383c selects a port; saved G_INPUT reads shared state. Against singleton proof: per-port maintenance, distinct LINK ranges and corrected normal routes0/1. Active crossbar/PHY/MCU behavior is unknown. | Static/configuration evidence cannot settle concurrent frames. Cheapest behavioral discriminator is two distinguishable moving physical sources advancing together, without a switch/freeze, under the review-only sequence. Stop on A interruption when B selects or on preemption; hours of preparation, seconds of future observation. |
+| Several windows on the same source | K defaults MAIN, V0x702d0 replaces an active same sink, G can reuse elements and L can return cached success. Against inevitability: a real new-connect payload carries separate k per node. | Bind each own session to its sink/source identity and observe independently changing patterns together, then release B while A advances. Same-source/replacement is a negative result for the objective; IDs/geometry/planeIDs alone never pass. Same bounded trial, no extra package/browser route. |
+| Type4/SUB0 and HTML complementary entries | C0x12df6–0x12e00 requests SUB_SCALER;0x13c3e–0x13c6e rewrites MAIN→SUB0 only for type4. M0x490a8/0x49170 forwards by associated ID→registered sender service;0x4ba04 replays cached selection. Accepted membership, intended own child and pre-MAIN timing remain unknown. HTML hides the same lower ownership problem and warns of port switching. | Ground the RM provider and trace offsets12/16/64/68 before qualifying membership/targeting, then resolve timing and actual grants. Stop before borrowed targeting, guessed providers/IDs or new policy. Focused static work likely hours after provider bytes; device behavior uncertain. Retain direct UTP; another browser does not answer HDMI ingress. |
 
 ### Candidate decisions and cheapest discriminators
 
-The four-path assessment in the VAL section is current. Type4/SUB0, SMP main/sub
+The assessment above is current. Type4/SUB0, SMP main/sub
 and HTML HDMI sources are complementary presentation leads; none replaces the
 independent-receiver gate or justifies a replacement browser candidate.
 
@@ -609,7 +825,9 @@ HDMI1 and HDMI2 sources must advance together in separately bound windows,
 without switching/freezing either. Require independently eligible ownership,
 isolated release and normal picture/sound/remote restoration; keep audio ownership
 and sustained stability as separate gates. Stop on preemption/shared state,
-uncertain cleanup or impaired restoration. No active trial is currently prepared.
+uncertain cleanup or impaired restoration. The
+[concrete review-only sequence](../device-tests/current-plan.md#review-only-dual-source-experiment)
+is documented; no runnable dual candidate is prepared and no active run occurred.
 Current readiness is owned only by [Status](../../STATUS.md#single-next-task) and
 the [current procedure](../device-tests/current-plan.md).
 
