@@ -4,10 +4,42 @@
 
 ## Authorization and scope
 
-Status owns the latest dated TV state. A document, saved script, roadmap gate or
-completed authorization does not authorize a new device operation. This document
-authorizes no TV operation. Picture-mode launch requires explicit owner scope
-and the conditions in the current plan.
+Status owns the latest dated TV state. The owner's standing permission below
+supersedes earlier blanket no-connection/per-file approval instructions for
+read-only research. Saved scripts, roadmap gates and completed tests do not
+authorize an active experiment. Picture-mode launch requires explicit owner
+scope and the conditions in the current plan.
+
+### Standing read-only permission
+
+On2026-11-16 the owner explicitly loosened read-only permissions, explaining that
+the earlier restrictions came from a generated prompt. The governing requirement
+is to keep the TV operational and avoid bricking it or deleting files crucial
+to its operation. This standing permission persists across chats until changed
+by the owner; it is not consumed by one collection.
+
+Proceed autonomously with relevant bounded read-only evidence gathering at the
+existing configured TV endpoint using its saved SSH pin. This includes targeted
+file/metadata reads, dependency collection when analysis identifies a need,
+bounded directory lookup, process/mapping inspection and read-only shell/status
+commands whose behavior is understood to be passive. Use existing evidence first
+when it answers the question. No separate permission is needed for each new file,
+query or validated read-only collector. Home readiness or a new owner timer is
+not a prerequisite for ordinary file reads.
+
+Protect normal operation: keep work small and finite, use cancellation/time/byte
+bounds and confirmed cleanup, and stop on unexpected behavior or uncertain
+closure. Retain private results in fresh local slots and preserve0.1.12 and
+original evidence. A name such as get/query/read is not enough to classify an
+unknown service or device operation as passive; establish its behavior first.
+Do not treat opening a receiver, allocating/capturing hardware, changing a sink
+or executing vendor initialization as read-only inspection.
+
+This permission does not authorize TV writes/deletions, deployments, input or
+permission changes, service restarts, firmware/flash work or power actions.
+Those are outside read-only scope. Keep the device boundaries below; do not
+trade operational safety for speed. The current plan owns practical read bounds
+and the single next research task, without adding another per-read approval gate.
 
 Permission coverage is not actual UTP admission. Installed-file verification is
 not app execution. The retained one-app/four-method grant must be reported as
@@ -19,6 +51,14 @@ HDMI 4 and can affect existing viewing. Admission-only modes make permission
 predictions without SDL/UTP target calls; even a foreground app can affect
 viewing/lifecycle. Never label acquisition passive or infer unchanged viewing
 merely from denied admission.
+
+## SSH trust belongs to development transport
+
+The saved host-key pin and endpoint binding protect the host's evidence/deployment
+connection. They are not TV application credentials and do not belong in the IPK.
+The runtime app uses the reviewed local interfaces; it does not need a TV SSH
+host key. TOFU remains explicitly first-use trust, not independent verification;
+a mismatch stops without replacing the pin or changing the TV.
 
 ## Device boundaries
 

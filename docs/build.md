@@ -10,12 +10,60 @@ From the repository root in PowerShell:
 npm test
 npm run lint
 npm run test:controls
+node tests/host/hdmi-element-collector.test.cjs
+node scripts/collect-hdmi-elements.cjs --plan
+node tests/host/hdmi-host-key-check.test.cjs
+node scripts/check-hdmi-host-key.cjs --plan
+node tests/host/resource-client-collector.test.cjs
+node scripts/collect-resource-client.cjs --plan
+node tests/host/videooutput-collector.test.cjs
+node scripts/collect-videooutput.cjs --plan
+node tests/host/val-library-reader.test.cjs
+node scripts/collect-val-library.cjs --plan
+node tests/host/val-capability-reader.test.cjs
+node scripts/collect-val-capability.cjs --plan
 ~~~
 
 npm test exercises the current schema2 report/witness, evidence gate, shared
 controller/IO, native launch-authority rules, runner/foreground orchestration,
 registration role and exact UTP coverage. It uses synthetic transports; it never
 loads a TV profile. Optional controls cover the retained passive/local-media code.
+The separate element-collector suite uses synthetic SFTP and fake transport inputs;
+its real local capture check verifies owner-only Windows ACLs through PowerShell 7.
+Run it in normal native Windows user context: a sandbox that prevents those ACLs
+causes a fail-closed refusal. The collector plan checks local pins only. Neither
+command authorizes or makes a TV connection. [Collector bounds and readiness](research/c1-hdmi-evidence-ledger.md#collected-inputs-and-actual-outcomes).
+The host-key suite adds synthetic acceptance and a temporary loopback-only SSH
+server, closed afterward. It proves the installed client rejects the observed
+key before authentication; it reads no real profile/key. The TOFU plan is also
+offline. [Host-key check contract](device-tests/c1-journal.md#tofu-host-key-check--single-pre-auth-observation).
+
+The resource-client suite uses synthetic SSH/SFTP and injected profile/key fixtures;
+it never reads a real profile or private key. Run it in native Windows user context
+for the owner-only directory/raw-file/inventory ACL acceptance. Its plan verifies
+only saved request/trust-receipt hashes and working-control pins, with no transport
+import or endpoint lookup. [One-candidate bounds and completed collection](device-tests/c1-journal.md#resource-client-evidence--bounded-single-file-collection-complete).
+
+The video-output suite adds the exact descriptor-before-executable rule, inert
+Name/Exec binding, fixed zero-link paths, aggregate bounds, metadata/EOF/ELF
+checks, deadline/cancellation/late-callback behavior and private Windows outputs.
+It blocks real transport imports and profile/key reads. Use native Windows context
+for ACL acceptance. Its --plan command checks saved request/trust/control pins
+locally, with no endpoint lookup or connection. [Completed two-file outcome](device-tests/c1-journal.md#video-output-service--bounded-two-file-collection).
+
+The VAL-reader suite covers its fixed single-file candidate, exact two-link
+namespace, mutation/refusal/byte/read/time bounds, ELF-header check, cancellation,
+late callbacks and confirmed cleanup. It blocks real transport and profile/key
+access, and uses native Windows context for private-output ACL acceptance.
+Its --plan binds only the immutable local request/trust/control pins. Neither
+command connects to the TV. [Completed VAL outcome](device-tests/c1-journal.md#val-library--bounded-single-file-collection).
+
+The capability-reader suite validates the fixed64 KiB/two-read/zero-link scope,
+metadata, strict local JSON/plane interpretation and shared cleanup deadline with
+synthetic transport only. It blocks real profiles/keys and transport imports;
+native Windows context is required for private-output ACL acceptance. Its --plan
+checks saved request/control/evidence pins locally. No TV connection or ELF/IPK
+build is needed for this reader. [Readiness and exact scope](device-tests/current-plan.md#prepared-capability-file-read--offline-only).
 
 Native acceptance requires CMake/Ninja, json-c and GLib in the existing Ubuntu
 WSL environment. Use fresh output directories for the entry/trace/witness and

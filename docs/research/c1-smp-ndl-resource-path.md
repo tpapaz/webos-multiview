@@ -287,9 +287,14 @@ Newly read-only copied libraries:
 3. AV connector `setSink` checks for an empty string at `0x1d61c` and
    returns after its warning at `0x1d638`. This matches our old empty
    configurations. With a videoSink object, `_setSink` reads its `type`
-   at `0x1d14a`, converts it at `0x1d168`, and writes the selected type to
-   the video connector at `0x1d17e`. Its converter recognizes the strings
+   at `0x1d1ea`, converts it at `0x1d204`, and calls `changeSink` at
+   `0x1d20c`. Its converter recognizes the strings
    directly: main_video=2, sub_video=4, graphic=8 (`0x18540–0x1859a`).
+   The earlier attribution of `0x1d17e` to video was incorrect: that store
+   follows findConnector("audio") at `0x1d126` and belongs to audioSink.
+   The [source-bound caller trace](c1-hdmi-interface-map.md#connector-type4-callers-and-private-command-boundary)
+   independently follows both JSON fields. This address correction does not
+   change the original Phase1 device outcomes or their immutable evidence.
 4. `VideoConnector::_prepare`, entry `0x12dac`, branches on type 8 for
    graphic/no scaler list, then compares video type to 2 at `0x12df8`.
    Type 2 selects MAIN_SCALER (`0x1300a–0x1300e`); the non-main video

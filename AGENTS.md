@@ -14,8 +14,12 @@ Current direction: **Phase 2 HDMI acquisition/window research**. The defining
 milestone is one physical HDMI picture, then independently live HDMI 1 + HDMI 2.
 Use Status for exact installed version, current captured grant disposition and
 readiness. Keep this file about contributor rules rather than a second handoff.
-No document or completed test authorizes a repeat, app/HDMI run, policy change,
-retrieval or power action. The current plan owns the one proposed trial.
+The owner grants standing permission for useful, bounded read-only TV research;
+do not request permission again for each file, passive inspection or new read-only
+evidence scope. Follow `docs/safety.md#standing-read-only-permission` and the
+current plan's operational bounds. Preserve TV operation and critical files.
+Completed tests do not authorize app/HDMI acquisition, policy changes or power
+actions. The current plan owns any proposed active trial.
 
 Do not repeat activation, mode correction or boot diagnostics as generic preflight.
 IWC setter work is paused; screensaver/Glasshouse work is closed/separate; Phase 1

@@ -8,13 +8,14 @@ outcomes do not authorize a new TV operation.
 | [Status](../STATUS.md) | Verified first-picture result, limits, current artifact and one next task. |
 | [Roadmap](../ROADMAP.md) | Product phases and acceptance gates. |
 | [Prototype contract](../native/phase2-hdmi-candidate-0.1.12/README.md) | Current actions, native/report/witness/runner contract and exact artifacts. |
-| [Research map](research/c1-hdmi-interface-map.md) | Causal findings and independent second-path research gaps. |
+| [Research map](research/c1-hdmi-interface-map.md) | First picture; TVRM/LINK/VSC routing, VAL-to-VSC port/sink mapping, corrected kernel routing and remaining receiver/release ownership gaps. |
+| [Evidence ledger](research/c1-hdmi-evidence-ledger.md) | Saved collection/trace index, corrected interpretations and remaining hardware gates. |
 | [Device journal](device-tests/c1-journal.md) | Actual lifecycle/physical outcomes and evidence hashes; concise earlier summary. |
-| [Device disposition](device-tests/current-plan.md) | Consumed grant, bounds, restoration and next offline scope. |
+| [Device disposition](device-tests/current-plan.md) | One current capability-file procedure, standing permission, fixed bounds and active-trial stop rules. |
 | [Build guide](build.md) | Offline checks, toolchain and current prototype build. |
 | [Layout/retention](repository-layout.md) | Shared production code, optional controls and private evidence. |
 | [Policy contract](../native/phase2-hdmi-window/policy/README.md) | Exact own-app/four-method grant, checker and saved-map semantics. |
-| [Contributor rules](../AGENTS.md) / [safety](safety.md) | Stable scope, privacy and device restrictions. |
+| [Contributor rules](../AGENTS.md) / [safety](safety.md) | Standing owner permission for bounded read-only research, operational safety and privacy. |
 | [Handoff](handoff/hdmi-next-chat.md) | Reading order and continuation conventions. |
 
 ## Technical references
