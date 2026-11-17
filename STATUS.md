@@ -85,14 +85,15 @@ options remain window metadata at the video sink, and `mediaFrontend` selects
 an element configuration. The explicit sink field was traced in SMP local
 playback. The saved construction trace stops at these boundaries.
 
-**Next evidence needed.** The G4 03.11.20 download is complete. Its secured O24
-update did not expose the stock Multi View caller or HDMI load handler to offline
-inspection. HDMI 2's sink at its first scaler request remains **unknown**.
-The exact-model disclosure identifies the browser connector's allowed services.
-The saved Chromium archive ends before its media source, and the public
-Chromium 108 OSE factory has no HDMI player. The trace now needs a readable
-stock client and HDMI handler from O24 `9.1.0-48 (ombre-oeta)`.
-[Chromium connector follow-up](docs/research/prior-art.md#chromium-108-connector-follow-up).
+**Retail G4 artifacts recovered.** One offline extraction of the saved
+03.11.20 update exposed the O24 `9.1.0-48 (ombre-oeta)` stock settings app,
+Multi View controller, HDMI handler and connector. A matching side-by-side
+callback for the second app applies type 4 to its connector before trying to
+connect. If type 4 is present at the first scaler selection, the connector
+requests `SUB_SCALER`. The ordering on a fresh stock HDMI 2 session remains
+**unknown**. The next offline trace needs to close the callback order from
+port binding and initial readiness to that connector's first selection.
+[Retail G4 extraction and call trace](docs/research/prior-art.md#retail-g4-extraction-and-call-trace).
 
 The completed single executable capture remains:
 529,960 bytes, SHA2561f3a45553139881e2ca978352ae0c87e8654b571b0d439af131b5e2fa82c2d4e,

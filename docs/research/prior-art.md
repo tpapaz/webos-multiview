@@ -285,6 +285,55 @@ any HDMI port or scaler request.
 caller and its physical HDMI load handler for this O24 build. The archive
 transfers were left spent. No TV access or active tests occurred.
 
+### Retail G4 extraction and call trace
+
+One offline `epk2extract -s -n -c` run on the saved G4 image completed in
+92.62 s with exit 0 and 312 successful signature checks. The tool identified
+EPK3, firmware `03.11.20.01`, and OTA ID `HE_DTV_W24O_AFABATAA`. The input
+SHA-256 matched the earlier receipt after the run. We built upstream
+`a0ccd8a4b4f48d05675a4cddd233f8780ee36767` in the existing WSL environment with
+workspace-local development dependencies. The build reported clock skew on
+the shared filesystem and produced the extractor successfully. Using
+`dpmeta.pak`, we carved four readable SquashFS partitions from `super.pak`.
+The `rootfs` SHA-256 begins `8f4a19c9ad577618`. The stock client and HDMI
+handler were recovered from that partition. The independent public catalog
+search found no matching readable artifacts in its checked coverage.
+[Extractor source](https://github.com/openlgtv/epk2extract/tree/a0ccd8a4b4f48d05675a4cddd233f8780ee36767) · [Public symbol inventory](https://github.com/webosbrew/dev-toolbox-cli/tree/2d5a7b6881850d825aa7fdc6c0b5e53c91dc40d3/common/data)
+
+| Stock artifact | Observed behavior |
+|---|---|
+| `com.webos.app.multiviewsettings/main.js` and O24 `multiview.json` | The configuration lists HDMI 1 and HDMI 2 in order under `recommendedAppsMulti.2screen` at lines 595–600. The UI builds ordered `appId` and `order` entries at bytes 716756 and 717131 and sends the list and mode to `multiviewcontroller/launchApps` at byte 705704. That request carries no sink. |
+| `/usr/sbin/multiviewcontroller` | The foreground-window callback binds the HDMI app's window at `0xd57e–0xd58a`. The binding callback maps the returned window to its port and stores the broadcast ID as the pipeline ID at `0xeb02–0xeb30`. The switch constructs `portId` and `pipelineId` at `0xe63a–0xe67c`. A separate `trackPipelineInfo` subscription observes the reported scaler resources at `0x1b094–0x1b0ea`. |
+| `libextinput-service.so.1.0.0` and `libelement-video-hdmi.so.1.0.0` | HDMI post-load reads Multi View information at `0x779c6`. The HDMI element separately emits `requestSubScaler` through `subScalerResource` at `0x373e4–0x373f8`, and the watcher handles it at `0x77d44`. These messages are distinct from the connector's first scaler acquisition below. |
+| `libav-connector.so.1.0.0` | A fresh video connector starts at type 2 (`0x18140–0x18144`). The side-by-side changed callback maps priority 1 to type 4 at `0x34630–0x34636`, calls `changeSink` at `0x3415c–0x34162` and then calls `tryConnect` on the same implementor at `0x342c2–0x342ce`. The normal window path writes the new type to the video connector at `0x21280`. |
+
+**Verified in the code.** `VideoConnector::_prepare` reads the current type
+at `0x18c28` and builds `MAIN_SCALER` for type 2 and `SUB_SCALER` for type
+4. `connect` calls prepare at `0x229d4` before `acquire` at `0x22a78`.
+Connection information has its own translation of a MAIN descriptor to
+`SUB0` for type 4 at `0x19f06–0x1a1f6`. Seeing that descriptor by itself
+cannot establish the type used by the first prepare.
+
+**Candidate and unknown.** The G4 has a conditional delay for the normal-TV
+HDMI path. `delayConnect` checks the source and feature flag at
+`0x1edf2–0x1ee12`. A matching side-by-side request sets the flag at
+`0x33ba2` and inhibits automatic connection at `0x33bb0`.
+`setRenderReady` can clear readiness bit `0x40` at `0x22066`.
+`tryConnect` requires status `0x7f` and an empty policy list. If HDMI 2's own
+connector receives the matched priority-1 callback before its first
+`_prepare`, and retains type 4, that request is `SUB_SCALER`. The fresh
+delay flag starts clear. The stock trace has yet to establish that binding,
+readiness and callback order always provide that condition. This is static
+evidence for the G4 package. The C1 and hardware concurrency remain
+unverified.
+
+Extraction, partition and selected-file receipts are under
+`build/phase-2/g4-03.11.20-offline/epk2extract-a0ccd8a/`. See
+`single-extraction/result.json`, `single-extraction/partitions/inventory.json`,
+`controller-trace/addresses.json` and `connector-timing-static/`.
+This work used the saved update once with zero retries. No TV access or
+active device tests occurred.
+
 ## SDK boundary for the C1 investigation
 
 Checked 2026-11-11 after the owner's SDK question. LG's public
