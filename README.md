@@ -8,7 +8,7 @@ long-term goal is to show **several independently live sources at once** in
 movable windows, including layouts with more than two sources. A layout could
 combine HDMI inputs, live TV, another webOS app and a network stream in
 picture-in-picture, split-screen or a grid. The available combinations will
-depend on the TV model and firmware. [Example layouts](https://x.com/sushiperv/status/2120960043256348699)
+depend on the TV model and firmware.
 
 ## What works today
 
@@ -23,6 +23,15 @@ depend on the TV model and firmware. [Example layouts](https://x.com/sushiperv/s
 The tested `0.1.12` IPK is a local research artifact under ignored `dist/`.
 A fresh checkout contains the source and host checks. Native builds use an
 existing webOS SDK and retained device libraries. [Build and package details](docs/build.md)
+
+## Concept layouts
+
+These mockups illustrate planned layouts. The source combinations shown are
+still unverified on the TV. [Original concept post](https://x.com/sushiperv/status/2120960043256348699)
+
+| Four-source grid | Three-source split | Picture-in-picture |
+| --- | --- | --- |
+| ![Concept grid with HDMI 1, a stream, HDMI 2 and live TV](docs/images/concepts/four-source-grid.jpg) | ![Concept split with HDMI 1 on the left and a stream above HDMI 2 on the right](docs/images/concepts/three-source-split.jpg) | ![Concept with a stream in a corner over HDMI 1](docs/images/concepts/picture-in-picture.png) |
 
 ## Run the host checks
 
