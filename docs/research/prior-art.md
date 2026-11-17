@@ -170,7 +170,7 @@ generation. Its independently live HDMI capability remains **unknown**.
 
 | Lead | Evidence and limit |
 |---|---|
-| 77-inch G4 (OLED77G4WUA, webOS 24) | **Verified/documented:** LG specifies Multi View with up to two HDMI inputs for this exact model. Its US support page lists firmware 03.11.20 from August 2024. This is a comparison image candidate. Contents and the exact build's HDMI load route are **unknown**. [Product specifications](https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv) · [Firmware listing](https://www.lg.com/us/support/product/lg-OLED77G4WUA.AUS?tab=1) |
+| 77-inch G4 (OLED77G4WUA, webOS 24) | **Verified/documented:** LG specifies Multi View with up to two HDMI inputs for this exact model. The 03.11.20 package has been inspected offline. The HDMI load route remains **unknown**. [Product specifications](https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv) · [Firmware inspection](#g4-031120-offline-inspection) |
 | `com.webos.app.multiview` and `com.webos.app.multiviewsettings` | **Identity leads:** the older ID appears in the public SAM configuration and a first-person webOS 3.8 report names a native executable with that basename. A later owner report identifies the second ID as the Multi View settings entry. The executable or service that loads the second HDMI on the G4 remains **unknown**. [SAM configuration](https://github.com/webosose/sam/blob/master/files/conf/sam-conf.json.in) · [Older executable report](https://gist.github.com/Informatic/1983f2e501444cf1cbd182e50820d6c1) · [Settings entry report](https://community.openhab.org/t/lg-web-os-issue-with-multiview-after-recent-major-webos-update/156098) |
 | `com.webos.service.multiviewcontroller` | **Reported from stock QML:** Glasshouse's G3 / webOS 9.2.2 source inspection follows LG Home's single-HDMI recent-input preview through App View. Its request carries the HDMI guest and a layout. The guest opens UTP with app/window IDs and selects the port. That evidence ends at one HDMI preview. The Dual PC Monitor request and the controller's sink assignment are **unknown**. [Stock G3 App View source report](https://rorygallagher2024.github.io/glasshouse/development/TV-RESEARCH/#lgs-recent-input-preview-g3-webos-922) |
 
@@ -182,6 +182,35 @@ would be a versioned stock Dual PC Monitor or Dual Screen client and its
 matching loader, showing how the second physical port reaches its connector's
 first scaler decision. This comparison remains separate from C1 hardware
 verification. [Saved C1 construction trace](c1-hdmi-interface-map.md#can-hdmi-2-select-sub0-when-its-connector-is-created)
+
+### G4 03.11.20 offline inspection
+
+**Verified.** LG's US and Canadian OLED77G4WUA listings agree on the ZIP
+name, size and August 27, 2024 release date. The Canadian listing supplied the
+LG download link. One HTTPS GET returned HTTP 200 with zero redirects or
+retries. The saved ZIP contains one member. Reading it to EOF verified its
+ZIP CRC-32 (`858e8fb2`). The SHA-256 values below identify the local copies.
+[LG US listing](https://www.lg.com/us/support/product/lg-OLED77G4WUA.AUS?tab=1) · [LG Canada listing](https://www.lg.com/ca_en/support/product-support/cs-OLED77G4WUA.ACC/)
+
+| Artifact | Bytes | SHA-256 |
+|---|---:|---|
+| `Software_File(Version_03.11.20).zip` | 1,859,391,821 | `0cd48602bfb061b8ee32b43f254b35398eb44d6c2c5edb3280e2b02015e7a26e` |
+| `lib32-starfish-global-secured-o24-oeta-48-03.11.20_prodkey_usb_V3_SECURED.epk` | 1,878,619,461 | `d81c112fadea573106fb8050bb56be562548fd0f97d806226c1dbfe9f1e29be9` |
+
+The EPK contains `9.1.0` at offsets `0x6b4` and `0x6c4`. Its package
+header has no clear `EPK3` magic at either known offset. A full raw-byte
+scan found no named Multi View client/controller, `switchExternalInput`,
+`SUB0`, scaler labels or SquashFS magic among the patterns checked. The
+two apparent ELF and ZIP signatures had invalid headers. The public EPK
+reader documents that secured EPK v3 extraction requires matching keys.
+[EPK header layout](https://github.com/openlgtv/epk2extract/blob/master/include/epk3.h#L87-L112) · [Reader format support](https://github.com/openlgtv/epk2extract#supported-formats)
+
+**Unknown.** The stock caller and handler could still be inside the secured
+payload. No readable call site ties the second physical port to its own
+connector or orders its sink assignment against the first scaler request.
+Continuing requires readable files from this build. The archive and inspection
+receipts are in `build/phase-2/g4-03.11.20-offline/`. No TV access or active
+test occurred.
 
 ## SDK boundary for the C1 investigation
 

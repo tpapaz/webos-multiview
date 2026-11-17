@@ -85,12 +85,11 @@ options remain window metadata at the video sink, and `mediaFrontend` selects
 an element configuration. The explicit sink field was traced in SMP local
 playback. The saved construction trace stops at these boundaries.
 
-**Next evidence needed.** LG documents stock dual HDMI on the 77-inch G4
-(OLED77G4WUA, webOS 24) and publishes the 03.11.20 comparison image. The
-stock Dual PC Monitor or Dual Screen caller and matching HDMI load handler
-are still missing. If those artifacts become available, trace where the
-second port's sink is chosen before its first scaler request.
-[Stock client search and comparison target](docs/research/prior-art.md#stock-lg-multi-view-and-physical-hdmi).
+**Next evidence needed.** The G4 03.11.20 download is complete. Its secured O24
+update did not expose the stock Multi View caller or HDMI load handler to offline
+inspection. HDMI 2's sink at its first scaler request remains **unknown**.
+The next trace needs a readable filesystem or matching client and handler from
+this build. Keep the saved package for comparison. [G4 firmware receipt](docs/research/prior-art.md#g4-031120-offline-inspection).
 
 The completed single executable capture remains:
 529,960 bytes, SHA2561f3a45553139881e2ca978352ae0c87e8654b571b0d439af131b5e2fa82c2d4e,
