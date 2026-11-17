@@ -159,6 +159,30 @@ that is not a proof of hardware impossibility.
   frames or an exclusive-input bypass for C1. webOS OSE and commercial Signage
   APIs must not be treated as consumer C1 contracts.
 
+## Stock LG Multi View and physical HDMI
+
+Checked 2026-11-17. LG documents two distinct HDMI sources in **Dual PC
+Monitor** on supported webOS 23 models, and simultaneous HDMI in **Dual
+Screen** on supported webOS 24 models. LG Italy lists no stock Multi View
+feature for 2020/2021 webOS 5/6 TVs. This bounds the stock UI on the C1
+generation. Its independently live HDMI capability remains **unknown**.
+[LG model and mode notes](https://www.lg.com/it/supporto/supporto-prodotto/risoluzione-anomalie/help-library/cs-CT20154005-20152532939115/)
+
+| Lead | Evidence and limit |
+|---|---|
+| 77-inch G4 (OLED77G4WUA, webOS 24) | **Verified/documented:** LG specifies Multi View with up to two HDMI inputs for this exact model. Its US support page lists firmware 03.11.20 from August 2024. This is a comparison image candidate. Contents and the exact build's HDMI load route are **unknown**. [Product specifications](https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv) · [Firmware listing](https://www.lg.com/us/support/product/lg-OLED77G4WUA.AUS?tab=1) |
+| `com.webos.app.multiview` and `com.webos.app.multiviewsettings` | **Identity leads:** the older ID appears in the public SAM configuration and a first-person webOS 3.8 report names a native executable with that basename. A later owner report identifies the second ID as the Multi View settings entry. The executable or service that loads the second HDMI on the G4 remains **unknown**. [SAM configuration](https://github.com/webosose/sam/blob/master/files/conf/sam-conf.json.in) · [Older executable report](https://gist.github.com/Informatic/1983f2e501444cf1cbd182e50820d6c1) · [Settings entry report](https://community.openhab.org/t/lg-web-os-issue-with-multiview-after-recent-major-webos-update/156098) |
+| `com.webos.service.multiviewcontroller` | **Reported from stock QML:** Glasshouse's G3 / webOS 9.2.2 source inspection follows LG Home's single-HDMI recent-input preview through App View. Its request carries the HDMI guest and a layout. The guest opens UTP with app/window IDs and selects the port. That evidence ends at one HDMI preview. The Dual PC Monitor request and the controller's sink assignment are **unknown**. [Stock G3 App View source report](https://rorygallagher2024.github.io/glasshouse/development/TV-RESEARCH/#lgs-recent-input-preview-g3-webos-922) |
+
+The bounded check of saved C1 HDMI clients, UTP/media backends and related
+registration files located neither a stock Multi View component nor a
+physical-HDMI load that passes SUB0. Those captures cover selected paths,
+so the full installed inventory remains **unknown**. The decisive evidence
+would be a versioned stock Dual PC Monitor or Dual Screen client and its
+matching loader, showing how the second physical port reaches its connector's
+first scaler decision. This comparison remains separate from C1 hardware
+verification. [Saved C1 construction trace](c1-hdmi-interface-map.md#can-hdmi-2-select-sub0-when-its-connector-is-created)
+
 ## SDK boundary for the C1 investigation
 
 Checked 2026-11-11 after the owner's SDK question. LG's public
@@ -192,7 +216,7 @@ None of these sources establishes independently live HDMI 1 + HDMI 2 on C1.
 | Capture of active HDMI | **Unknown** | An authorized output-capture test with unprotected input would address only the selected output. Forced capture and `/dev/mem` are **unsafe to test**. |
 | HDMI plus tuner or app | **Unknown** | Verify each source stays live on the exact firmware, including foreground policy, input focus and cleanup. |
 | Decoder, scaler and plane counts, 4K120/HDR/VRR, audio focus | **Unknown** | Allocation and teardown evidence for each claimed combination. |
-| Built-in Multi-View on C1 | **Unknown** | Exact model and firmware evidence. The Homebrew guide covers some webOS 7+ models. |
+| Built-in Multi View on C1 | **Undocumented for C1** | LG's feature list excludes the 2021 webOS 6 generation. Exact firmware component availability remains unknown. [Stock feature and model evidence](#stock-lg-multi-view-and-physical-hdmi) |
 
 Seek C1-specific documentation for input ownership and video resource policy.
 Use observed interfaces and bounded probes. [C1 playback evidence](../device-tests/c1-journal.md#phase-1)

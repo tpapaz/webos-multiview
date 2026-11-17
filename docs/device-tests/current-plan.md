@@ -272,6 +272,10 @@ chip/HAL/MCU behavior or advancing frames. Direct UTP remains selected; unchange
    first scaler and sink choices unknown. The [offline caller trace](../research/c1-hdmi-interface-map.md#can-the-app-wait-for-hdmi-2-to-confirm-sub0)
    places fresh child setup and play inside the same port-selection request.
    Waiting between open and select supplies no own-child confirmation.
+   The [saved construction trace](../research/c1-hdmi-interface-map.md#can-hdmi-2-select-sub0-when-its-connector-is-created)
+   found window and element configuration fields in the HDMI load. The
+   explicit sink-type Load example uses local playback. A construction route
+   that sets type 4 on the new physical-HDMI connector remains unknown.
 2. Define how the attempt records fresh versus adopted/reused acquisition and
    returned receiver/scaler eligibility, owner relationships, distinct sink/source
    bindings and preemption. Use actual returned records or an already-understood

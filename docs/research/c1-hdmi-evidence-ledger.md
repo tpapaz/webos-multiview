@@ -141,6 +141,12 @@ receives its window information during load. The app's last decision is
 whether to send select, when it has only a logical pipeline ID. The trace
 stops at the missing child-specific SUB0 confirmation. Local byte and relocation
 receipt: `hdmi-sub0-caller-offline-20261117-001/verification.json`.
+The [construction trace](c1-hdmi-interface-map.md#can-hdmi-2-select-sub0-when-its-connector-is-created)
+ends at the stock client's window metadata, the browser client's HDMI source
+URL and SMP's explicit local-playback sink type. The fresh branch gives
+the HDMI connector default type 2. Construction with type 4
+on that path remains unknown. Local receipt:
+`hdmi-sub0-construction-offline-20261117-001/verification.json`.
 Do not repeat file/identity/capability/lifecycle work.
 Static/configuration evidence cannot settle independent advancing frames. The
 [five-path assessment](c1-hdmi-interface-map.md#captured-capabilities-and-ownership-discriminator)

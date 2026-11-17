@@ -78,11 +78,19 @@ applied. The [internal timing interval](docs/research/c1-hdmi-interface-map.md#s
 has no verified app-controlled wait. The first scaler choice and independent
 HDMI 1 + HDMI 2 remain **unknown**.
 
-**Next offline task.** Look in saved HDMI clients and their load handlers for
-a physical-input construction path that explicitly takes a video sink type.
-Follow a concrete caller only if it passes that value to its own connector
-before the first scaler choice. Stop if the only example is SMP playback of
-local media or the value ends at a window ID/type. No device action is queued.
+**Construction trace complete.** The [saved HDMI clients and load handlers](docs/research/c1-hdmi-interface-map.md#can-hdmi-2-select-sub0-when-its-connector-is-created)
+provide no verified way to give a fresh HDMI 2 connector type 4 before its
+first scaler choice. Stock PiP changes the exported rectangle. UTP window
+options remain window metadata at the video sink, and `mediaFrontend` selects
+an element configuration. The explicit sink field was traced in SMP local
+playback. The saved construction trace stops at these boundaries.
+
+**Next evidence needed.** LG documents stock dual HDMI on the 77-inch G4
+(OLED77G4WUA, webOS 24) and publishes the 03.11.20 comparison image. The
+stock Dual PC Monitor or Dual Screen caller and matching HDMI load handler
+are still missing. If those artifacts become available, trace where the
+second port's sink is chosen before its first scaler request.
+[Stock client search and comparison target](docs/research/prior-art.md#stock-lg-multi-view-and-physical-hdmi).
 
 The completed single executable capture remains:
 529,960 bytes, SHA2561f3a45553139881e2ca978352ae0c87e8654b571b0d439af131b5e2fa82c2d4e,

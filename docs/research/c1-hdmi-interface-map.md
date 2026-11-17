@@ -488,6 +488,30 @@ sites, 12 relocated Thumb targets and nine literals against the saved bytes:
 U/B/S/G use the [saved input table](#saved-inputs-and-address-convention).
 In this section R is ResourceManagerClient, as in the preceding timing trace.
 
+### Can HDMI 2 select SUB0 when its connector is created?
+
+**No construction-time SUB0 route was found in the saved physical-HDMI
+clients and handlers.** On the saved C1 / 03.53.45 UTP path, the HDMI jack
+number reaches the load as `port`. The window options reach the sink as
+window metadata. The fresh connector still defaults to video type 2, which
+selects MAIN_SCALER if unchanged at its first scaler decision.
+
+| Saved route | Result of following the fields |
+|---|---|
+| Stock C1 HDMI client | `hdmi-discovery-20261111/route-1.qml` lines 58–64 and 87–93 send source type and app/window IDs on open. Lines 163–168 send `pipelineId` and `portId` on select. `route-5.qml` lines 1300 and 1328 map HDMI 2 to port 2 and select it on the retained pipeline. Its PiP branch at lines 1098–1114 changes the exported rectangle and calls the same initialization. Saved sink helpers `route-3.qml:21–23` and `route-4.qml:29–34` hard-code `MAIN`. See [stock source provenance](archive/c1-hdmi-investigation-2026-11-12.md#provenance-and-local-evidence). |
+| Native UTP connector and HDMI open | C's `UTPConnector::registerId` at `0x158c0` builds an HDMI open. It includes app/window IDs, `mediaFrontend` and `mediaId`, with branches at `0x15b2a–0x15b4e` and `0x15b64–0x15b88` for `InitialWindow` and `NoWindow`. B's HDMI open reads those metadata fields (`0x5129a/0x514a2/0x5150e/0x5157a/0x515e6`) and sends nonempty `mediaFrontend` through the watcher slot at `0x51946`. The HDMI override stores that string at watcher +1060 (`0x83088–0x83090`). |
+| HDMI load to video-sink | S reads watcher +1060 at `0x870b8` and passes it to the element configuration lookup at `0x870c8`. Nonempty selects the alternate element configuration map at `0x41f70–0x41f72`. The watcher assembles `elementConfig`, `port`, `appID`, `windowID`, `windowType`, `pipelineId` and optional `mediaFrontend` at `0x8714c–0x87232`. The controller passes the load JSON into `setAppWindowInfo` at `0x63efe`. K reads app/window ID variants and `windowType`. It stores window kinds 400, 402 and 401 at `0xaba6/0xadfc/0xb164`. Its fresh branch creates and initializes AVProxy at `0xaf20/0xb07e`. C stores default video type 2 at `0x12094`, and K's start still supplies `sink:MAIN` at `0x9b90/0x9bae`. No sink-type input reached the constructor through these window or front-end options. |
+| Saved browser HDMI client | Glasshouse's saved `home.html` lines 2352–2373 provide the HDMI source URL and external-input MIME type, then call DOM load/play. The client supplies no sink type. The browser's internal HDMI loader remains unknown. See [physical-input preview provenance](#glasshouse-preview-source-and-owner-observation). |
+| Explicit sink in local playback | SMP reads `option.avSink.videoSink.type` and calls the proxy with the stored sink info during load. That is the verified explicit-sink example for local clips. The inspected physical-HDMI load path supplies no evidence that it consumes that field. See [SMP Load trace](c1-smp-ndl-resource-path.md#exact-firmware-path). |
+
+This ends the saved construction-path check at the window fields and the
+local-media example. The [asynchronous replay interval](#sub0-selection-before-the-first-main-connection)
+still exists, with own-child delivery and first scaler choice **unknown**.
+Two independently live physical inputs remain **unknown**. The offline receipt,
+`build/phase-2/hdmi-sub0-construction-offline-20261117-001/verification.json`,
+pins five client sources and four ELFs, with 81 instruction sites, three
+virtual targets and 22 literals checked.
+
 ### TVRM grant-to-receiver mapping
 
 **Verified static, 2026-11-16:** allocation-mask encoding and grant packing are
