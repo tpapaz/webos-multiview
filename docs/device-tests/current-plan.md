@@ -269,7 +269,9 @@ chip/HAL/MCU behavior or advancing frames. Direct UTP remains selected; unchange
    and retains it through the first lower video connection, or establish a
    supported SUB-first construction route. Cached replay can arrive on either
    side of render-ready. The owner reply and a later SUB0 binding leave the
-   first scaler and sink choices unknown.
+   first scaler and sink choices unknown. The [offline caller trace](../research/c1-hdmi-interface-map.md#can-the-app-wait-for-hdmi-2-to-confirm-sub0)
+   places fresh child setup and play inside the same port-selection request.
+   Waiting between open and select supplies no own-child confirmation.
 2. Define how the attempt records fresh versus adopted/reused acquisition and
    returned receiver/scaler eligibility, owner relationships, distinct sink/source
    bindings and preemption. Use actual returned records or an already-understood

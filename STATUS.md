@@ -70,17 +70,19 @@ path remains unknown. No device operation is queued.
 [Actual outcome and hashes](docs/device-tests/c1-journal.md#resourcemanager-mapping-lookup--connect-timeout)
 · [Closed scope and original bounds](docs/device-tests/current-plan.md#spent-bounded-resourcemanager-path-lookup).
 
-**Next offline task.** Trace the caller of the HDMI play path in the saved
-controller and pipeline files. Look for an app-accessible point that can hold
-the second session before its first scaler request until its own SUB0 selection
-is confirmed. Stop at the first missing ownership or completion signal.
+**Current result.** The [offline caller trace](docs/research/c1-hdmi-interface-map.md#can-the-app-wait-for-hdmi-2-to-confirm-sub0)
+found that a fresh `switchExternalInput` sets up the connector and starts
+playback inside one backend request. The app can postpone select after open,
+but its logical ID cannot confirm that HDMI 2 owns a connector with SUB0
+applied. The [internal timing interval](docs/research/c1-hdmi-interface-map.md#sub0-selection-before-the-first-main-connection)
+has no verified app-controlled wait. The first scaler choice and independent
+HDMI 1 + HDMI 2 remain **unknown**.
 
-The [offline SUB0 timing trace](docs/research/c1-hdmi-interface-map.md#sub0-selection-before-the-first-main-connection)
-found a candidate interval after child initialization and before render-ready.
-The connector can accept type 4 there. Cached replay and render-ready compete
-for the same proxy lock, and the owner reply does not confirm delivery. A late
-selector can miss the first MAIN_SCALER request or the first MAIN connection.
-Guaranteed ordering and independently live HDMI remain **unknown**.
+**Next offline task.** Look in saved HDMI clients and their load handlers for
+a physical-input construction path that explicitly takes a video sink type.
+Follow a concrete caller only if it passes that value to its own connector
+before the first scaler choice. Stop if the only example is SMP playback of
+local media or the value ends at a window ID/type. No device action is queued.
 
 The completed single executable capture remains:
 529,960 bytes, SHA2561f3a45553139881e2ca978352ae0c87e8654b571b0d439af131b5e2fa82c2d4e,

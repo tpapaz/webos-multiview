@@ -462,6 +462,32 @@ checks bind the Thumb initializer, readiness byte, literals, callback and
 virtual slots. The saved initializer was decoded with SDK objdump in
 `-M force-thumb` mode. All work used local files.
 
+### Can the app wait for HDMI 2 to confirm SUB0?
+
+**No verified wait point on the current direct UTP path.** The app controls when
+it sends `switchExternalInput`. On the traced fresh path, that same request
+sets up the video sink's connector and starts playback. Inside the service there
+is an interval in which a selector can take effect. The app has neither a
+separate play command at that interval nor a reply identifying its child and
+confirming that the child applied type 4. This is static evidence for the saved
+C1 / 03.53.45 files. The installed 0.1.12 control selects HDMI 4 only.
+
+| Boundary | What the saved caller does | What the app can establish |
+|---|---|---|
+| Before select | The [session](../../native/phase2-hdmi-picture/session.cpp) accepts `open`, retains its returned `pipelineId`, checks cancellation, then sends select (lines 191–205). On fresh backend open B creates the keyed service at `0x51486`, sets app/window ID and window type at `0x51632/0x5163c/0x51646`, and builds a success reply with `returnValue` and `pipelineId` at `0x5178c–0x517be`. U can instead adopt cached state and rebind a NormalWindow at `0x5c45da`. | The app can withhold the port selection. Its logical ID supplies no evidence of a fresh child, its sink type or its ownership. |
+| One port-selection request | U (saved ATSC) calls its switch manager at `0x5645ae`. The manager resolves the logical resource at `0x5c63fa`, builds the backend `pipelineId` and `portId`, and runs the `switchExternalInput` call chain at `0x5c6780/0x5c6800/0x5c689e`. B looks up the service at `0x4e484`, calls watcher `setPort` at `0x4e52a` and `switchExternalInput` at `0x4e626`. Zero watcher status selects the Boolean success reply at `0x4e714–0x4e72c`. | The [app adapter](../../native/phase2-hdmi-dispatch/adapter.h) uses one reply per call (line 52). The app checks select success, then enters observation. |
+| Inside that request | S dispatches each configuration record to `_switchExternalInput` at `0x97792`. On the HDMI path it calls `_load` at `0x97c22`, pre-play at `0x97c3a` and `_play` at `0x97c4e`. Load result 16 skips the post-load hook and still reaches pre-play. S calls G's `PipelineBase::load/play` at `0x87344/0x87924`. G's manager load can already request pipeline resources at `0x2523e`, before its load hook at `0x16104`. | The backend advances from load to play without returning control to the app. A delay before select would precede this entire sequence. |
+| Connector setup and first scaler | G's load/play virtual calls at `0x16104/0x16c04` resolve to S's WatchPipeline hooks. S dispatches controller load at `0x68bec`. It looks up `video-sink` at `0x63ea8`, calls `setAppWindowInfo` when present at `0x63efe`, and destroys the returned JSON at `0x63f04`. On play, S dispatches the controller at `0x68e80` and issues the sink start at `0x66158`. The [render-ready trace](#sub0-selection-before-the-first-main-connection) follows that start to C's first scaler choice at `0x12df6` and request at `0x1b644`. | Fresh child setup happens during select. Sharing can preserve an earlier parent. The pipeline resource request during load and the connector's scaler request during render are distinct decisions. |
+| Missing confirmation | C's normal-window path writes the type at `0x19bd8` and returns local success. Its selector calls `tryConnect` at `0x1d0ca` and sets success at `0x1d0ce` even when render-ready is clear. A discards the setter result at `0x6c92–0x6c96`, R discards the callback result at `0x1142e–0x11430`, and M's cached replay at `0x4ba04` has no completion callback. A's separate resource-status callback forwards connectability at `0x68d8`. | None of these paths delivers the app a child-specific, type-applied receipt before the first scaler choice. A later SUB0 binding cannot reconstruct that choice. |
+
+The trace stops at that missing confirmation. A timing delay between open and
+select cannot establish this ordering. Independent HDMI 1 + HDMI 2 remains
+**unknown**. The private receipt checks eight saved ELF hashes, 89 instruction
+sites, 12 relocated Thumb targets and nine literals against the saved bytes:
+`build/phase-2/hdmi-sub0-caller-offline-20261117-001/verification.json`.
+U/B/S/G use the [saved input table](#saved-inputs-and-address-convention).
+In this section R is ResourceManagerClient, as in the preceding timing trace.
+
 ### TVRM grant-to-receiver mapping
 
 **Verified static, 2026-11-16:** allocation-mask encoding and grant packing are

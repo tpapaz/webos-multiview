@@ -135,6 +135,12 @@ for selection before render-ready. Replay completion before the first scaler
 request, exact child ownership and actual hardware behavior remain unknown.
 Private byte-verification receipt: `hdmi-sub0-timing-offline-20261117-001/verification.json`.
 [Timing trace and evidence](c1-hdmi-interface-map.md#sub0-selection-before-the-first-main-connection).
+The [offline caller trace](c1-hdmi-interface-map.md#can-the-app-wait-for-hdmi-2-to-confirm-sub0)
+binds UTP select to the watcher's load and play calls. The fresh video sink
+receives its window information during load. The app's last decision is
+whether to send select, when it has only a logical pipeline ID. The trace
+stops at the missing child-specific SUB0 confirmation. Local byte and relocation
+receipt: `hdmi-sub0-caller-offline-20261117-001/verification.json`.
 Do not repeat file/identity/capability/lifecycle work.
 Static/configuration evidence cannot settle independent advancing frames. The
 [five-path assessment](c1-hdmi-interface-map.md#captured-capabilities-and-ownership-discriminator)
