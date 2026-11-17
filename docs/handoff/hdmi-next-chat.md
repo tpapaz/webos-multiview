@@ -24,8 +24,10 @@ commit, push or invoke GitHub Actions automatically. Close only servers you star
 No dev server is needed for documentation or native checks.
 
 Keep build/dist private; never print credentials, profiles/network/boot/window/
-pipeline identifiers, launch authority or unrestricted vendor logs. Relevant
-local evidence paths are indexed from the journal and technical archives.
+pipeline identifiers, launch authority or unrestricted vendor logs.
+For the full C1 research notes, read the verified local snapshot under
+`build/publication-review-c1-20261118/originals/`. Use the journal for observed
+device outcomes.
 
 Update Status when readiness changes and the single plan when procedure changes.
 Append actual outcomes to the journal; archive exceptional detail with provenance.

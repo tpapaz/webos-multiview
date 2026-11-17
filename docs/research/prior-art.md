@@ -181,7 +181,7 @@ so the full installed inventory remains **unknown**. The decisive evidence
 would be a versioned stock Dual PC Monitor or Dual Screen client and its
 matching loader, showing how the second physical port reaches its connector's
 first scaler decision. This comparison remains separate from C1 hardware
-verification. [Saved C1 construction trace](c1-hdmi-interface-map.md#can-hdmi-2-select-sub0-when-its-connector-is-created)
+verification. [Saved C1 construction trace](c1-hdmi-interface-map.md#independent-second-path-research)
 
 ### Retail G4 comparison
 

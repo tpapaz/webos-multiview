@@ -118,7 +118,7 @@ claim follows from the file. Keep the observed path and raw identifiers private.
 
 ### Spent bounded ResourceManager path lookup
 
-The [offline manager/ownership pass](../research/c1-hdmi-interface-map.md#manager-bindings-selected-records-and-owner-replay)
+The [offline manager/ownership pass](../research/c1-hdmi-interface-map.md#independent-second-path-research)
 resolved server+32 as PipelineManager and server+28 as ResourceManager, generated
 resource ID→actual registering sender service, associated-record fan-out and
 cached selector replay after successful owner association. It did not recover
@@ -161,7 +161,7 @@ follows. Preserve both empty raw streams with the saved receipts.
 The missing bodies are RM vptr byte offsets12/16/64/68 (lookup, registration,
 association checks and ID-tree insertion/removal), then PM offset200. Accept only
 source-bound function/vtable/provider linkage; stop at unresolved identity or
-indirection. The [offline replay trace](../research/c1-hdmi-interface-map.md#sub0-selection-before-the-first-main-connection)
+indirection. The [offline replay trace](../research/c1-hdmi-interface-map.md#independent-second-path-research)
 identified an early selection interval. Actual delivery order and provider
 validation remain unknown. Preserve all
 existing raw bytes/receipts and distinguish ELF VAs from runtime addresses.
@@ -255,10 +255,11 @@ chip/HAL/MCU behavior or advancing frames. Direct UTP remains selected; unchange
 ### Required before a runnable proposal
 
 1. Bind an evidenced selector to the **new attempt's own** second avconnector,
-   selecting type4/SUB0 and requesting SUB_SCALER without reconfiguring A. The
-   [fixed source-bound body and evidence contract](../research/c1-hdmi-interface-map.md#own-sub0-selector-and-allocation-evidence-contract)
-   are resolved; accepted own-client delivery remains unknown. Omit audioSink
-   and streamType: empty audioSink clears the audio type. A callback/true setter
+   selecting type4/SUB0 and requesting SUB_SCALER without reconfiguring A.
+   Offline review resolved the request body and evidence requirements. Accepted
+   delivery to the app's own connector remains unknown.
+   [HDMI evidence summary](../research/c1-hdmi-interface-map.md#independent-second-path-research).
+   Omit audioSink and streamType: empty audioSink clears the audio type. A callback/true setter
    result does not acknowledge reconnection or grants. Do not borrow an identity
    or add policy grants.
    The saved server fallback can fan out over associated record IDs, and owner
@@ -272,7 +273,7 @@ chip/HAL/MCU behavior or advancing frames. Direct UTP remains selected; unchange
    first scaler and sink choices unknown. The [offline caller trace](../research/c1-hdmi-interface-map.md#can-the-app-wait-for-hdmi-2-to-confirm-sub0)
    places fresh child setup and play inside the same port-selection request.
    Waiting between open and select supplies no own-child confirmation.
-   The [saved construction trace](../research/c1-hdmi-interface-map.md#can-hdmi-2-select-sub0-when-its-connector-is-created)
+   The [saved construction trace](../research/c1-hdmi-interface-map.md#independent-second-path-research)
    found window and element configuration fields in the HDMI load. The
    explicit sink-type Load example uses local playback. A construction route
    that sets type 4 on the new physical-HDMI connector remains unknown.
@@ -285,7 +286,7 @@ chip/HAL/MCU behavior or advancing frames. Direct UTP remains selected; unchange
    sharing can retain the first parent's ID. An appId or setAppWindowInfo field
    cannot replace that join. G's resource-type/selector reuse match and the
    port-based release path require this distinction; see the
-   [source-bound assessment](../research/c1-hdmi-interface-map.md#captured-capabilities-and-ownership-discriminator).
+   [C1 evidence summary](../research/c1-hdmi-interface-map.md#independent-second-path-research).
 3. Bind model HDMI1/2 mapping through supported runtime discovery/the service's
    own model map; videoIndex3, PI_PORT, ordinal0/1 and planeID44/45 are not jack
    numbers. Qualify the provider/model adapter and actual named-sink availability.

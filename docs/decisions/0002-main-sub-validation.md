@@ -75,7 +75,7 @@ establishes public request/NACK handlers and cancellation/disconnect cleanup
 statically. Select that app-owned interface for a bounded permission/veto/cleanup
 probe; runtime authorization and inhibition remain unknown. Keep its lifetime
 through A recovery, including after B release. No new build occurred in this trace.
-[Screensaver investigation](../research/c1-smp-ndl-resource-path.md#app-scoped-screensaver-review-and-011-retry)
+[Screensaver investigation](../research/c1-smp-ndl-resource-path.md#app-scoped-screensaver-review)
 
 For the historical 0.1.1 focused retry, require a fresh same-ELF smoke with owner confirmation
 before five minutes, then a same-ELF five-minute pass before 30 minutes.

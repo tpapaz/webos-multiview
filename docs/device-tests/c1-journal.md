@@ -427,7 +427,7 @@ Metadata stdout hashes, in table order excluding SFTP:
 - `26fbac5c3851fb6ad6a2c005e8267d6de6f39a69e35363e51c84947b5ff5bb93`
 
 Offline extraction/disassembly and embedded symbol matching ground built-in
-hdmi20_v4l2 code; no vendor code executed. [Mechanism and limits](../research/c1-hdmi-interface-map.md#sysfs-driver-identity-and-selection-state-boundary):
+hdmi20_v4l2 code; no vendor code executed. [Mechanism and limits](../research/c1-hdmi-interface-map.md#independent-second-path-research):
 per-file handle, global input readback, per-port activity and port-based clear;
 independent hardware/sinks remain unproven. Working0.1.12 unchanged. No new
 picture/audio/remote restoration observation was requested or claimed.
@@ -541,7 +541,7 @@ power action, vendor initialization or device ioctl. No new picture/sound/remote
 observation was requested or claimed. One read-only collection is the entire TV
 scope of this task. Subsequent saved-evidence review identifies the factory reuse
 predicate and port-based cleanup limit in the
-[research map](../research/c1-hdmi-interface-map.md#captured-capabilities-and-ownership-discriminator).
+[research map](../research/c1-hdmi-interface-map.md#independent-second-path-research).
 The [dual-source sequence](current-plan.md#review-only-dual-source-experiment)
 is a review-only draft; it has not run and is not a runnable candidate.
 
@@ -578,7 +578,7 @@ ACL/generator refusals and an obsolete interpretation assertion failure are
 retained in acceptance-final.json; all occurred offline before dispatch.
 
 Subsequent saved-only review produced the
-[own-selector/evidence contract](../research/c1-hdmi-interface-map.md#own-sub0-selector-and-allocation-evidence-contract):
+[own-selector/evidence contract](../research/c1-hdmi-interface-map.md#independent-second-path-research):
 fixed nested JSON-string payload; empty audio fields clear type; setter replies
 do not prove reconnection; shared elements can retain their first backend parent.
 A separate bounded process/executable-identity request is prepared but not run.
@@ -692,7 +692,7 @@ picture/sound/remote observation was requested or claimed. No native build,
 package or active trial. A subsequent saved-byte first pass bound registered
 setSink to its selector/privateCommand fallback and trackResourcesStatus to
 subscriber registration/observer state. It used zero further TV connections or
-service calls. [Exact instructions and unresolved ownership gates](../research/c1-hdmi-interface-map.md#saved-media-server-selector-and-observer-handlers)
+service calls. [HDMI findings and ownership limits](../research/c1-hdmi-interface-map.md#independent-second-path-research)
 and private trace verification:
 build/phase-2/hdmi-media-server-trace-20261117-001/verification.json.
 A further offline pass bound the manager objects, registration's generated-ID
@@ -701,7 +701,7 @@ selector replay. A false setSink reply can coexist with forwarding. Exact
 manager virtual implementations and association validation remain outside the
 saved executable.14 excerpts/22 literals/two record vtables/two singleton imports,
 owner-only ACLs and201 preservation/43 working pins passed; zero further TV
-connections or service calls. [Mechanisms and provider gap](../research/c1-hdmi-interface-map.md#manager-bindings-selected-records-and-owner-replay).
+connections or service calls. [Mechanisms and provider gap](../research/c1-hdmi-interface-map.md#independent-second-path-research).
 Private verification: build/phase-2/hdmi-media-owner-trace-20261117-001/verification.json.
 No active experiment; do not repeat completed capture or identity discovery.
 

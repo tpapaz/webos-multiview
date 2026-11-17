@@ -272,11 +272,11 @@ continued decode execution remains unknown. This narrows the measured
 failure to contention in the main presentation scaler path.
 
 Evidence, hashes and decompressed source line references:
-[retained-log attribution](../../research/c1-smp-ndl-resource-path.md#retained-log-attribution--main_scaler-handover-verified).
+[retained-log attribution](../../research/c1-smp-ndl-resource-path.md).
 The redacted 33-record evidence report is
 `build/reports/c1-phase1-load-only-attribution-0.1.0.json` (schema 1).
 No playback repeat, IPK build or TV configuration change was performed.
-The [sink-selection review](../../research/c1-smp-ndl-resource-path.md#why-main_scaler-was-selected-and-the-independent-sink-candidate)
+The [sink-selection review](../../research/c1-smp-ndl-resource-path.md)
 then identified the SMP Load-time selector tested below.
 
 ## Two-SMP main/sub 0.1.0 — TV-tested control
@@ -637,7 +637,7 @@ in appinfo.json; allow SDL saver state at the menu, request inhibition only
 during a bounded run, restore the prior state after player cleanup; log each
 exit cause separately; retain CPU/temperature sampling, identity checks,
 watchdogs, cancellation and normal teardown. Do not change global TV policy.
-[API investigation and caveats](../../research/c1-smp-ndl-resource-path.md#app-scoped-screensaver-review-and-011-retry)
+[API investigation and caveats](../../research/c1-smp-ndl-resource-path.md#app-scoped-screensaver-review)
 
 New CSV events are `screensaver_policy`, `screensaver_inhibit`,
 `screensaver_restore`, `exit_event` and `app_exit`. Closed exit codes identify
@@ -1019,7 +1019,7 @@ LS2 body then exposed a pre-send privilege check for non-null application IDs
 (`0xda5a–0xda6a`). The app's anonymous public connection did not establish
 that privilege; this is the leading **candidate** cause, not a runtime-proven
 branch. The omitted `LSError` detail prevents certainty.
-[Caller restriction evidence](../../research/c1-native-screensaver-interface.md#short-implementation-follow-up-012).
+[Caller restriction evidence](../../research/c1-native-screensaver-interface.md).
 Do not claim a service-level rejection or an applied veto.
 
 CPU evidence is menu-only: one 2.109-second interval, system busy 11.37%,

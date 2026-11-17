@@ -8,8 +8,8 @@ outcomes do not authorize a new TV operation.
 | [Status](../STATUS.md) | Verified first-picture result, limits, current artifact and one next task. |
 | [Roadmap](../ROADMAP.md) | Product phases and acceptance gates. |
 | [Prototype contract](../native/phase2-hdmi-candidate-0.1.12/README.md) | Current actions, native/report/witness/runner contract and exact artifacts. |
-| [Research map](research/c1-hdmi-interface-map.md) | First picture; MAIN/SUB0 mapping, manager/record/sender binding and cached selector replay, own-target contract, TVRM/LINK/VSC routing and remaining ownership gaps. |
-| [Evidence ledger](research/c1-hdmi-evidence-ledger.md) | Saved collection/trace index, corrected interpretations and remaining hardware gates. |
+| [Research map](research/c1-hdmi-interface-map.md) | Verified HDMI 4 result, secondary-route findings and open ownership questions. |
+| [Evidence ledger](research/c1-hdmi-evidence-ledger.md) | Summary of observed outcomes, collected evidence and remaining hardware gates. |
 | [Device journal](device-tests/c1-journal.md) | Actual lifecycle/physical outcomes and evidence hashes; concise earlier summary. |
 | [Device disposition](device-tests/current-plan.md) | Spent ResourceManager lookup, completed scopes, review-only dual-source gates and active-trial stop rules. |
 | [Build guide](build.md) | Offline checks, toolchain and current prototype build. |
@@ -34,16 +34,16 @@ outcomes do not authorize a new TV operation.
 ## Evidence archives
 
 - [First-picture development](research/archive/c1-first-picture-development-2026-11-15.md):
-  exact saved LS2/SDL/helper analysis, rejected hypotheses and development provenance.
+  setup controls, verified first picture and retained development records.
 - [First-picture campaign](device-tests/archive/c1-first-picture-campaign-2026-11-15.md):
   detailed dated outcomes and original hashes for retired diagnostics.
-- [Acquisition/backend traces](research/archive/c1-hdmi-investigation-2026-11-12.md)
-  and [admission/cleanup traces](research/archive/c1-hdmi-admission-2026-11-14.md).
+- [Early HDMI findings](research/archive/c1-hdmi-investigation-2026-11-12.md)
+  and [admission and cleanup findings](research/archive/c1-hdmi-admission-2026-11-14.md).
 - [Earlier device records](device-tests/archive) preserve Phase0/1 and specific
   preparation/lifecycle observations. They are references, not an execution queue.
 
-Raw firmware/assembly, reports, private authority, frozen as-used snapshots and
-ABI/build receipts remain local under ignored build. Current IPK is under dist.
+Full research notes, raw firmware and assembly, private reports, and
+build receipts remain local under ignored build. Current IPK is under dist.
 Do not publish credentials, raw identifiers or vendor logs; do not refetch saved
 inputs. Superseded source is absent from the active tree; local cleanup snapshots
 provide rollback without maintaining historical runtime implementations.

@@ -7,7 +7,7 @@
 2026-11-12: owner-authorized **read-only SFTP** of exactly `/usr/sbin/utp-atsc`
 and `/usr/sbin/utp-dvb` succeeded (8,792,988 / 8,788,888 bytes). Size/mtime
 checks stayed stable; local SHA-256 and provenance are in the
-[provider review](../../research/archive/c1-hdmi-investigation-2026-11-12.md#utp-provider-allocation-and-cleanup--2026-11-12)
+[provider review](../../research/archive/c1-hdmi-investigation-2026-11-12.md)
 and `build/phase-2/utp-provider-20261112-001/inventory.json`. Connection closed;
 no remote commands, writes/deletes, app launches, HDMI switches or policy
 deployment. Subsequent ARM disassembly was offline. Both binaries contain the
@@ -24,7 +24,7 @@ The first collector mishandled directory EOF; its partial report is preserved.
 A corrected same-scope pass completed with matching filename sets and stable
 before/after directory metadata. Both connections closed. No file contents,
 remote commands, writes/deletes, app launches, HDMI switches or policy deployment.
-[Exact provenance and limits](../../research/archive/c1-hdmi-investigation-2026-11-12.md#provider-routing-metadata-and-cleanup-boundary--2026-11-12);
+[Earlier research and limits](../../research/archive/c1-hdmi-investigation-2026-11-12.md);
 reports: `build/phase-2/utp-routing-metadata-20261112-001/` and `-002/`.
 This establishes names/types only, not an HDMI backend cleanup result.
 
@@ -38,7 +38,7 @@ Size/mtime checks passed; original copies/SHA-256 are retained under
 commands, writes/deletes, app launches, HDMI switching or policy deployment.
 The config maps HDMI to `com.webos.service.extinputs.hdmi`; offline tracing
 identifies dispatch/timeout boundaries, not actual cleanup or hardware release.
-[Provenance and remaining gate](../../research/archive/c1-hdmi-investigation-2026-11-12.md#hdmi-backend-mapping-and-cleanup-timeout-boundary--2026-11-12).
+[Provenance and remaining gate](../../research/archive/c1-hdmi-investigation-2026-11-12.md).
 No acquisition, picture or restoration test occurred.
 
 ## HDMI backend registration and implementation
@@ -56,7 +56,7 @@ contents remain unsaved. No remote commands, TV file writes/deletes, app launch,
 HDMI switch, backend method call or policy deployment. Offline tracing found
 backend lookup removal after a returned release failure and a candidate
 stop/pause registration mismatch. Neither is an observed hardware leak/denial.
-[Exact files, hashes, limits and remaining gates](../../research/archive/c1-hdmi-investigation-2026-11-12.md#hdmi-backend-implementation-and-release-failure--2026-11-12).
+[Earlier findings and remaining gates](../../research/archive/c1-hdmi-investigation-2026-11-12.md).
 No acquisition, picture or restoration test occurred. TV was left on.
 
 ## HDMI release-client implementation retrieval
@@ -70,7 +70,7 @@ action, remote command, TV write/delete, app launch, input switch, backend call
 or permission deployment. Offline review resolves the saved stop mismatch and
 finds an untimed resource-release wait plus conditional destructor release
 re-entry with ignored result. No runtime denial/hang/leak, acquisition, picture
-or restoration result is claimed. [Exact findings and limits](../../research/archive/c1-hdmi-investigation-2026-11-12.md#stop-routing-resolved-and-downstream-release-boundary--2026-11-12).
+or restoration result is claimed. [Earlier findings and limits](../../research/archive/c1-hdmi-investigation-2026-11-12.md).
 
 ## HDMI window 0.1.3 installed verification and baseline
 
@@ -120,7 +120,7 @@ Offline comparison verifies exact own-role/client references and both provider
 API references. The public file contains no UTP entry; retained declarations
 still predict denial. This closes the four file/reference gaps, not the hub's
 loaded-state or historical active-group gap. No additional permission prediction
-or acquisition was performed. The [current finding](../../research/archive/c1-hdmi-admission-2026-11-14.md#current-blocker-and-proposed-loaded-policy-check)
+or acquisition was performed. The [current finding](../../research/archive/c1-hdmi-admission-2026-11-14.md)
 proposes two specific read-only hub queries under a future separate scope;
 their results cannot retrospectively prove the closed app's active vector.
 

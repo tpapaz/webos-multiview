@@ -8,4 +8,4 @@ callback storage prematurely.
 
 The separate setup-correction patch, old setup review CMake target and diagnostic
 fixtures were retired. Current adapter/mailbox/retained-owner native acceptance
-covers the deployed use. [Causal saved-library review](../../docs/research/archive/c1-first-picture-development-2026-11-15.md#ls2glib-context-and-sdl-lifecycle-review).
+covers the deployed use. [C1 development summary](../../docs/research/archive/c1-first-picture-development-2026-11-15.md).
