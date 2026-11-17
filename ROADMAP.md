@@ -4,9 +4,12 @@
 
 ## Objective and position
 
-Build a standalone, root-assisted Homebrew app for independently live
-**HDMI 1 + HDMI 2**, displayed in movable/scalable PiP or split screen on the
-TV's own hardware. Additional source types do not replace this objective.
+Build a standalone, root-assisted Homebrew app that can show **more than two
+independently live sources at once** on the TV's hardware. The goal is to
+combine physical HDMI inputs, live TV, webOS apps and network streams in
+movable and resizable picture-in-picture, split-screen or grid layouts where
+the TV can support the combination. The next hardware milestone is
+independently live **HDMI 1 + HDMI 2**.
 
 Reference device: LG OLED C1 (2021), firmware 03.53.45 / SDK 6.5.3.
 One physical HDMI-4 picture with continuous motion and sound is verified in our

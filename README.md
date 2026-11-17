@@ -1,9 +1,14 @@
 # webOS MultiView
 
+> **Experimental prototype for research and controlled testing only.**
+> [Device safety and disclaimer](#device-safety-and-disclaimer)
+
 webOS MultiView is a root-assisted homebrew research project for LG TVs. The
-goal is to show **two physical inputs, HDMI 1 and HDMI 2, live at the same time**
-using the TV's hardware, with movable picture-in-picture or split-screen
-windows.
+long-term goal is to show **several independently live sources at once** in
+movable windows, including layouts with more than two sources. A layout could
+combine HDMI inputs, live TV, another webOS app and a network stream in
+picture-in-picture, split-screen or a grid. The available combinations will
+depend on the TV model and firmware. [Example layouts](https://x.com/sushiperv/status/2120960043256348699)
 
 ## What works today
 
