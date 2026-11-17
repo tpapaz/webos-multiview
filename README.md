@@ -27,7 +27,7 @@ existing webOS SDK and retained device libraries. [Build and package details](do
 ## Concept layouts
 
 These mockups illustrate planned layouts. The source combinations shown are
-still unverified on the TV. [Original concept post](https://x.com/sushiperv/status/2120960043256348699)
+still unverified on the TV.
 
 | Four-source grid | Three-source split | Picture-in-picture |
 | --- | --- | --- |
