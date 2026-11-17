@@ -416,8 +416,8 @@ is spent after an SSH connect timeout. No command ran, so the loaded mapping and
 provider file path remain unknown. Establishing provider identity still requires
 an evidenced path and ELF symbol/vtable linkage. The DT_NEEDED candidates alone
 leave singleton/vtable resolution open.
-Remaining saved-body work can correlate replay with A initialize and K::_start,
-but cannot replace the missing owner-validation implementation.
+The [offline timing trace](#sub0-selection-before-the-first-main-connection)
+follows the cached replay through initialization and the first presentation request.
 
 The runtime join still needs this attempt's logical UTP→backend→first/current
 element context→child resource ID→accepted owner association→sender service.
@@ -428,6 +428,39 @@ frames and isolated hardware release remain unknown. The existing five-path
 assessment and review-only dual-source draft remain in force, with no runnable
 trial. Do not repeat capture/identity/lifecycle work, guess a target or call a
 selector/subscription/reset to compensate for this static boundary.
+
+### SUB0 selection before the first MAIN connection
+
+**Candidate on LG OLED C1, firmware 03.53.45.** On the fresh, normal-window
+path, the second connector can hold video type 4 while render-ready is still
+clear. If that type persists through the first scaler decision and output
+request, the first presentation can go to SUB0. Delivery in time to the
+second session's own connector remains **unknown**. These are static ARM32 ELF
+virtual addresses for the saved images. Here R denotes ResourceManagerClient.
+
+| Stage | Verified order in the saved code |
+|---|---|
+| Child setup | K `setAppWindowInfo` takes the fresh-proxy branch at `0xac32–0xac38` and initializes A at `0xb07e`. On the inspected success path C sets status bit 1 at `0x17504–0x17506`. A installs the callback, registers the child at `0x7114`, then calls setOwnerPipeline at `0x7148`. Both registration-result branches reach that call (`0x712c/0x717e`). R waits for the registration reply at `0x8fe6`, then its **separate** owner request sends at `0xe6ec` and returns the serialization result at `0xe726`. |
+| Owner replay | M can cache the selector at `0x49030`. After successful association at `0x4b808`, the cache-hit path looks up the child and sends at `0x4ba04` with a null completion callback. The association Boolean supplies the owner reply (`0x4b80a/0x4bc02`). On the pthread path, A's initialize, private callback and setRenderReady all lock the same proxy field at +12 (`0x6e8e/0x6ea2`, `0x6bda/0x6be4`, `0x5f32/0x5f48`). Initialize submits the owner request under that lock and releases it at `0x6ef0`. Mutual exclusion leaves the order of the subsequent callback and render-ready calls open. |
+| Early selector opportunity | C's selector entry tests initialized bit 1 (`0x16a48–0x16a50`, `0x1d614–0x1d61a`). On the ordinary path, a parsed type 4 reaches changeSink at `0x1d20c` and the normal-window path updates the existing connector type at `0x19bd8`. Its later tryConnect(0) at `0x1d0ca` has a stricter test. The Thumb initializer `0xe18c` stores 31 at `0xe21c–0xe220`; the load at `0x17148` reads that same byte (ELF VA `0x382a4`). checkStatus compares the whole status word for equality at `0x16aa2–0x16aaa`. While bit 8 is clear, this path returns without scheduling a connect. |
+| Render and allocation | S's HDMI play path looks up video-hdmi then video-sink at `0x6608e/0x6609e` and issues their start requests at `0x66118/0x66158`. On the element-start path S calls E at `0x5feb2`, and E's virtual call at `0x18a24` resolves to K::_start for VideoSink. K supplies MAIN in its descriptor and calls setRenderReady(true) at `0x9c20`. C stores connection information at `0x1a9c6`, sets status bit 8 at `0x1aa8c`, and calls tryConnect(0) at `0x1aae2`. When eligible, it schedules a GLib callback (`0x171be–0x171c2`, `0x17064–0x17078`) which enters connect at `0x1bf66`. |
+| First lower request | C defaults the video type to 2 at `0x12094`. Video preparation reads the current type at `0x12df6`: type 2 selects MAIN_SCALER, type 4 selects SUB_SCALER. The resource request is issued at `0x1b644`. Separately, video connect calls normalization at `0x13ede`; a valid MAIN descriptor with current type 4 is rewritten to SUB0 at `0x13c3e–0x13c6e` before lower dispatch at `0x13f58`. |
+
+**Timing limit.** Even if the final sink reads SUB0, the first scaler request
+could already have selected MAIN_SCALER. If the first lower MAIN connection
+was also delivered, HDMI 1 could already have been displaced. Safe progression
+requires evidence that the intended child applied type 4 before **both** first
+uses, or a supported SUB-first construction path. The inspected replay has no
+completion event that orders playback behind it. The shared-element path also
+leaves the intended child and parent in question. Physical concurrency and the
+first actual hardware grant remain unknown.
+
+Local receipt and repeatable byte checks from the repository root:
+`build/phase-2/hdmi-sub0-timing-offline-20261117-001/{verification.json,verify.cjs}`.
+Seven ELF hashes and 101 disassembled instruction sites matched. Additional
+checks bind the Thumb initializer, readiness byte, literals, callback and
+virtual slots. The saved initializer was decoded with SDK objdump in
+`-M force-thumb` mode. All work used local files.
 
 ### TVRM grant-to-receiver mapping
 

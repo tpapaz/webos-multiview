@@ -129,12 +129,12 @@ subscriber/observer side effects. Acknowledgement supplies no grant evidence.
 The next pass resolved those virtual calls to PM offset200 and RM offset12,
 registration's sender binding and cached selector replay. Exact target functions
 and association/membership checks remain external; neither a true owner reply
-nor a false selector reply establishes delivery/no-action. The bounded mapping
-lookup is prepared/offline-validated with immutable request and fixed saved-pin
-dispatcher; it has not run. An accepted mapped candidate would ground only a
-separate file request, not symbol ownership or an automatic read.
-Own-session selection, SUB-before-MAIN timing, active permission and resource
-update/release semantics remain unknown. [Exact mechanisms and next discriminator](c1-hdmi-interface-map.md#manager-bindings-selected-records-and-owner-replay).
+nor a false selector reply establishes delivery/no-action. The mapping lookup
+is spent after its connect timeout. The saved timing trace verified an interval
+for selection before render-ready. Replay completion before the first scaler
+request, exact child ownership and actual hardware behavior remain unknown.
+Private byte-verification receipt: `hdmi-sub0-timing-offline-20261117-001/verification.json`.
+[Timing trace and evidence](c1-hdmi-interface-map.md#sub0-selection-before-the-first-main-connection).
 Do not repeat file/identity/capability/lifecycle work.
 Static/configuration evidence cannot settle independent advancing frames. The
 [five-path assessment](c1-hdmi-interface-map.md#captured-capabilities-and-ownership-discriminator)

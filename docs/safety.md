@@ -23,9 +23,9 @@ existing configured TV endpoint using its saved SSH pin. This includes targeted
 file/metadata reads, dependency collection when analysis identifies a need,
 bounded directory lookup, process/mapping inspection and read-only shell/status
 commands whose behavior is understood to be passive. Use existing evidence first
-when it answers the question. No separate permission is needed for each new file,
-query or validated read-only collector. Home readiness or a new owner timer is
-not a prerequisite for ordinary file reads.
+when it answers the question. Standing permission covers each relevant bounded
+read. Follow the [TV readiness rules](device-tests/current-plan.md#tv-readiness)
+to decide when live evidence is needed and when to defer.
 
 Protect normal operation: keep work small and finite, use cancellation/time/byte
 bounds and confirmed cleanup, and stop on unexpected behavior or uncertain

@@ -2,6 +2,28 @@
 
 [Status](../../STATUS.md) · [Actual outcomes](c1-journal.md) · [Prototype contract](../../native/phase2-hdmi-candidate-0.1.12/README.md)
 
+## TV readiness
+
+- **Offline work** can proceed with the TV off. Use saved files and receipts when
+  they answer the question.
+- **Live read-only work** needs a reachable TV. For ordinary reads, use the TV
+  while it is awake in normal use. Defer when the owner says it is off or in
+  standby. When power state is unknown, use the connection attempt already in
+  the bounded procedure. Home and a new owner timer are unnecessary for an
+  ordinary read. A connect timeout leaves the TV's power and service state
+  unknown. Stop at the attempt's bound and preserve the receipt.
+- **State-dependent evidence** should come from the state being investigated.
+  For HDMI runtime questions, record the known power, viewing and source state
+  that matters to the result. Keep owner observations separate from machine
+  receipts. Use passive reads alongside normal viewing when they can answer the
+  question within their bounds.
+- **Physical HDMI trials** require the awake TV, the specified live sources,
+  owner observation and restoration access, and explicit trial scope. Put any
+  required evidence collection inside the trial's existing time and cleanup bounds.
+
+Powering on the TV does not reopen spent attempts or authorize app acquisition.
+Keep live research within the [standing read-only scope](../safety.md#standing-read-only-permission).
+
 ## Current read-only research procedure
 
 The capability-file collection below is **completed and closed; do not repeat**.
@@ -139,8 +161,9 @@ follows. Preserve both empty raw streams with the saved receipts.
 The missing bodies are RM vptr byte offsets12/16/64/68 (lookup, registration,
 association checks and ID-tree insertion/removal), then PM offset200. Accept only
 source-bound function/vtable/provider linkage; stop at unresolved identity or
-indirection. Saved-body replay timing relative to A initialize and K::_start can
-be traced separately but cannot establish provider validation. Preserve all
+indirection. The [offline replay trace](../research/c1-hdmi-interface-map.md#sub0-selection-before-the-first-main-connection)
+identified an early selection interval. Actual delivery order and provider
+validation remain unknown. Preserve all
 existing raw bytes/receipts and distinguish ELF VAs from runtime addresses.
 The own-session join, effective caller policy, non-displacing pre-MAIN ordering
 and resource update/unsubscribe/release semantics remain unknown.
@@ -242,10 +265,11 @@ chip/HAL/MCU behavior or advancing frames. Direct UTP remains selected; unchange
    association can replay a cached selector. Prove membership and exact own-child
    targeting before using either route; false setSink replies can still follow
    forwarded messages and must not trigger an automatic retry.
-   Establish a non-displacing selection point before B's first lower MAIN
-   connect, or an evidenced SUB-first construction route. An after-the-fact
-   type4 change can already have replaced A's MAIN binding; ordering remains
-   unresolved and must not be hidden by a later successful SUB reply.
+   Establish that B's own child applies type 4 before its first scaler request
+   and retains it through the first lower video connection, or establish a
+   supported SUB-first construction route. Cached replay can arrive on either
+   side of render-ready. The owner reply and a later SUB0 binding leave the
+   first scaler and sink choices unknown.
 2. Define how the attempt records fresh versus adopted/reused acquisition and
    returned receiver/scaler eligibility, owner relationships, distinct sink/source
    bindings and preemption. Use actual returned records or an already-understood

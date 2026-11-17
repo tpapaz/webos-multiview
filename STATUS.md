@@ -70,8 +70,17 @@ path remains unknown. No device operation is queued.
 [Actual outcome and hashes](docs/device-tests/c1-journal.md#resourcemanager-mapping-lookup--connect-timeout)
 · [Closed scope and original bounds](docs/device-tests/current-plan.md#spent-bounded-resourcemanager-path-lookup).
 
-If research resumes, the next task is offline correlation of cached selector
-replay with pipeline initialization using saved bodies.
+**Next offline task.** Trace the caller of the HDMI play path in the saved
+controller and pipeline files. Look for an app-accessible point that can hold
+the second session before its first scaler request until its own SUB0 selection
+is confirmed. Stop at the first missing ownership or completion signal.
+
+The [offline SUB0 timing trace](docs/research/c1-hdmi-interface-map.md#sub0-selection-before-the-first-main-connection)
+found a candidate interval after child initialization and before render-ready.
+The connector can accept type 4 there. Cached replay and render-ready compete
+for the same proxy lock, and the owner reply does not confirm delivery. A late
+selector can miss the first MAIN_SCALER request or the first MAIN connection.
+Guaranteed ordering and independently live HDMI remain **unknown**.
 
 The completed single executable capture remains:
 529,960 bytes, SHA2561f3a45553139881e2ca978352ae0c87e8654b571b0d439af131b5e2fa82c2d4e,

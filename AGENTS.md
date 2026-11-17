@@ -18,6 +18,8 @@ The owner grants standing permission for useful, bounded read-only TV research;
 do not request permission again for each file, passive inspection or new read-only
 evidence scope. Follow `docs/safety.md#standing-read-only-permission` and the
 current plan's operational bounds. Preserve TV operation and critical files.
+Use saved evidence first and follow the current plan's
+[TV readiness rules](docs/device-tests/current-plan.md#tv-readiness) for live work.
 Completed tests do not authorize app/HDMI acquisition, policy changes or power
 actions. The current plan owns any proposed active trial.
 
