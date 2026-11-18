@@ -9,7 +9,7 @@ outcomes do not authorize a new TV operation.
 | [Roadmap](../ROADMAP.md) | Product phases and acceptance gates. |
 | [Prototype contract](../native/phase2-hdmi-candidate-0.1.12/README.md) | Current actions, native/report/witness/runner contract and exact artifacts. |
 | [Research map](research/c1-hdmi-interface-map.md) | Verified HDMI 4 result, secondary-route findings and open ownership questions. |
-| [Evidence ledger](research/c1-hdmi-evidence-ledger.md) | Summary of observed outcomes, collected evidence and remaining hardware gates. |
+| [Evidence ledger](research/c1-hdmi-evidence-ledger.md) | Observed outcomes, the native HDMI pause and remaining options. |
 | [Device journal](device-tests/c1-journal.md) | Actual lifecycle/physical outcomes and evidence hashes; concise earlier summary. |
 | [Device disposition](device-tests/current-plan.md) | Spent ResourceManager lookup, completed scopes, review-only dual-source gates and active-trial stop rules. |
 | [Build guide](build.md) | Offline checks, toolchain and current prototype build. |

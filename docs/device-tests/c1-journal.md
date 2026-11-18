@@ -8,6 +8,35 @@ preparation wording is not current authorization or a replay queue. Current
 permission/bounds live in the [current plan](current-plan.md); interpretation
 corrections and saved-input locations live in the [evidence ledger](../research/c1-hdmi-evidence-ledger.md).
 
+## Stock HDMI 2 switch — read-only log capture
+
+2026-11-18. The owner selected HDMI 2 from Home Assistant during bounded
+read-only captures. The file-based captures surfaced receiver and scaler
+requests. An event cap and later log rotation prevented a complete join.
+
+The combined Luna stream matched stock port 2 to its backend video-output
+context on `MAIN`. The only accepted connector ownership reply belonged to
+a different pipeline with its own output context. An earlier `MAIN_SCALER`
+request carried a resource connection ID that could not be joined to HDMI 2.
+The first scaler request for stock HDMI 2 remains **unknown**.
+
+The read-only sessions closed. The app stayed closed and no trial ran.
+[Capture requirements](current-plan.md#hdmi-2-first-scaler-request)
+
+## C1 AV proxy wrapper — read-only capture
+
+2026-11-18. A single-file SFTP read completed and the connection closed.
+The owner was notified when TV access ended. The file and receipt stayed
+local for offline review.
+[Legacy finding](../research/c1-hdmi-interface-map.md#can-hdmi-2-select-sub0-during-setup)
+
+## C1 browser engine — read-only capture
+
+2026-11-18. A single-file SFTP read completed and the connection closed.
+The owner was notified when TV access ended. The file and receipt stayed
+local for offline review.
+[Browser finding](../research/c1-hdmi-interface-map.md#does-browser-load-start-hdmi-scaler-preparation)
+
 ## Phase 0
 
 Passive inventory and a clean app lifecycle were verified. [Detailed result](archive/lg-c1-phase-0.md).

@@ -31,10 +31,34 @@ other keeps playing.
 
 ## Can the app wait for HDMI 2 to confirm SUB0?
 
-The existing app can wait between opening a logical session and selecting
-an HDMI port. The saved call sequence gives no verified app-controlled wait
-after connector creation or evidence of a confirmation for the same
-connector's first scaler choice.
+**Unknown on C1 03.53.45.** Fresh port selection creates and starts the
+connector in the same request. Once ready, a connector with its default type
+requests `MAIN_SCALER`. Deferred window attachment and cached sink replay
+give the app no verified way to hold this HDMI 2 connector until its own
+`SUB0` update takes effect.
+
+## Does browser load start HDMI scaler preparation?
+
+**Verified in saved C1 code for a fresh, non-autoplay element.** DOM `load()`
+opens a logical input session. DOM `play()` drives physical port selection,
+which creates and starts the connector in one request. Holding `play()` delays
+creation as well as scaler preparation. The browser exposes no verified
+interval to apply `SUB0` to the fresh connector before it starts.
+
+## Can HDMI 2 select SUB0 during setup?
+
+| Path reviewed | Result on C1 03.53.45 |
+|---|---|
+| Direct UTP, browser and alternate frontend | The saved HDMI open and switch paths carry no secondary sink into connector creation. |
+| Legacy renderer and AV proxy wrapper | Setup and render-ready are separate, but the reviewed caller neither binds physical HDMI 2 nor applies the stored secondary role to the connector before ready. |
+| Native input connector | The reviewed caller selects a fixed different port and provides no initial sink argument. |
+| SMP/NDL | Early sink selection is evidenced for media playback. The reviewed HDMI resource reports no caller-selected binding to port 2. |
+
+The connector can request `SUB_SCALER` when the secondary type is applied
+early enough. The saved C1 callers provide no verified way for the app to
+force that ordering on its own HDMI 2 connector. A later `SUB0` descriptor
+shows the later route. The first scaler request remains **unknown**.
+[Remaining options](c1-hdmi-evidence-ledger.md#remaining-options)
 
 ## Glasshouse preview source and owner observation
 

@@ -16,13 +16,15 @@ input path. [Prototype contract](native/phase2-hdmi-candidate-0.1.12/README.md)
 
 ## Single next task
 
-Use the saved offline evidence to determine whether HDMI 2 can receive its
-own secondary presentation route before its first scaler request. The LG G4
-03.11.20 comparison identified a conditional secondary-scaler path. Its
-ordering on a fresh stock HDMI 2 session remains **unknown**.
-[C1 findings](docs/research/c1-hdmi-interface-map.md) · [G4 comparison](docs/research/prior-art.md#retail-g4-comparison)
+**Phase 2 native dual-HDMI work is paused.** Check with LG Developer Support
+whether the C1 has a supported way for an app to bind HDMI 2 to a secondary
+sink before its connector requests a scaler. The stock captures reached HDMI 2
+video output on `MAIN`, while the only accepted ownership reply belonged to a
+different pipeline. The first request for HDMI 2 remains **unknown**. Another
+switch with the same capture setup would leave the same gap.
+[Remaining options](docs/research/c1-hdmi-evidence-ledger.md#remaining-options)
 
-The bounded ResourceManager mapping lookup timed out and is spent. The
-retained app-specific permission grant still awaits separate cleanup. The
-dual-source device trial remains at the design review stage.
+The existing HDMI 4 package is the control. The bounded ResourceManager
+mapping lookup is spent, the app-specific grant awaits separate cleanup,
+and the dual-source trial remains at design review.
 [Current device disposition](docs/device-tests/current-plan.md)

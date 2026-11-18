@@ -56,8 +56,9 @@ consistency. For native C++ checks and ARM toolchain setup, see the [build guide
 
 The next milestone is independent motion from HDMI 1 and HDMI 2 in two fixed
 windows. The proposed test also checks that closing HDMI 2 leaves HDMI 1
-playing. The experiment is at the design review stage and any active TV trial
-requires explicit owner authorization. [Dual-source test design](docs/device-tests/current-plan.md#review-only-dual-source-experiment)
+playing. Native dual-HDMI research is paused pending an app-owned route that
+can select the secondary sink before the first scaler request.
+[Remaining options](docs/research/c1-hdmi-evidence-ledger.md#remaining-options)
 
 - Read the [current status](STATUS.md) for the next task and the [roadmap](ROADMAP.md)
   for the planned milestones.

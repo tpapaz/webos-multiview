@@ -170,27 +170,32 @@ generation. Its independently live HDMI capability remains **unknown**.
 
 | Lead | Evidence and limit |
 |---|---|
-| 77-inch G4 (OLED77G4WUA, webOS 24) | **Verified/documented:** LG specifies Multi View with up to two HDMI inputs for this exact model. The 03.11.20 package has been inspected offline. The HDMI load route remains **unknown**. [Product specifications](https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv) · [Retail comparison](#retail-g4-comparison) |
-| `com.webos.app.multiview` and `com.webos.app.multiviewsettings` | **Identity leads:** the older ID appears in the public SAM configuration and a first-person webOS 3.8 report names a native executable with that basename. A later owner report identifies the second ID as the Multi View settings entry. The executable or service that loads the second HDMI on the G4 remains **unknown**. [SAM configuration](https://github.com/webosose/sam/blob/master/files/conf/sam-conf.json.in) · [Older executable report](https://gist.github.com/Informatic/1983f2e501444cf1cbd182e50820d6c1) · [Settings entry report](https://community.openhab.org/t/lg-web-os-issue-with-multiview-after-recent-major-webos-update/156098) |
+| 77-inch G4 (OLED77G4WUA, webOS 24) | **Verified/documented:** LG specifies Multi View with up to two HDMI inputs for this exact model. The saved 03.11.20 package identifies the HDMI loader and a conditional secondary route. [Product specifications](https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv) · [Retail comparison](#retail-g4-comparison) |
+| `com.webos.app.multiview` and `com.webos.app.multiviewsettings` | **Identity leads:** the older ID appears in the public SAM configuration and a first-person webOS 3.8 report names a native executable with that basename. A later owner report identifies the second ID as the Multi View settings entry. These reports identify earlier entry points. [SAM configuration](https://github.com/webosose/sam/blob/master/files/conf/sam-conf.json.in) · [Older executable report](https://gist.github.com/Informatic/1983f2e501444cf1cbd182e50820d6c1) · [Settings entry report](https://community.openhab.org/t/lg-web-os-issue-with-multiview-after-recent-major-webos-update/156098) |
 | `com.webos.service.multiviewcontroller` | **Reported from stock QML:** Glasshouse's G3 / webOS 9.2.2 source inspection follows LG Home's single-HDMI recent-input preview through App View. Its request carries the HDMI guest and a layout. The guest opens UTP with app/window IDs and selects the port. That evidence ends at one HDMI preview. The Dual PC Monitor request and the controller's sink assignment are **unknown**. [Stock G3 App View source report](https://rorygallagher2024.github.io/glasshouse/development/TV-RESEARCH/#lgs-recent-input-preview-g3-webos-922) |
 
-The bounded check of saved C1 HDMI clients, UTP/media backends and related
-registration files located neither a stock Multi View component nor a
-physical-HDMI load that passes SUB0. Those captures cover selected paths,
-so the full installed inventory remains **unknown**. The decisive evidence
-would be a versioned stock Dual PC Monitor or Dual Screen client and its
-matching loader, showing how the second physical port reaches its connector's
-first scaler decision. This comparison remains separate from C1 hardware
-verification. [Saved C1 construction trace](c1-hdmi-interface-map.md#independent-second-path-research)
+The saved C1 review covered selected HDMI clients, media and input backends
+and registration files. An app-owned secondary-first physical HDMI route
+remains **unknown** on that device.
+[Saved C1 findings](c1-hdmi-interface-map.md#independent-second-path-research)
 
 ### Retail G4 comparison
 
-LG documents Multi View with two HDMI inputs on the OLED77G4WUA. Its
-support page lists firmware 03.11.20. An offline comparison found a
-conditional secondary scaler path in this build. Whether a fresh HDMI 2
-session selects it before its first scaler request remains **unknown**.
-The comparison does not add a verified device result.
-[LG product specifications](https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv) · [LG firmware listing](https://www.lg.com/us/support/product/lg-OLED77G4WUA.AUS?tab=1)
+LG documents stock Multi View with two HDMI inputs on the OLED77G4WUA.
+[LG product specifications](https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv)
+
+**Verified in saved G4 03.11.20 code.** The stock controller associates the
+HDMI session with its window. A side-by-side status that identifies HDMI 2
+as secondary can apply the secondary type before scaler preparation.
+The first status reply can also arrive before the HDMI 2 slot is recorded.
+A reply with no current participants can release the readiness gate with the
+connector's default type, allowing `MAIN_SCALER` once its other readiness
+conditions are met.
+A later secondary descriptor leaves the first request unknown.
+
+The first reply and scaler request on a live fresh start were **unobserved**.
+The G4 result is a comparison for the separate C1 app-owned route.
+[C1 readiness finding](c1-hdmi-interface-map.md#can-the-app-wait-for-hdmi-2-to-confirm-sub0)
 
 ### Public sources for the comparison
 
@@ -204,9 +209,8 @@ The comparison does not add a verified device result.
 An older LG Chromium 53 external-input client provides a readable comparison.
 It binds the external-input ID to ACB and waits for the matching ACB load task
 before switching the port. Its switch request carries input and port identifiers.
-That client shows no sink setter, and the callback reports ACB state. The
-matching G4 caller, connector's sink assignment and first scaler request
-remain **unknown**. [Initialization](https://github.com/webosose/chromium53/blob/54c144dac6d3d0744792b18629f19a313df797c4/src/media/blink/webos/extinput_pipeline.cc#L82-L115) · [Switch payload](https://github.com/webosose/chromium53/blob/54c144dac6d3d0744792b18629f19a313df797c4/src/media/blink/webos/extinput_pipeline.cc#L151-L183) · [Callback](https://github.com/webosose/chromium53/blob/54c144dac6d3d0744792b18629f19a313df797c4/src/media/blink/webos/extinput_pipeline.cc#L319-L326)
+That client shows no sink setter, and the callback reports ACB state.
+[Initialization](https://github.com/webosose/chromium53/blob/54c144dac6d3d0744792b18629f19a313df797c4/src/media/blink/webos/extinput_pipeline.cc#L82-L115) · [Switch payload](https://github.com/webosose/chromium53/blob/54c144dac6d3d0744792b18629f19a313df797c4/src/media/blink/webos/extinput_pipeline.cc#L151-L183) · [Callback](https://github.com/webosose/chromium53/blob/54c144dac6d3d0744792b18629f19a313df797c4/src/media/blink/webos/extinput_pipeline.cc#L319-L326)
 
 ## SDK boundary for the C1 investigation
 

@@ -109,11 +109,20 @@ the single-picture milestone unless the owner explicitly reopens it.
 
 ## Public repository
 
-Publish project source, reproducible host checks, and concise research findings
-with the model, firmware and observed result. Cite upstream sources and verify
-redistribution rights and attribution before adding third-party material.
+Publish project-authored source, synthetic host fixtures and concise findings
+in original wording. Include the model, firmware, observed result and evidence
+limits. Use LG names to identify the tested products and public references.
+This project is independent of LG Electronics.
 
 Keep firmware images, extracted stock files, detailed disassembly or
-decompilation, unredacted device logs, and research chat exports in local ignored
-storage. Check the files in a proposed commit for those items and for private
-device information. Preserve the original research records locally.
+decompilation, vendor SDK files and libraries, stock UI assets, raw device logs
+and research chats in local ignored storage. Preserve original records locally.
+Review pending changes and release archive contents for those items and private
+device identifiers before publishing.
+
+Link to third-party material at its source. For any material proposed for
+redistribution, check the exact component's license or obtain permission, and
+preserve required notices and attribution. LG's developer terms point to
+separate licenses for individual SDKs and tools. The open-source portal covers
+components released under their stated licenses.
+[LG developer terms, section 2.7](https://forum.webostv.developer.lge.com/tos) · [LG Open Source](https://opensource.lge.com/)
