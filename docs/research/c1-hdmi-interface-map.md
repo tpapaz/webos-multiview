@@ -65,3 +65,20 @@ shows the later route. The first scaler request remains **unknown**.
 Glasshouse provides a separate single-input preview reference. Our verified
 HDMI 4 trial used the direct UTP path.
 [Glasshouse source report](https://rorygallagher2024.github.io/glasshouse/development/TV-RESEARCH/#lgs-recent-input-preview-g3-webos-922)
+
+## HDMI 4 with a built-in tuner feed
+
+**Candidate.** The saved Glasshouse source plays a single tuner preview
+using a broadcast preview media type and a `tv://` channel source. The
+maintainer reports that this preview worked on a G3. The saved C1 browser
+engine contains the broadcast preview media type and `tv://` strings.
+Those observations give us a known caller and a starting point for tracing
+the C1 implementation offline.
+[Glasshouse call site](https://github.com/rorygallagher2024/glasshouse/blob/43ec5ac020838ebee985b1a392c0f9afe7d8f95e/server/assets/home.html#L2299-L2379) · [C1 browser capture](../device-tests/c1-journal.md#c1-browser-engine--read-only-capture)
+
+**Unknown on C1.** The missing chain is preview creation under the app's own
+identity, binding an independent tuner session to the secondary window while
+HDMI 4 stays live, and closing only that tuner session. The code for a lone
+preview gives no evidence of a secondary assignment or of coexistence with
+an owned HDMI session. The next offline gate is to trace those three steps
+through the saved C1 browser and broadcast evidence.

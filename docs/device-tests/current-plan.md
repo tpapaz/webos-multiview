@@ -26,9 +26,10 @@ Keep live research within the [standing read-only scope](../safety.md#standing-r
 
 ## Current read-only research procedure
 
-Native dual-HDMI work is paused. Resume only if a supported app interface
-emerges or a new passive source can supply the missing stock HDMI 2 ownership
-join. Keep the TV offline for current work. The capability-file read, media
+Native dual-HDMI work is paused. Reopen the research if a reproducible
+app-owned early-sink path emerges or a new passive source can supply the
+missing stock HDMI 2 ownership join. Keep the TV offline for current work.
+The capability-file read, media
 executable collection and stock capture campaign are closed. The bounded
 ResourceManager mapping lookup timed out during SSH connect and is spent.
 [Evidence and remaining options](../research/c1-hdmi-evidence-ledger.md) · [Device outcomes](c1-journal.md)

@@ -16,13 +16,24 @@ input path. [Prototype contract](native/phase2-hdmi-candidate-0.1.12/README.md)
 
 ## Single next task
 
-**Phase 2 native dual-HDMI work is paused.** Check with LG Developer Support
-whether the C1 has a supported way for an app to bind HDMI 2 to a secondary
-sink before its connector requests a scaler. The stock captures reached HDMI 2
-video output on `MAIN`, while the only accepted ownership reply belonged to a
-different pipeline. The first request for HDMI 2 remains **unknown**. Another
-switch with the same capture setup would leave the same gap.
-[Remaining options](docs/research/c1-hdmi-evidence-ledger.md#remaining-options)
+**Phase 2 native dual-HDMI work is paused pending new evidence.** Reopen it
+when a new evidence source can tie the stock HDMI 2 connector to its first
+scaler request, or when an app-owned HDMI path emerges that can apply the
+secondary sink before that request. The stock captures reached HDMI 2 video
+output on `MAIN`. The accepted ownership reply belonged to a different
+pipeline, so HDMI 2's first request remains **unknown**.
+
+The next offline task is **HDMI 4 plus the built-in TV tuner**. Trace the
+saved C1 broadcast preview path for app-owned secondary placement and
+tuner-only close while HDMI 4 stays live. Coexistence remains unknown.
+[Tuner evidence](docs/research/c1-hdmi-interface-map.md#hdmi-4-with-a-built-in-tuner-feed)
+
+HDMI 4 plus a local clip remains a **candidate**. The schedule fits on
+paper. Keeping HDMI cleanup responsive requires moving all synchronous
+player work off the HDMI controller. Clip teardown and shared-resource
+behavior remain unknown.
+[Clip isolation finding](docs/research/c1-smp-ndl-resource-path.md#isolating-clip-playback-from-hdmi-cleanup) ·
+[Source combinations](docs/research/c1-hdmi-evidence-ledger.md#source-combinations)
 
 The existing HDMI 4 package is the control. The bounded ResourceManager
 mapping lookup is spent, the app-specific grant awaits separate cleanup,

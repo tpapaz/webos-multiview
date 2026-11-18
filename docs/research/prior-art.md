@@ -92,6 +92,14 @@ that is not a proof of hardware impossibility.
 
 ## Network playback and app lifecycle prior art
 
+The camera overlay illustrates a way to avoid contention with primary video.
+The project reports that its default MJPEG mode draws successive camera
+images over the current picture on a G4. That approach uses an independently
+available network feed. The C1 local-clip candidate instead has evidence for
+a native decoded secondary video plane. LG's web-app FAQ lists simultaneous
+HTML video elements as outside official support.
+[Camera overlay stream modes](https://github.com/iDaddyCz/ha-lg-webos-pip#stream-modes) · [LG media FAQ](https://webostv.developer.lge.com/faq?ccm_paging_p=2&faqCategoryID=Technical+FAQ) · [C1 clip evidence](c1-smp-ndl-resource-path.md#hdmi-4-with-a-secondary-local-clip)
+
 - **verified/source:** lg-iptv's [multiview implementation](https://github.com/sharktie/lg-iptv/blob/37776484ebc340b7cc0b7a674254b60c2f2bd8c6/js/livetv/multiview.js#L1-L83) manages a grid
   of network channel players, staggers startup, and stops the main player to
   avoid decoder contention. [boot.js](https://github.com/sharktie/lg-iptv/blob/37776484ebc340b7cc0b7a674254b60c2f2bd8c6/assets/boot.js#L37-L80) derives `maxDecoders` as 2 or 4 from
