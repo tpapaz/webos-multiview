@@ -16,6 +16,7 @@ depend on the TV model and firmware.
   displayed continuously moving video from physical HDMI 4 in a fixed, centered
   app window with audible sound during one eight-second trial. The app exited
   and normal picture, sound and remote control returned. [Device test and evidence](docs/device-tests/c1-journal.md#0112-physical-hdmi-4--moving-picture-and-sound)
+- **Verified in the standalone JS probe.** HDMI 4 played with sound. With HDMI 4 and laptop HDMI 1 both connected, the second picture took over and the first resumed after it closed. [Browser pair trial](docs/device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry)
 - **Unknown.** Simultaneous HDMI 1 and HDMI 2, sustained stability, independent
   audio control, hardware resource release and compatibility with other
   models or firmware remain unverified. [Current status](STATUS.md)
@@ -41,24 +42,18 @@ was verified with Node.js 24 and npm 11.
 ```powershell
 npm ci
 npm test
-node scripts/check-js.cjs
+npm run lint
 ```
 
-These checks run without a TV connection. The tests exercise the prototype's
-launch rules, cleanup and evidence reporting with simulated transports. The
-last command checks JavaScript and JSON syntax.
-
-Run `npm run lint` in the research workspace with the retained transport helper
-under `build/`. Full lint checks Markdown links, source references and policy
-consistency. For native C++ checks and ARM toolchain setup, see the [build guide](docs/build.md).
+These checks run offline after dependency installation. The tests exercise the
+native prototype's launch rules, both browser HDMI probes, cleanup and evidence
+reporting with simulated transports. Lint checks JavaScript and JSON syntax,
+Markdown links, source references and policy consistency. The device runner
+requires retained private files. [Native checks and build guide](docs/build.md)
 
 ## Follow or contribute to the research
 
-The next milestone is independent motion from HDMI 1 and HDMI 2 in two fixed
-windows. The proposed test also checks that closing HDMI 2 leaves HDMI 1
-playing. Native dual-HDMI research is paused pending an app-owned route that
-can select the secondary sink before the first scaler request.
-[Remaining options](docs/research/c1-hdmi-evidence-ledger.md#remaining-options)
+For the progression from the native HDMI prototype to the Glasshouse-style JS probe and the native ownership investigation, read the [research history](docs/research/c1-hdmi-evidence-ledger.md#research-history). Each stage records what ran on the C1, why the route changed, and the evidence behind that decision.
 
 - Read the [current status](STATUS.md) for the next task and the [roadmap](ROADMAP.md)
   for the planned milestones.

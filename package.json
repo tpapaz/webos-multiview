@@ -3,12 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test": "npm run test:prototype",
+    "test": "npm run test:prototype && npm run test:hdmi-browser",
     "test:prototype": "node tests/host/physical-candidate-report.test.cjs && node tests/host/physical-candidate-gate.test.cjs && node tests/host/physical-candidate-runner.test.cjs && node tests/host/physical-candidate-foreground.test.cjs && node tests/host/hdmi-termination-evidence.test.cjs && node tests/host/hdmi-picture-controller.test.cjs && node tests/host/hdmi-picture-io.test.cjs && node tests/host/tv-launch-authority.test.cjs && node tests/host/hdmi-window-installed-role.test.cjs && node tests/host/hdmi-utp-coverage.test.cjs && node tests/host/hdmi2-scaler-evidence.test.cjs && npm run check:utp-policy",
     "check:utp-policy": "node scripts/check-hdmi-utp-policy.cjs",
     "test:controls": "node tests/host/probe.test.cjs && node tests/host/mixed-evidence.test.cjs && node tests/host/resource-log.test.cjs && node tests/host/sinks-evidence.test.cjs && node tests/host/endurance-evidence.test.cjs",
+    "test:hdmi-preview": "node --test tests/host/hdmi-preview.test.cjs",
+    "test:hdmi-browser": "node --test tests/host/hdmi-preview.test.cjs tests/host/hdmi-pair.test.cjs",
     "lint": "node scripts/check-js.cjs && node scripts/check-hdmi-utp-policy.cjs && node scripts/check-repository.cjs",
-    "package:controls": "node scripts/package.cjs"
+    "package:controls": "node scripts/package.cjs",
+    "package:hdmi-preview": "node scripts/package.cjs hdmi-preview",
+    "package:hdmi-pair": "node scripts/package.cjs hdmi-pair"
   },
   "devDependencies": {
     "@webos-tools/cli": "3.2.6",

@@ -1,0 +1,26 @@
+body {
+    margin: 48px;
+    background: #111827;
+    color: #f1f5f9;
+    font: 26px sans-serif;
+}
+
+h1 { margin: 0 0 24px; font-size: 42px; }
+
+button {
+    border: 3px solid transparent;
+    padding: 12px 22px;
+    background: #e2e8f0;
+    color: #111827;
+    font: inherit;
+}
+
+button:focus { border-color: #fbbf24; outline: 3px solid white; }
+
+video {
+    display: block;
+    width: 960px;
+    height: 540px;
+    margin: auto;
+    background: #020617;
+}

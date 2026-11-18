@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file:; style-src 'self' file:; media-src ext:; base-uri 'none'">
+  <title>MultiView HDMI Pair Test</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>HDMI pair test</h1>
+    <button id="action" type="button">Ready for HDMI test</button>
+    <p id="status" role="status">Press OK when ready. The playback timer starts after the launch cue.</p>
+    <div class="windows">
+      <section><h2>HDMI 4</h2><video id="first" preload="none" playsinline muted></video></section>
+      <section><h2>HDMI 1</h2><video id="second" preload="none" playsinline muted></video></section>
+    </div>
+    <p id="trace" aria-label="Trial log"></p>
+  </main>
+  <script src="pair.js"></script>
+</body>
+</html>

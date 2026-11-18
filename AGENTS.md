@@ -5,6 +5,7 @@ Read `STATUS.md` first for the current result and single next task, then
 Use `docs/README.md` as the documentation index. Historical “next steps” in dated
 records do not override `STATUS.md`; do not append chronological updates to the
 roadmap or active handoff.
+Before finishing each task, apply the [documentation update rules](docs/README.md#keeping-the-record-current). The [research history](docs/research/c1-hdmi-evidence-ledger.md#research-history) owns route transitions and their reasons.
 Keep device testing in `docs/device-tests/c1-journal.md` (concise actual outcomes)
 and `docs/device-tests/current-plan.md` (one current procedure). Do not create a
 Markdown file per run. Preserve original reports/hashes; archive exceptional

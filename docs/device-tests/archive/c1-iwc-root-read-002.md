@@ -45,7 +45,7 @@ app admission, setter permission/application, full-view restoration, independent
 receivers or simultaneous HDMI 1 + 2.
 
 Next review the candidate target and normal-view/recovery preconditions using
-the [admission/reset contract](../../research/c1-iwc-admission-reset-plan.md).
+the [admission/reset contract](../../research/c1-iwc-research.md#ownership-permission-and-recovery).
 No active experiment is ready or authorized by this result. Preserve both
 root-read reports and the separate normal-app run 002 policy denial.
 

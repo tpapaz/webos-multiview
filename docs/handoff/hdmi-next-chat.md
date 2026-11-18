@@ -1,35 +1,8 @@
 # Continue webOS MultiView
 
-Workspace: `D:\Development\webos-multiview`. Start with [Status](../../STATUS.md),
-then [contributor rules](../../AGENTS.md), [safety](../safety.md), the
-[current procedure](../device-tests/current-plan.md) and [build guide](../build.md).
+1. Read [Status](../../STATUS.md) for the installed versions, readiness and single next task.
+2. Read the [research history](../research/c1-hdmi-evidence-ledger.md#research-history) for why native dual HDMI paused, why JS was tried and what led to the ownership investigation. Follow the linked trial or firmware finding when you need the underlying evidence.
+3. Before preparing an experiment, read the [contributor rules](../../AGENTS.md), [scope decision](../decisions/0003-close-idle-work-resume-hdmi.md), [device procedure](../device-tests/current-plan.md), [safety rules](../safety.md) and [build guide](../build.md).
+4. Before ending a task, follow the [documentation update rules](../README.md#keeping-the-record-current).
 
-Status alone owns the latest result/next task. The candidate README owns its
-artifact/launch contract; the policy README owns coverage semantics; the HDMI map
-owns technical conclusions; the C1 journal owns actual TV outcomes. Do not copy
-chronological blockers or a second procedure into this handoff.
-
-The active milestone is one physical HDMI-4 picture, then independently live
-HDMI 1 + HDMI 2. The owner grants [standing read-only research permission](../safety.md#standing-read-only-permission);
-do not ask again for each bounded evidence read. Keep the TV operational and
-critical files intact. Active app/HDMI acquisition and TV changes remain outside
-that permission. Do not repeat completed activation, mode repair or boot diagnostics.
-IWC, screensaver/Glasshouse Home routing and Phase 1 repeat campaigns remain
-deferred/closed. Glasshouse's HDMI preview source is a separate presentation
-reference in the HDMI evidence map, not a request to modify its launcher.
-
-Use PowerShell on Windows and the existing WSL SDK for Linux builds. Preserve
-the uncommitted tree, original reports, saved firmware and packages. Never reset,
-commit, push or invoke GitHub Actions automatically. Close only servers you start.
-No dev server is needed for documentation or native checks.
-
-Keep build/dist private; never print credentials, profiles/network/boot/window/
-pipeline identifiers, launch authority or unrestricted vendor logs.
-For the full C1 research notes, read the verified local snapshot under
-`build/publication-review-c1-20261118/originals/`. Use the journal for observed
-device outcomes.
-
-Update Status when readiness changes and the single plan when procedure changes.
-Append actual outcomes to the journal; archive exceptional detail with provenance.
-Historical records are not execution queues. End with validation, remaining
-limits and one suggested commit message.
+Detailed pre-consolidation C1 notes are retained locally in `build/publication-review-c1-20261118/originals/`. Use the [device journal](../device-tests/c1-journal.md) to locate actual outcomes and original receipts.

@@ -6,14 +6,11 @@ IWC controls stock window publications/geometry; it has not established a second
 physical HDMI receiver. Direct UTP produced our first picture and remains the
 selected path. No IWC setter/reset/supervisor experiment is queued.
 
-Useful retained technical analysis:
+## Ownership, permission and recovery
 
-- [Ownership and recovery](c1-iwc-ownership-recovery.md): publication/relay
-  lifetime and controller death do not establish hardware restoration.
-- [Permitted caller](c1-iwc-permitted-caller.md): stock executable-bound utility
-  permissions are not a general grant to our app.
-- [Admission and reset limits](c1-iwc-admission-reset-plan.md): a policy prediction
-  and a local fallback model do not establish applied restoration on the TV.
+The service relays geometry requests to registered publishers. An acknowledgment establishes receipt. Applied geometry, resource release and restoration after controller exit each need independent evidence.
+
+The stock utility's permission is bound to its executable. The tested app caller received a policy denial. The proposed reset and automatic recovery remain unverified on the TV. A policy prediction or synthetic recovery model cannot establish either outcome. [Original device observation](../device-tests/archive/c1-iwc-root-read-002.md)
 
 The earlier read-only collector, synthetic recovery model, fake-process harness
 and lifecycle helper were retired after the first-picture milestone. Their exact

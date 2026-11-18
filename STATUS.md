@@ -1,41 +1,19 @@
 # Current status
 
-Updated 2026-11-18. [Roadmap](ROADMAP.md) · [Documentation](docs/README.md) · [Current procedure](docs/device-tests/current-plan.md)
-
-## Verified milestone
-
-Version 0.1.12 displayed moving video and audible sound from physical HDMI 4
-in a fixed app window during one short trial on an LG OLED C1 running
-firmware 03.53.45. The app terminated independently. Normal picture, sound
-and remote control returned after exit.
-[Device outcome](docs/device-tests/c1-journal.md#0112-physical-hdmi-4--moving-picture-and-sound)
-
-Independent HDMI 1 and HDMI 2, sustained stability, audio ownership and
-isolated release remain **unknown**. Direct UTP remains the prototype's
-input path. [Prototype contract](native/phase2-hdmi-candidate-0.1.12/README.md)
+LG OLED C1 · firmware 03.53.45 · updated 2026-11-18. [Research history](docs/research/c1-hdmi-evidence-ledger.md#research-history) · [Roadmap](ROADMAP.md) · [Device procedure](docs/device-tests/current-plan.md)
 
 ## Single next task
 
-**Phase 2 native dual-HDMI work is paused pending new evidence.** Reopen it
-when a new evidence source can tie the stock HDMI 2 connector to its first
-scaler request, or when an app-owned HDMI path emerges that can apply the
-secondary sink before that request. The stock captures reached HDMI 2 video
-output on `MAIN`. The accepted ownership reply belonged to a different
-pipeline, so HDMI 2's first request remains **unknown**.
+**Trace a stock native caller offline.** Does it pass its own already-registered media pipeline in `options.mediaId` when opening HDMI, and does the video connector receive an accepted ownership reply for that same pipeline? The native open handlers read a media ID. The ordinary browser open on this C1 chose a backend ID before the receiver registered, and both connectors' ownership requests failed. Follow the ID through both handlers in the saved files. A matching field name alone leaves the question open. [Connector owner data flow](docs/research/c1-hdmi-interface-map.md#where-does-the-hdmi-video-connector-get-its-owner)
 
-The next offline task is **HDMI 4 plus the built-in TV tuner**. Trace the
-saved C1 broadcast preview path for app-owned secondary placement and
-tuner-only close while HDMI 4 stays live. Coexistence remains unknown.
-[Tuner evidence](docs/research/c1-hdmi-interface-map.md#hdmi-4-with-a-built-in-tuner-feed)
+**Decision after that check.** An accepted association would let us investigate targeting just the laptop's HDMI 1 video connector. A device trial would then need to show the laptop moving on `SUB0` with `MAIN` free before starting HDMI 4. The defining milestone is still independent motion from HDMI 1 + HDMI 2, followed by closing one while the other keeps playing. No device trial is queued. [Proposed move](docs/research/c1-hdmi-interface-map.md#move-hdmi-1-to-sub0-before-opening-hdmi-4)
 
-HDMI 4 plus a local clip remains a **candidate**. The schedule fits on
-paper. Keeping HDMI cleanup responsive requires moving all synchronous
-player work off the HDMI controller. Clip teardown and shared-resource
-behavior remain unknown.
-[Clip isolation finding](docs/research/c1-smp-ndl-resource-path.md#isolating-clip-playback-from-hdmi-cleanup) ·
-[Source combinations](docs/research/c1-hdmi-evidence-ledger.md#source-combinations)
+## Verified milestone
 
-The existing HDMI 4 package is the control. The bounded ResourceManager
-mapping lookup is spent, the app-specific grant awaits separate cleanup,
-and the dual-source trial remains at design review.
-[Current device disposition](docs/device-tests/current-plan.md)
+| Path | Latest evidence and disposition |
+|---|---|
+| Native direct UTP | **Verified** moving HDMI 4 with sound in 0.1.12. Keep that package as the single-input control. The native HDMI 1 + 2 design paused before a two-input launch. [Native history and pause](docs/research/c1-hdmi-evidence-ledger.md#research-history) |
+| JavaScript external-input player | **Verified** moving HDMI 4 with sound in preview 0.1.0. Pair 0.1.2 showed HDMI 4 → laptop HDMI 1 → HDMI 4 in sequence. Both moving together remains **unknown** for a secondary route. [Pair observation](docs/device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry) |
+| JS probe with native ownership tracing | Installed pair 0.1.3 traced HDMI 1 on `MAIN` and closed normally. Moving it to `SUB0` remains **untested**. Pair 0.1.4 preserves the previous trial log through idle opens and stale launch requests. It is host-tested and packaged locally. The last TV-tested version is 0.1.3. [Trace](docs/device-tests/c1-journal.md#browser-hdmi-1-connector-ownership) · [Build guide](docs/build.md#browser-hdmi-preview) |
+
+**Pending separately.** The captured app-specific UTP grant awaits cleanup. First-scaler assignment for stock HDMI 2, independent receiver release, audio ownership and sustained stability remain unknown. HDMI plus tuner or a local clip are parked candidates. [Grant disposition](docs/research/archive/c1-hdmi-admission-2026-11-14.md) · [Source combinations](docs/research/c1-hdmi-evidence-ledger.md#source-combinations)

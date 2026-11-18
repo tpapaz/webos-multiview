@@ -26,7 +26,9 @@
 | tests/host/videooutput-collector.test.cjs | Two fixed zero-link paths, Name/Exec binding before executable open, aggregate bytes/reads, metadata/EOF/header, deadline/cancellation/closure and offline/private-output acceptance. |
 | tests/host/val-capability-reader.test.cjs | Synthetic fixed-path/zero-link/byte/read/metadata/JSON/plane/deadline/cleanup acceptance, offline refusal and private Windows outputs. |
 | tests/host/val-library-reader.test.cjs | Fixed single-candidate/two-link scope, mutation and byte/read/time bounds, EOF/header, cancellation/late callback/closure and offline/private-output acceptance. |
-| native/phase1*, native/probe, apps | Optional local-media/passive controls and shared icon. They are not alternate HDMI implementations. |
+| native/phase1*, native/probe, apps/phase1-browser, apps/probe-ui | Optional local-media/passive controls and shared icon. |
+| apps/phase2-hdmi-preview | TV-tested one-input JS preview using the Glasshouse media source. |
+| apps/phase2-hdmi-pair | Separate staged HDMI 4 + HDMI 1 JS probe with an HDMI 1-only ownership-trace mode. [Build and host checks](build.md#browser-hdmi-preview) |
 
 Older-looking shared paths are real current imports. Do not remove/rename them
 without updating and validating the current artifact contract. The deployed
@@ -43,13 +45,7 @@ allow local rollback without carrying those implementations in the repository.
 
 ## Documentation ownership
 
-Status is a short handoff; ROADMAP owns gates. docs/research/c1-hdmi-interface-map.md
-owns current technical conclusions and second-path gaps. The journal owns actual
-TV results; current-plan owns authorization/disposition and bounds. Contracts own
-software interfaces. The [evidence ledger](research/c1-hdmi-evidence-ledger.md) indexes saved scopes,
-trace receipts and corrected interpretations. Detailed earlier development lives
-in the linked archives; completed procedures are not duplicated in Status or the
-current plan.
+The [documentation index](README.md) assigns each record its purpose and explains what to update after a task.
 
 ## Private evidence and cleanup
 

@@ -1,0 +1,8 @@
+body { margin: 48px; background: #111827; color: #f1f5f9; font: 26px sans-serif; }
+h1 { margin: 0 0 24px; font-size: 42px; }
+h2 { margin: 0 0 12px; font-size: 28px; }
+button { border: 3px solid transparent; padding: 12px 22px; color: #111827; background: #e2e8f0; font: inherit; }
+button:focus { border-color: #fbbf24; outline: 3px solid white; }
+.windows { display: flex; justify-content: space-between; }
+video { display: block; width: 880px; height: 495px; background: #020617; }
+#trace { margin-top: 20px; font: 21px monospace; }

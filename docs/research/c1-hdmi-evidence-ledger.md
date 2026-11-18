@@ -1,36 +1,28 @@
-# C1 HDMI evidence ledger
+# C1 HDMI research history and evidence ledger
 
-The detailed collection receipts and firmware traces are retained locally.
-These results apply to the LG OLED C1 on firmware 03.53.45.
+LG OLED C1, firmware 03.53.45. Start here for the route changes and their evidence. [Current task](../../STATUS.md#single-next-task) · [Device journal](../device-tests/c1-journal.md)
 
-## Collected inputs and actual outcomes
+## Research history
 
-| Evidence | Finding |
-|---|---|
-| Version 0.1.12 physical trial | HDMI 4 showed moving video and audible sound in the app's fixed window. The app exited and normal operation returned. |
-| Earlier local-media playback | Both clips advanced together on separate main and secondary views. The main clip continued after closing the secondary clip. |
-| Stock HDMI 2 capture | Port 2 was tied to video output on `MAIN`. The accepted ownership reply was for a different pipeline. Nearby scaler requests remain unlinked to HDMI 2. |
-| Saved C1 static evidence | The direct and browser loaders start a fresh connector during port selection. No reviewed app path verifies that `SUB0` takes effect before the same HDMI 2 connector's first request. |
-| Saved G4 03.11.20 comparison | A secondary-first path exists, and an early initial status can allow a default scaler request. The first live request remains **unknown**. |
-| Bounded ResourceManager mapping lookup | Timed out during connection. SSH closed and the attempt is spent. |
-
-[C1 HDMI findings](c1-hdmi-interface-map.md) · [Device journal](../device-tests/c1-journal.md) · [G4 comparison](prior-art.md#retail-g4-comparison)
+| Stage | What we tried and learned | Why the path changed |
+|---|---|---|
+| 1. Local playback and window controls | Phase 0 verified passive inventory and exit. In Phase 1 two local clips advanced on separate main and secondary views. The IWC window-control path lacked verified restoration. [Phase 1 result](../device-tests/c1-journal.md#phase-1) · [IWC findings](c1-iwc-research.md) | The clips proved two presentation surfaces. We still needed to acquire physical HDMI in our own window. Idle work closed and the remaining Phase 1 checks were deferred. [Scope decision](../decisions/0003-close-idle-work-resume-hdmi.md) |
+| 2. Native single HDMI | Direct UTP is the TV service path the native app used to open and select an input. We worked through registration, event-loop and exit problems. Version 0.1.12 showed eight seconds of moving HDMI 4 with sound and returned to normal viewing. [Development stages](../device-tests/c1-journal.md#first-picture-development-summary) · [HDMI 4 trial](../device-tests/c1-journal.md#0112-physical-hdmi-4--moving-picture-and-sound) | This gave us a working single-input control for the native pair design. |
+| 3. Native HDMI 1 + HDMI 2 | We designed HDMI 1 on `MAIN` and HDMI 2 on the secondary display path, `SUB0`. Port selection creates and starts a fresh connector in one call. Stock HDMI 2 was observed on `MAIN`; the accepted ownership reply in that capture belonged to a different pipeline. G4 firmware supplied a comparison only. [Stock capture](../device-tests/c1-journal.md#stock-hdmi-2-switch--read-only-log-capture) · [G4 comparison](prior-art.md#retail-g4-comparison) | **Paused before a native two-input device trial.** We lacked an app-owned way to place HDMI 2 on the secondary path before its first scaler request and verify isolated cleanup. [Native design and gates](../device-tests/current-plan.md#review-only-dual-source-experiment) |
+| 4. Glasshouse-style JS preview | Glasshouse used an HTML video element with `service/webos-external` and `ext://hdmi:<port>`. The owner had seen it show a live HDMI 4 preview on this C1. Our standalone JS 0.1.0 probe also showed moving HDMI 4 with sound. [Glasshouse source and observation](c1-hdmi-interface-map.md#glasshouse-preview-source-and-owner-observation) · [Our preview](../device-tests/c1-journal.md#browser-hdmi-4--moving-picture-and-sound) | A second video element let us test whether the browser assigned separate paths by default. The available live sources were HDMI 4 and the laptop on HDMI 1. |
+| 5. JS HDMI 4 + HDMI 1 | Pair 0.1.0 produced no visible first picture. In 0.1.1 the saved log showed the second press missed its deadline and HDMI 1 never started. With the longer window in 0.1.2, HDMI 1 played, HDMI 4 stopped, and HDMI 4 resumed when HDMI 1 closed. [First attempt](../device-tests/c1-journal.md#browser-hdmi-4-and-hdmi-1--exploratory-attempt) · [Recovered log](../device-tests/c1-journal.md#browser-hdmi-pair--ready-and-playback-retry) · [Completed pair trial](../device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry) | Default routing produced sequential playback. The reviewed JS media options and compositor path exposed no verified per-input secondary selector. [JS sink selection](c1-hdmi-interface-map.md#can-javascript-select-the-hdmi-sink) · [Compositor findings](c1-hdmi-interface-map.md#can-the-compositor-or-multi-view-assign-sub0-before-playback) |
+| 6. Native assistance for the JS session | We considered preparing a secondary session before JS playback, then moving HDMI 1 after it started. Probe 0.1.3 ran HDMI 1 alone. Of its two registered connectors, one requested `MAIN_SCALER`. Both proposed the backend as owner and both associations failed. [Helper design](c1-hdmi-interface-map.md#could-a-native-helper-prepare-hdmi-1-for-the-browser) · [HDMI 1 trace](../device-tests/c1-journal.md#browser-hdmi-1-connector-ownership) | We identified the video connector. An app-owned way to address it is still missing. The move and the subsequent HDMI 4 start were never attempted. The offline lead is a parent pipeline already registered when HDMI opens. [Owner data flow](c1-hdmi-interface-map.md#where-does-the-hdmi-video-connector-get-its-owner) |
 
 ## Remaining options
 
 | Option | What would move it forward |
 |---|---|
-| Keep two app-owned physical HDMI windows on the C1 | Wait for a reproducible app-owned path that assigns the secondary sink before the first scaler request, or a new source that links HDMI 2's stock backend to its actual connector from registration onward. The stock join would answer the ordering question. App-owned configuration still needs its own evidence. |
+| Move HDMI 1 after it starts | Establish an accepted app-owned HDMI parent, target only its video connector, then verify laptop motion on `SUB0` and `MAIN` free. [Move proposal](c1-hdmi-interface-map.md#move-hdmi-1-to-sub0-before-opening-hdmi-4) |
+| Start native HDMI 2 directly on the secondary path | Reopen with a reproducible app-owned path that assigns the secondary sink before the first scaler request, or a new source that links HDMI 2's stock backend to its actual connector from registration onward. The stock join would answer the ordering question. App-owned configuration still needs its own evidence. |
 | Continue with a narrower C1 app feature | The offline check found clip-only unload and secondary-window placement feasible in the local control. HDMI motion and sound through the same sequence remain **unknown**. [Mixed-source feasibility](c1-smp-ndl-resource-path.md#hdmi-4-with-a-secondary-local-clip) |
 | Get two pictures for normal viewing | An external HDMI multiviewer can combine two sources into one HDMI feed for the C1, with layout controlled externally. Stock Multi View is another option on an LG model whose documentation explicitly supports the desired HDMI pair. Verify source formats and content-protection compatibility for either route. [External multiviewer example](https://support.orei.com/hc/en-us/articles/41705322972183-UHD-201MV-Overview-and-Use-Cases) · [Documented LG model](https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv) |
 
-Native dual-HDMI implementation is paused pending new evidence. Repeat stock
-switches and rescans of the same firmware are closed.
-A runnable experiment still requires a fresh app-owned connector tied to
-physical HDMI 2, confirmed early secondary-sink application, evidence of
-independent receiver eligibility and a reviewed isolated cleanup path. Dual
-physical HDMI on this C1 remains **unknown**.
-[Review-only gates](../device-tests/current-plan.md#review-only-dual-source-experiment)
+Repeat stock switches with the same monitor are closed. The earlier bounded ResourceManager mapping lookup timed out before authentication. A later, separate read obtained the on-disk C1 resource-manager library and enabled the ownership analysis. [First lookup](../device-tests/archive/c1-hdmi-collection-2026-11-15-to-17.md#resourcemanager-mapping-lookup--connect-timeout) · [Later collection](../device-tests/c1-journal.md#browser-hdmi-1-connector-ownership)
 
 ## Source combinations
 
@@ -45,7 +37,8 @@ presentation and foreground resources it needs.
 | HDMI + network camera images | **Candidate.** MJPEG or snapshots can be drawn as images and avoid a second native video decoder. A homebrew project reports MJPEG overlay on G4. App-owned HDMI and the image overlay still need to be shown together on C1. [Camera overlay project](https://github.com/iDaddyCz/ha-lg-webos-pip) |
 | Network stream + network stream | **Candidate.** Two decoded local clips give us a presentation path to try with streams the app can receive and decode. IPTV multiview implementations give a separate precedent. Bandwidth, startup, codec and decoder limits need measurement on the C1. [IPTV prior art](prior-art.md#network-playback-and-app-lifecycle-prior-art) |
 | HDMI + IPTV or other network video | **Candidate.** Establish HDMI plus the controlled local clip first, then try an authorized network source on the same secondary playback route. Live startup, buffering and audio bring separate variables. |
-| HDMI + tuner, screen share or a separate TV app | **Unknown on C1.** LG documents specific pairs such as HDMI plus YouTube or screen share on supported models. A separate TV app also needs system support for foreground policy, focus and presentation, with its normal content protections in place. [LG Multi View guide](https://www.lg.com/us/support/help-library/lg-tv-how-to-use-multiview--20153280988637) |
+| HDMI + built-in tuner | **Candidate** based on a single Glasshouse tuner preview and the C1 browser implementation. Tuner placement, independent close and concurrent HDMI motion remain unknown. [Tuner evidence](c1-hdmi-interface-map.md#hdmi-4-with-a-built-in-tuner-feed) |
+| HDMI + screen share or a separate TV app | **Unknown on C1.** LG documents specific pairs such as HDMI plus YouTube or screen share on supported models. A separate TV app also needs system support for foreground policy, focus and presentation, with its normal content protections in place. [LG Multi View guide](https://www.lg.com/us/support/help-library/lg-tv-how-to-use-multiview--20153280988637) |
 | HDMI + HDMI | **Unknown for app-owned windows on C1.** LG documents two HDMI inputs in stock Multi View on specific models. A stock test there could establish supported formats and controller behavior on that firmware. [G4 specifications](https://www.lg.com/us/tvs/lg-oled77g4wua-oled-4k-tv) · [Saved G4 comparison](prior-art.md#retail-g4-comparison) |
 
 Three simultaneous hardware video pictures remain **unknown**. Image overlays

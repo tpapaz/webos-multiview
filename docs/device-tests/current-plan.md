@@ -26,18 +26,7 @@ Keep live research within the [standing read-only scope](../safety.md#standing-r
 
 ## Current read-only research procedure
 
-Native dual-HDMI work is paused. Reopen the research if a reproducible
-app-owned early-sink path emerges or a new passive source can supply the
-missing stock HDMI 2 ownership join. Keep the TV offline for current work.
-The capability-file read, media
-executable collection and stock capture campaign are closed. The bounded
-ResourceManager mapping lookup timed out during SSH connect and is spent.
-[Evidence and remaining options](../research/c1-hdmi-evidence-ledger.md) · [Device outcomes](c1-journal.md)
-
-### Completed capability-file read
-
-The one-file read completed, with the original receipt retained locally.
-[Observed outcome and provenance](c1-journal.md#val-capability-json--bounded-single-file-collection)
+The current investigation uses saved C1 files. [Status](../../STATUS.md#single-next-task) names the ownership question and the evidence needed to proceed. The native two-input design below is for review. The capability, compositor and stock HDMI 2 collection scopes are complete. [Research history](../research/c1-hdmi-evidence-ledger.md#research-history) · [Device journal](c1-journal.md)
 
 ## HDMI 2 first scaler request
 
@@ -58,7 +47,7 @@ all three. Keep the raw records and IDs in ignored storage.
 | `associate` | Accepted ownership for `childId`, with `ownerPipelineId` and `accepted: true`. |
 | `acquire` | `source: "media-server"`, `eventId: "ACQUIRE_REQUEST"` and the private request `message`. |
 
-A later descriptor or grant leaves the first request unknown. The export
+Match the fresh open to the port 2 binding even if other inputs opened. When the same pipeline registered multiple AV connectors, only one may have scaler evidence, and its own accepted association and first scaler request must both be present. A grant alone leaves the first request unknown. The export
 contains the scaler category and association order, or a fixed reason for
 unknown. Host acceptance runs with `node tests/host/hdmi2-scaler-evidence.test.cjs`.
 
@@ -70,6 +59,10 @@ belonged to a different pipeline. To classify the stock HDMI 2 first request,
 a new source would need to tie its backend ID to its own connector and
 observe that connector's requests from registration onward. A repeat with
 the same monitor setup is closed. [Capture findings](c1-journal.md#stock-hdmi-2-switch--read-only-log-capture) · [Upstream monitor guide](https://www.webosose.org/docs/tools/commands/ls-monitor/)
+
+## Browser HDMI 4 preview
+
+All browser trial scopes are spent. Preview 0.1.0 and pair 0.1.3 were last confirmed closed. The one-shot backup closes were observed during those specific trials. Behavior during a media hang and physical release remain unknown. Any future move or pair trial needs evidence identifying the app-owned connector, an observable move, reviewed cleanup and fresh owner scope. [Pair result](c1-journal.md#browser-hdmi-pair--40-second-retry) · [Last HDMI 1 trace](c1-journal.md#browser-hdmi-1-connector-ownership)
 
 ## Review-only dual-source experiment
 
@@ -112,8 +105,8 @@ chip/HAL/MCU behavior or advancing frames. Direct UTP remains selected; unchange
 
 The eventual separately authorized owner must have two connected independent,
 recognizably different moving sources on HDMI1 and HDMI2 and be present with the
-normal remote/Home restoration path and independent timer. Connection/readiness
-is not established by this task; earlier records had only one source connected.
+normal remote/Home restoration path and independent timer. Confirm the ports and
+live sources for that trial. The earlier browser pair used HDMI 4 and HDMI 1.
 Use two fixed nonoverlapping windows in the existing validated1920x1080 surface,
 e.g. left/right960x540 rectangles. Move/resize and audio selection follow concurrency.
 

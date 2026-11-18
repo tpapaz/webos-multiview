@@ -20,6 +20,21 @@ const acquire = (id, ...resources) => ({kind: 'acquire', source: 'media-server',
 const check = (events, bounds = coverage) => classify({version: 1, coverage: bounds, events});
 const withEvent = (index, change) => trace.map((event, i) => i === index ? {...event, ...change} : event);
 
+const siblings = [
+    {...trace[0], logicalId: 'other-input'},
+    {...trace[1], logicalId: 'other-input', serviceId: 'other-service', port: 1},
+    ...trace, {...registration, childId: 'audio-child'},
+    {...association, childId: 'audio-child'}, acquire('audio-child', 'ADEC'),
+    acquire(childId, 'MAIN_SCALER')
+];
+assert.equal(check(siblings).firstScaler, 'MAIN_SCALER');
+assert.equal(check([...siblings, acquire('audio-child', 'SUB_SCALER')]).reason, 'video_child_unproven');
+assert.equal(check([...siblings, {kind: 'grant', childId: 'audio-child', resource: 'MAIN_SCALER'}]).reason,
+    'video_child_unproven');
+assert.equal(check([...siblings, {kind: 'acquire'}]).reason, 'unreadable_acquire_request');
+assert.equal(check(siblings.map(event => event === association ? {...event, accepted: false} : event)).reason,
+    'owner_association_unproven');
+
 const firstMain = check([...trace, acquire(childId, 'MAIN_SCALER'), acquire(childId, 'SUB_SCALER'),
     {kind: 'grant', childId, resource: 'SUB_SCALER'}, {kind: 'descriptor', childId, sink: 'SUB0'}]);
 assert.deepEqual(firstMain, {status: 'first_request_observed', port: 2, firstScaler: 'MAIN_SCALER',

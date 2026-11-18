@@ -9,8 +9,7 @@ firmware 03.53.45. [Status](../../STATUS.md) · [Roadmap](../../ROADMAP.md) ·
 **Subsequent evidence, 2026-11-14:** the owner supplied Glasshouse, outside these
 six repositories. Its pinned `startPreview()` uses HTML video with
 `service/webos-external` / `ext://hdmi:<port>` and also has tuner source code.
-This materially improves the smallest single-picture client option; our own app's
-access and independent-port concurrency remain unproven. See the [pinned source
+This materially improves the smallest single-picture client option; the later standalone C1 trial verified one HDMI picture. Independent-port concurrency remains unknown. [Browser trials and route history](c1-hdmi-evidence-ledger.md#research-history). See the [pinned source
 review and updated next-candidate implication](c1-hdmi-interface-map.md#glasshouse-preview-source-and-owner-observation).
 The negative search conclusions below apply to the six original repositories.
 

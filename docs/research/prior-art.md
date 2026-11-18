@@ -3,11 +3,7 @@
 > Research/tool record. [Current status](../../STATUS.md) · [Documentation index](../README.md). Earlier next steps and untested labels describe that stage; use Status and later device records for current results.
 
 Historical upstream audit, retained for provenance and licensing boundaries.
-For the next HDMI task, begin with the [handoff](../handoff/hdmi-next-chat.md)
-and [current scope decision](../decisions/0003-close-idle-work-resume-hdmi.md).
-Current C1 results and direction are in the [Phase 1 device record](../device-tests/c1-journal.md#phase-1),
-[firmware/resource investigation](c1-smp-ndl-resource-path.md) and
-[main/sub decision](../decisions/0002-main-sub-validation.md).
+For subsequent work, see the [research history](c1-hdmi-evidence-ledger.md#research-history) and [current task](../../STATUS.md#single-next-task).
 
 Audit date: 2026-11-09 UTC. Default branches were downloaded as shallow trees and
 pinned below. This is static source/documentation research, **not TV testing**.

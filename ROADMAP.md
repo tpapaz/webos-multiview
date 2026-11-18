@@ -12,8 +12,7 @@ the TV can support the combination. The next hardware milestone is
 independently live **HDMI 1 + HDMI 2**.
 
 Reference device: LG OLED C1 (2021), firmware 03.53.45 / SDK 6.5.3.
-One physical HDMI-4 picture with continuous motion and sound is verified in our
-window. Simultaneous HDMI is **unknown**; only one physical input has been TV-tested.
+The [research history](docs/research/c1-hdmi-evidence-ledger.md#research-history) records how the native and JS approaches developed and why each changed.
 
 Compatibility target: broad coverage across LG webOS TV families. C1 firmware
 addresses and register maps are research evidence, not application constants.

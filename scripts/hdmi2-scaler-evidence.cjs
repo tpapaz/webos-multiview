@@ -33,17 +33,33 @@ function classify(record) {
         return found.length === 1 ? found[0] : undefined;
     }
 
-    const open = unique('open', () => true);
-    if (open?.disposition !== 'fresh' || !identifier(open.logicalId)) return unknown('fresh_open_unproven');
-    const bind = unique('bind', event => event.logicalId === open.logicalId);
-    if (bind?.port !== 2 || !identifier(bind.serviceId) ||
+    const bind = unique('bind', event => event.port === 2);
+    if (!bind || !identifier(bind.logicalId) || !identifier(bind.serviceId) ||
+        unique('bind', event => event.logicalId === bind.logicalId) !== bind ||
         unique('bind', event => event.serviceId === bind.serviceId) !== bind) return unknown('hdmi2_binding_unproven');
+    const open = unique('open', event => event.logicalId === bind.logicalId);
+    if (open?.disposition !== 'fresh' || !identifier(open.logicalId)) return unknown('fresh_open_unproven');
     const element = unique('element_open', event => event.serviceId === bind.serviceId);
     if (element?.disposition !== 'fresh' || !identifier(element.pipelineId) || element.firstParentId !== element.pipelineId ||
         unique('element_open', event => event.pipelineId === element.pipelineId) !== element) return unknown('fresh_element_unproven');
-    const register = unique('register', event => event.pipelineId === element.pipelineId);
-    if (register?.connectionType !== 'avconnector' || !identifier(register.childId) ||
-        unique('register', event => event.childId === register.childId) !== register) return unknown('child_registration_unproven');
+    const connectors = events.filter(event => event.kind === 'register' && event.pipelineId === element.pipelineId &&
+        event.connectionType === 'avconnector');
+    if (!connectors.length || connectors.some(event => !identifier(event.childId) ||
+        unique('register', other => other.childId === event.childId) !== event)) return unknown('child_registration_unproven');
+
+    // The same HDMI pipeline can register separate audio and video children.
+    const requests = events.map(event => event.kind === 'acquire' ? parseAcquire(event) : null);
+    let register = connectors[0];
+    if (connectors.length > 1) {
+        if (events.some((event, index) => event.kind === 'acquire' && !requests[index])) return unknown('unreadable_acquire_request');
+        const scalerChildren = new Set(requests.filter(request => request && request.names.some(scaler)).map(request => request.childId));
+        for (const event of events) {
+            if (event.kind === 'grant' && scaler(event.resource)) scalerChildren.add(event.childId);
+        }
+        const candidates = connectors.filter(event => scalerChildren.has(event.childId));
+        if (candidates.length !== 1) return unknown('video_child_unproven');
+        register = candidates[0];
+    }
     const association = unique('associate', event => event.childId === register.childId);
     if (association?.accepted !== true || association.ownerPipelineId !== element.pipelineId) return unknown('owner_association_unproven');
 
@@ -57,7 +73,7 @@ function classify(record) {
             return unknown('earlier_scaler_grant');
         }
         if (event.kind !== 'acquire') continue;
-        const request = parseAcquire(event);
+        const request = requests[index];
         if (!request) return unknown('unreadable_acquire_request');
         if (request.childId !== register.childId) continue;
         if (index <= order.at(-1)) return unknown('identity_order_conflict');

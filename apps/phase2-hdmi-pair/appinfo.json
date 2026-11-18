@@ -1,0 +1,12 @@
+{
+  "id": "io.github.tpapaz.multiview.hdmipair",
+  "version": "0.1.4",
+  "vendor": "tpapaz",
+  "type": "web",
+  "main": "index.html",
+  "title": "MultiView HDMI Pair Test",
+  "icon": "icon.png",
+  "resolution": "1920x1080",
+  "disableBackHistoryAPI": true,
+  "requiredACG": []
+}

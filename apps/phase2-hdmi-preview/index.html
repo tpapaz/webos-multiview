@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file:; style-src 'self' file:; media-src ext:; base-uri 'none'">
+  <title>MultiView HDMI Preview</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>HDMI 4 preview</h1>
+    <button id="action" type="button">Start HDMI 4</button>
+    <p id="status" role="status">Starting may switch the active input.</p>
+    <video id="preview" aria-label="HDMI 4 picture" preload="none" playsinline></video>
+  </main>
+  <script src="preview.js"></script>
+</body>
+</html>

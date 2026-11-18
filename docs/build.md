@@ -26,44 +26,44 @@ node scripts/collect-val-capability.cjs --plan
 
 npm test exercises the current schema2 report/witness, evidence gate, shared
 controller/IO, native launch-authority rules, runner/foreground orchestration,
-registration role and exact UTP coverage. It uses synthetic transports; it never
+registration role, exact UTP coverage and both browser HDMI probes. It uses synthetic transports; it never
 loads a TV profile. Optional controls cover the retained passive/local-media code.
 The separate element-collector suite uses synthetic SFTP and fake transport inputs;
 its real local capture check verifies owner-only Windows ACLs through PowerShell 7.
 Run it in normal native Windows user context: a sandbox that prevents those ACLs
 causes a fail-closed refusal. The collector plan checks local pins only. Neither
-command authorizes or makes a TV connection. [Collector bounds and readiness](research/c1-hdmi-evidence-ledger.md#collected-inputs-and-actual-outcomes).
+command authorizes or makes a TV connection. [Collector bounds and readiness](device-tests/c1-journal.md#passive-hdmi-collection).
 The host-key suite adds synthetic acceptance and a temporary loopback-only SSH
 server, closed afterward. It proves the installed client rejects the observed
 key before authentication; it reads no real profile/key. The TOFU plan is also
-offline. [Host-key check contract](device-tests/c1-journal.md#tofu-host-key-check--single-pre-auth-observation).
+offline. [Host-key check contract](device-tests/archive/c1-hdmi-collection-2026-11-15-to-17.md#tofu-host-key-check--single-pre-auth-observation).
 
 The resource-client suite uses synthetic SSH/SFTP and injected profile/key fixtures;
 it never reads a real profile or private key. Run it in native Windows user context
 for the owner-only directory/raw-file/inventory ACL acceptance. Its plan verifies
 only saved request/trust-receipt hashes and working-control pins, with no transport
-import or endpoint lookup. [One-candidate bounds and completed collection](device-tests/c1-journal.md#resource-client-evidence--bounded-single-file-collection-complete).
+import or endpoint lookup. [One-candidate bounds and completed collection](device-tests/archive/c1-hdmi-collection-2026-11-15-to-17.md#resource-client-evidence--bounded-single-file-collection-complete).
 
 The video-output suite adds the exact descriptor-before-executable rule, inert
 Name/Exec binding, fixed zero-link paths, aggregate bounds, metadata/EOF/ELF
 checks, deadline/cancellation/late-callback behavior and private Windows outputs.
 It blocks real transport imports and profile/key reads. Use native Windows context
 for ACL acceptance. Its --plan command checks saved request/trust/control pins
-locally, with no endpoint lookup or connection. [Completed two-file outcome](device-tests/c1-journal.md#video-output-service--bounded-two-file-collection).
+locally, with no endpoint lookup or connection. [Completed two-file outcome](device-tests/archive/c1-hdmi-collection-2026-11-15-to-17.md#video-output-service--bounded-two-file-collection).
 
 The VAL-reader suite covers its fixed single-file candidate, exact two-link
 namespace, mutation/refusal/byte/read/time bounds, ELF-header check, cancellation,
 late callbacks and confirmed cleanup. It blocks real transport and profile/key
 access, and uses native Windows context for private-output ACL acceptance.
 Its --plan binds only the immutable local request/trust/control pins. Neither
-command connects to the TV. [Completed VAL outcome](device-tests/c1-journal.md#val-library--bounded-single-file-collection).
+command connects to the TV. [Completed VAL outcome](device-tests/archive/c1-hdmi-collection-2026-11-15-to-17.md#val-library--bounded-single-file-collection).
 
 The capability-reader suite validates the fixed64 KiB/two-read/zero-link scope,
 metadata, strict local JSON/plane interpretation and shared cleanup deadline with
 synthetic transport only. It blocks real profiles/keys and transport imports;
 native Windows context is required for private-output ACL acceptance. Its --plan
 checks saved request/control/evidence pins locally. No TV connection or ELF/IPK
-build is needed for this reader. [Completed capability read](device-tests/current-plan.md#completed-capability-file-read).
+build is needed for this reader. [Completed capability read](device-tests/archive/c1-hdmi-collection-2026-11-15-to-17.md#val-capability-json--bounded-single-file-collection).
 
 Native acceptance requires CMake/Ninja, json-c and GLib in the existing Ubuntu
 WSL environment. Use fresh output directories for the entry/trace/witness and
@@ -83,6 +83,29 @@ If json-c headers are not on the host search path, supply
 retains its validated header input at
 build/phase-2/entry-diagnostic-host-0.1.11/include. That is a local dependency,
 not another installed app. Do not delete all build evidence as a cache cleanup.
+
+On 2026-11-18 the offline review passed `npm test`, `npm run lint`,
+`npm run test:controls`, the six collector suites and their plan commands.
+The root, native 0.1.12 and dispatch projects passed all ten WSL CTest cases
+in Release builds. The ABI version test and report schema test passed.
+The source-only checkout also passed the default tests and lint with the
+installed npm dependencies. The retained 0.1.12 artifact passed its local
+hash checks. These checks cover host behavior and package integrity.
+
+## Browser HDMI preview
+
+~~~powershell
+npm run test:hdmi-browser
+npm run package:hdmi-preview
+npm run package:hdmi-pair
+~~~
+
+The browser apps use the existing webOS CLI and require no ARM compilation. The default output is `dist/`. Packaging refuses to overwrite an existing IPK. For a verification rebuild, pass a fresh output directory, for example `npm run package:hdmi-preview -- build/preview-rebuild`. Each package stages its manifest, HTML, JS, CSS and shared icon.
+
+| App | Package and behavior |
+|---|---|
+| Single HDMI preview | `io.github.tpapaz.multiview.hdmipreview_0.1.0_all.ipk`. Explicit opt-in opens HDMI 4 for a bounded observation. [TV result](device-tests/c1-journal.md#browser-hdmi-4--moving-picture-and-sound) |
+| HDMI pair probe | `io.github.tpapaz.multiview.hdmipair_0.1.4_all.ipk`. A fresh owner-armed relaunch starts HDMI 4, then a separate OK starts HDMI 1. The `traceHdmi1: true` mode opens HDMI 1 alone. The last trial log survives an idle reopen or stale arm. Host-tested and packaged locally. The TV evidence is from pair 0.1.2 and 0.1.3. [Device disposition](device-tests/current-plan.md#browser-hdmi-4-preview) |
 
 ## ARM build and saved ABI inputs
 
