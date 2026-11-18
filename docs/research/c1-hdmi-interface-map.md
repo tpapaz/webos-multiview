@@ -185,15 +185,101 @@ first parent. The receiver has a separate ID lookup in `tvrm.elf` at
 disassembly are in `TVRMClass::debug_feature` at `0x61816` and `0x61f54`.
 Neither call feeds the HDMI video sink.
 
-**Candidate for offline investigation.** Both saved UTP variants read
-`options.mediaId` in the native external-input open handler (ATSC
-`0x5625ac–0x5625c0`, DVB `0x5624fc–0x562510`). The backend's
-`HdmiService::open` separately reads a top-level `mediaId` at
-`0x51290–0x512d8`. The reviewed browser open supplies no such ID. The
-remaining question is whether a stock caller passes its own **already
-registered** media pipeline through those two handlers and gets an accepted
-HDMI child association. Forwarding between the two fields, ownership through
-that route and independent placement on `SUB0` remain **unknown**.
+### Does the stock HDMI caller supply a registered parent?
+
+**Verified in the saved C1 input app.** Both first launch and ordinary open
+construct a new request with `inputSourceType` and two options, `appId` and
+`windowId`. The caller supplies neither `mediaId` nor `mediaFrontend`. It saves
+the `pipelineId` **returned by open**, then uses it to select the physical port.
+The nearby code that saves `response.mediaId` belongs to DVR/media playback and
+writes a different variable. In the collected `com.webos.app.inputcommon`
+sources, see `ExternalInputService.qml:47–64,76–93,163–168` and
+`DisplayVideoModel.qml:345,360,495–497,710–717,972–975,1300`
+(`hdmi-discovery-20261111/route-1.qml` and `route-5.qml`, SHA-256 prefixes
+`2ecc5608daa2` and `d61ee398fef6`).
+
+**Verified in the native open path.** The earlier description of a top-level
+backend `mediaId` was incorrect. On a fresh external-input open, the field stays
+nested throughout:
+
+| Stage | Evidence on firmware 03.53.45 |
+|---|---|
+| UTP admission of the field | Both regional handlers read `options.mediaId`. With an empty `mediaFrontend`, they clear the ID for an ordinary window and reject `InitialWindow`. ATSC `utp-atsc.elf` at `0x5625ac–0x5625c0`, `0x56272e–0x5627be`; DVB `utp-dvb.elf` at `0x5624fc–0x562510`, `0x56267e–0x56270e`. |
+| Fresh open versus reuse | ATSC `TVExternalManager::open` queues a fresh `TVPlayer::extinputsOpen` at `0x5c42a2–0x5c4384`. A stored boot session can take a separate adoption branch at `0x5c4092–0x5c40ee`, `0x5c429e`. On the fresh path the serializer writes a retained nonempty ID into `options` at `0x5d2d66–0x5d2db2` and dispatches `open` at `0x5d2e2e`. The saved HDMI provider mapping selects the HDMI backend. |
+| HDMI backend | In `extinput-integration.elf` (SHA-256 prefix `4caec3536b68`), `HdmiService::open` parses the outer `options` into a JSON object at `0x51150–0x51156`. It checks that object's `mediaId` and reads the string at `0x51290–0x512d8`. A nonempty value takes the service-key path to `createService` at `0x5139c–0x513ca`, `0x51432–0x51436` and `0x51482–0x51486`. An empty value takes the ID-generation branch at `0x51842`. Service creation supplies no resource-manager ownership receipt. |
+
+A **different native caller**, `UTPConnector::registerId` in
+`libav-connector.so.1` (SHA-256 prefix `c7cffeb1437f`), does send a
+`mediaFrontend` and a `mediaId`. Its constructor copies a caller-supplied
+string at `0x15752`, `0x15802–0x1580a`. The open builder serializes that
+string at `0x159a0–0x159c0`. Its port switch uses the fixed value 5 at
+`0x160bc–0x160dc`. This identifies a producer of the optional field.
+The port trace below resolves how that value is routed. Prior resource
+registration of the supplied string remains **unknown**.
+
+**Stock ownership remains unknown at runtime.** The saved HDMI 2 monitor
+contains zero HDMI open calls. Its request projection also retained only top-level
+`mediaId` (`c1-hdmi2-luna-join-20261118-001/monitor.cjs:76–85`, adjacent
+`monitor-result.json` SHA-256 prefix `b18967d046e7`). Events 331 and 333 select port 2, and 395/398 tie its backend
+to video output on `MAIN`. The scaler request at 343/347 lacks an HDMI 2
+child association. The only accepted ownership call/reply, 595/599, joins
+a different registered parent and child (569/573 and 591/593). That parent
+requested `VDEC` at 612 and had a separate output context at 653. Thus the
+stock capture establishes neither acceptance nor rejection for HDMI 2's
+video connector. By contrast, the app's HDMI 1 capture recorded two explicit
+rejections. [Stock HDMI 2 capture](../device-tests/c1-journal.md#stock-hdmi-2-switch--read-only-log-capture) · [App HDMI 1 trace](../device-tests/c1-journal.md#browser-hdmi-1-connector-ownership)
+
+### What does the native caller's fixed port 5 select?
+
+**Verified in the saved C1 firmware (03.53.45).** Logical HDMI port 5 selects
+a special media-frontend branch with fixed video hardware index 4. The
+reviewed native caller gives the app no way to choose physical HDMI 1 or 2.
+The distinction is visible in the port values themselves:
+
+| Input path | How webOS selects it | Video hardware index (`sourcePort`) | Evidence |
+|---|---|---|---|
+| Laptop on HDMI 1 | Logical port 1, ordinary model mapping | **3 observed** | App trace, port switch 15 and accepted HDMI connection 96. [HDMI 1 trial](../device-tests/c1-journal.md#browser-hdmi-1-connector-ownership) |
+| Stock HDMI 2 | Logical port 2, ordinary model mapping | **2 observed** | Stock trace, port switch 333 and accepted HDMI connection 395. [HDMI 2 capture](../device-tests/c1-journal.md#stock-hdmi-2-switch--read-only-log-capture) |
+| Native media frontend | Logical port 5, separate controller branch | **4 in code** | The controller passes 4 directly to the video element. Neither saved capture contains a port-5 switch. Its live output and board wiring remain **unknown**. |
+
+**Caller and service.** On a fresh switch, `UTPConnector::_connect()` in
+`libav-connector.so.1` constructs the integer 5 at `0x160bc` and writes
+it to `portId` at `0x160dc`. The C1 ATSC UTP handler reads the integer at
+`0x56457e–0x5645ae`, and its manager forwards the same value as `portId` at
+`0x5c66bc–0x5c66e2`. The stock input model exposes HDMI 1–4 and assigns
+logical values 1–4 (`DisplayVideoModel.qml:1293–1305`). The HDMI watcher
+recognizes a fifth logical value separately: its jump table at `0x83750`
+dispatches 5 to `0x83766`, which sets source enum 12.
+
+**Hardware selection.** In `libextinput-service.so.1.0.0` (SHA-256 prefix
+`7e497c76c377`), `HdmiController::setResourceInfo` tests for port 5 at
+`0x654ea–0x654ee`. Ordinary ports index the model map at `0x6550a–0x65518`.
+Port 5 requires a `mediaFrontend` field and sends the video element a fixed
+numeric `port` of 4 alongside that string (`0x65ad6–0x65ae6`,
+`0x65c24–0x65c8e`). Thus the missing saved model table does not prevent
+resolving this branch. In the saved `video-hdmi` plugin (SHA-256 prefix
+`f6b8e5c055b4`), `setHwPort` stores the integer at `0x38126–0x38132`.
+The driver receives that index plus one, giving driver input 5
+(`0x4070a–0x40738`). The video sink reports the upstream `elementPortHw`
+index as `sourcePort` (`video-sink`, `0x9cba–0x9cc6`, `0x9b50–0x9b76`).
+The 4 in this branch is a hardware index; physical HDMI 4 has its own
+logical port and uses the ordinary model map.
+
+The saved kernel converts driver input 5 to zero-based index 4 and checks
+it against the configured input count before activation (kernel image file
+offsets `0xb316c4–0xb316f4`). The out-of-range branch can also return
+success. A successful switch reply alone would leave signal and wiring
+unverified.
+
+**Purpose and limit.** The reviewed Starfish player builds this connector
+on a platform-specific `o208k` branch with a separate flag
+(`libplayerAPIs.so.1`, `0x3a692–0x3a69a`, `0x3a9aa–0x3a9cc`). It
+supplies a playback content type as `mediaFrontend` at `0x3a7bc–0x3a7c4`;
+examples include `movie_8k` and `dtv_8k`. The video plugin publishes the
+nonempty string as `contentType` at `0x3a1c2–0x3a1e6`, `0x3985a`. This
+supports a media-playback purpose for the branch. Its activation on this TV,
+the signal physically feeding index 4, and any independent `SUB0` routing
+remain **unknown**.
 
 ### Other setup paths
 
@@ -201,7 +287,7 @@ that route and independent placement on `SUB0` remain **unknown**.
 |---|---|
 | Direct UTP, browser and alternate frontend | The saved HDMI open and switch paths carry no secondary sink into connector creation. |
 | Legacy renderer and AV proxy wrapper | Setup and render-ready are separate, but the reviewed caller neither binds physical HDMI 2 nor applies the stored secondary role to the connector before ready. |
-| Native input connector | The reviewed caller selects a fixed different port and provides no initial sink argument. |
+| Native input connector | The fixed port-5 media-frontend branch uses hardware index 4. The HDMI 1 and 2 captures reported indices 3 and 2. No initial secondary sink is supplied. |
 | SMP/NDL | Early sink selection is evidenced for media playback. The reviewed HDMI resource reports no caller-selected binding to port 2. |
 
 The connector can request `SUB_SCALER` when the secondary type is applied
