@@ -24,23 +24,23 @@ depend on the TV model and firmware.
 
 ## Which sources play together?
 
-Each cell summarizes whether two pictures of the selected source types advanced
-together on the **LG OLED C1, firmware 03.53.45**. The diagonal pairs two
-distinct sources of the same type, such as two HDMI devices or two local clips.
+On the **LG OLED C1, firmware 03.53.45**, a pair passes when both pictures
+visibly advance at the same time. Each result applies to the setup tested.
+
+✅ **Pass** · ❌ **Fail** · **—** Untested
 
 | Source type | HDMI | Live TV (tuner) | Local clip | Network video | webOS app |
-|---|---|---|---|---|---|
-| **HDMI** | **Took turns in trial** | Untested | Untested | Untested | Untested |
-| **Live TV (tuner)** | Untested | Untested | Untested | Untested | Untested |
-| **Local clip** | Untested | Untested | **Together** | Untested | Untested |
-| **Network video** | Untested | Untested | Untested | Untested | Untested |
-| **webOS app** | Untested | Untested | Untested | Untested | Untested |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| **HDMI** | ❌ Fail | — | — | — | — |
+| **Live TV (tuner)** | — | — | — | — | — |
+| **Local clip** | — | — | ✅ Pass | — | — |
+| **Network video** | — | — | — | — | — |
+| **webOS app** | — | — | — | — | — |
 
-- **Together** — two local clips briefly advanced in separate windows. Audio ownership and sustained playback remain open. [Local clip trial](docs/device-tests/c1-journal.md#phase-1)
-- **Took turns in trial** — the browser probe showed HDMI 4 → HDMI 1 → HDMI 4. Simultaneous playback on other HDMI pairs or routes remains unknown. [HDMI pair trial](docs/device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry)
-- **Untested** — no recorded C1 playback trial for that pair. Live TV means a channel from the built-in tuner. Network video includes IPTV. [Source definitions and research leads](docs/research/c1-hdmi-evidence-ledger.md#source-combinations)
+- **HDMI + HDMI** took turns in the browser probe. HDMI 1 replaced HDMI 4, which resumed after HDMI 1 closed. Other HDMI pairs or routes remain unverified. [HDMI pair trial](docs/device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry)
+- **Local clip + local clip** briefly played in separate windows with both pictures moving. Audio ownership and sustained playback remain open. [Local clip trial](docs/device-tests/c1-journal.md#phase-1)
 
-Three or more sources need their own trial even when every pair plays together.
+Network video includes IPTV. Three or more sources need their own trial even when every pair plays together. [Source combinations](docs/research/c1-hdmi-evidence-ledger.md#source-combinations)
 
 ## Next experiment
 
