@@ -1,7 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {spawnSync} = require('node:child_process');
-const {decode} = require('../../scripts/hdmi-receiver-decoder.cjs');
+const {execFileSync, spawnSync} = require('node:child_process');
+const path = require('node:path');
+const {decode, decodeStock} = require('../../scripts/hdmi-receiver-decoder.cjs');
 
 const hdmi = 'com.webos.service.extinputs.hdmi';
 const tvrm = 'com.webos.service.tvrm';
@@ -111,4 +112,180 @@ test('acknowledges each release independently when both callers use the same rel
         releaseA,release,reply(release,result),reply(releaseA,result)];
     assert.deepEqual(run(rows).events.filter(e => e.kind === 'release_acknowledged')
         .map(e => [e.port,e.replyLine,e.priorAllocationReplyLine]), [[4,12,5],[1,11,7]]);
+});
+
+const media = 'com.webos.media';
+const registration = {...call(media, 'registerPipeline', 1, {type: 'test-receiver'}, ':receiver'),
+    destinationUniqueName: ':media'};
+const connectionId = 'private-registration';
+const registered = reply(registration, {connectionId});
+const acquire = {...registration, method: 'acquire', token: 2, payload: {connectionId}};
+const payload = {connectionId, state: true, resources: [{resource: 'HDMI_INPUT'}, {resource: 'VHDMIRX', index: 0}]};
+const complete = {...call('private-client', 'acquireComplete', 6, payload, ':media'),
+    sender: media, destinationUniqueName: ':receiver'};
+const coverage = {type: 'tvrmSlotCoverage', continuous: true};
+const pipeline = {type: 'tvrmSlot', kind: 'pipeline', slot: 5, enabled: true, fullId: true, pipelineId: b.payload.pipelineId};
+const connection = {type: 'tvrmSlot', kind: 'connection', slot: 5, fullId: true, connectionId};
+const beforeSlot = [coverage, b, registration, registered];
+const mediaFindings = rows => run(rows).events.filter(e => e.operation === 'acquireComplete');
+
+test('joins the server grant to the full backend switch inside one observed enabled slot lifetime', () => {
+    const clientCopy = {...acquire, method: 'acquireComplete', token: 3, payload};
+    const rows = [...beforeSlot, pipeline, connection, acquire, complete, {...complete, transport: 'RX'},
+        clientCopy, reply(acquire), reply(b)];
+    const report = run(rows);
+    assert.deepEqual(mediaFindings(rows), [{operation: 'acquireComplete', callLine: 8,
+        registrationReplyLine: 4, kind: 'media_receiver_assigned', receiverIndex: 0, port: 1,
+        switchCallLine: 2, slotPipelineLine: 5, slotConnectionLine: 6}]);
+    assert.equal(report.events[0].reason, 'no_tvrm_exchange');
+    assert.doesNotMatch(JSON.stringify(report), /private-|:receiver|:media|:switcher|:backend/);
+    assert.deepEqual(mediaFindings([registration, registered, acquire, clientCopy]), []);
+});
+
+test('requires a registered connection and reversed server/client endpoints even without a switch', () => {
+    const rows = [registration, registered, complete];
+    assert.deepEqual(run(rows), {status: 'observed', events: [{operation: 'acquireComplete', callLine: 3,
+        kind: 'media_receiver_assigned', registrationReplyLine: 2, receiverIndex: 0, port: null}]});
+    for (const messages of [
+        [complete], [registration, complete, registered], [registration, {...registered, type: 'error'}, complete],
+        [registration, reply(registration, {connectionId, returnValue: false}), complete],
+        [registration, {...registered, replyToken: 44}, complete],
+        [registration, registered, {...complete, payload: {...payload, connectionId: connectionId + '-other'}}],
+        [registration, registered, {...complete, destinationUniqueName: ':unrelated'}],
+        [registration, registered, {...complete, senderUniqueName: ':different-server'}],
+        [registration, registered, {...acquire, method: 'unregisterPipeline'}, complete]
+    ]) assert.equal(mediaFindings(messages)[0].reason, 'unproven_registration');
+    assert.deepEqual(mediaFindings([registration, registered, {...complete, sender: 'private-client'}]), []);
+});
+
+test('failed, names-only, quantity-only and ambiguous receiver completions leave the index unknown', () => {
+    for (const change of [
+        {state: false}, {state: 'true'}, {state: undefined, resources: ['HDMI_INPUT','VHDMIRX']},
+        {resources: [{resource: 'VHDMIRX', qty: 1}]}, {resources: [{resource: 'VHDMIRX'}]},
+        ...[-1, 1.5, '0', null].map(index => ({resources: [{resource: 'VHDMIRX', index}]})),
+        {resources: [...payload.resources, {resource: 'VHDMIRX', index: 1}]}
+    ]) {
+        const [event] = mediaFindings([registration, registered, {...complete, payload: {...payload, ...change}}]);
+        assert.equal(event.kind, 'unknown');
+        assert.equal(event.receiverIndex, undefined);
+    }
+});
+
+test('missing or interrupted slot evidence retains the grant for the connection alone', () => {
+    const match = [pipeline, connection];
+    for (const evidence of [
+        [pipeline], [connection], [{...pipeline, enabled: false}, connection],
+        [{...pipeline, enabled: false}, connection, pipeline], [pipeline, {...connection, slot: 1}],
+        [{...pipeline, pipelineId: pipeline.pipelineId.slice(0,-1)}, connection],
+        [{...pipeline, fullId: false}, connection], [pipeline, {...connection, connectionId: 'another'}],
+        [...match, {...pipeline, enabled: false}, pipeline], [...match, {...pipeline, pipelineId: 'another'}],
+        [...match, {...connection, connectionId: 'another'}], [...match, {...connection, slot: 1}],
+        [...match, {...pipeline, slot: 1}], [...match, {type: 'tvrmSlot', kind: 'reuse', slot: 5}],
+        ...['copy','move'].flatMap(kind => [[...match, {type: 'tvrmSlot', kind, fromSlot: 5, toSlot: 2}],
+            [...match, {type: 'tvrmSlot', kind, fromSlot: 2, toSlot: 5}]]),
+        [pipeline, {type: 'tvrmSlot', kind: 'gap'}, connection], [pipeline, {...connection, slot: -1}, connection],
+        [...match, acquire, {...acquire, token: 30, method: 'tryAcquire'}],
+        [...match, select(pipeline.pipelineId, 4)], [...match, call(hdmi, 'close', 40, {pipelineId: pipeline.pipelineId}, ':switcher')]
+    ]) {
+        const [event] = mediaFindings([...beforeSlot, ...evidence, complete, reply(b)]);
+        assert.equal(event.port, null);
+        assert.equal(event.receiverIndex, 0);
+    }
+    for (const rows of [
+        [...beforeSlot.slice(1), ...match, complete, reply(b)],
+        [coverage, registration, registered, ...match, b, reply(b), complete],
+        [...beforeSlot, ...match, complete, reply(b, {returnValue: false})],
+        [...beforeSlot, pipeline, complete, connection, reply(b)]
+    ]) assert.equal(mediaFindings(rows)[0].port, null);
+});
+
+test('prefix collisions and competing switches across a nested completion break the port match', () => {
+    const prefix = 'x'.repeat(31);
+    const binding = select(prefix + '1', 2);
+    const other = select(prefix + '2', 4);
+    const start = [coverage, binding, registration, registered, {...pipeline, pipelineId: prefix + '1'}, connection];
+    assert.equal(mediaFindings([...start, complete, reply(binding)])[0].port, 2);
+    assert.equal(mediaFindings([...start, other, complete, reply(binding)])[0].port, null);
+    assert.equal(mediaFindings([...start, complete, select(prefix + '1', 4), reply(binding)])[0].port, null);
+});
+
+test('one successful TVRM list can omit type 19 while the media server assigns an indexed receiver', () => {
+    const allocatorReply = reply(getB, {...result, resources: {pipelineId: b.payload.pipelineId, data: []}});
+    const rows = [...beforeSlot, getB, pipeline, connection, complete, allocatorReply, reply(b)];
+    const full = run(rows);
+    assert.equal(full.status, 'observed');
+    assert.deepEqual(full.events.map(e => [e.kind, e.port]), [['no_receiver_in_reply',1], ['media_receiver_assigned',1]]);
+    const badMedia = run([...rows, {...complete, transport: 'RX', payload: {}}]);
+    assert.equal(badMedia.status, 'partial');
+    assert.deepEqual(badMedia.events[0], full.events[0]);
+    const badSwitch = mediaFindings([...rows, {...b, transport: 'RX', payload: {...b.payload, portId: 3}}]);
+    assert.equal(badSwitch[0].receiverIndex, 0);
+    assert.equal(badSwitch[0].port, null);
+});
+
+test('the HDMI 1 stock and reconnect controls give independent, incomplete findings', () => {
+    // Replay only the fields retained in the stock callback and the separate TVRM allocation verdict.
+    const namesOnly = {...complete, payload: {connectionId, resources: ['HDMI_INPUT','VHDMIRX']}};
+    const stock = mediaFindings([registration, registered, namesOnly]);
+    assert.equal(stock[0].kind, 'unknown');
+    assert.equal(stock[0].receiverIndex, undefined);
+    const reconnect = [b, getB, reply(getB, {...result, resources: {pipelineId: b.payload.pipelineId, data: []}}), reply(b)];
+    assert.deepEqual(run(reconnect).events.map(e => [e.port, e.kind]), [[1, 'no_receiver_in_reply']]);
+    assert.equal(mediaFindings([...reconnect, complete])[0].reason, 'unproven_registration');
+    assert.equal(run([coverage, registration, registered, coverage, complete]).reason, 'unexpected_capture_header');
+});
+
+function stockFilter(messages) {
+    const awk = process.platform === 'win32'
+        ? path.resolve(execFileSync('git', ['--exec-path'], {encoding: 'utf8'}).trim(), '../../../usr/bin/awk.exe')
+        : 'awk';
+    const program = path.resolve(__dirname, '../../scripts/stock-hdmi1-monitor.awk');
+    return execFileSync(awk, ['-f', program], {input: messages.map(m => JSON.stringify(m)).join('\n') + '\n',
+        encoding: 'utf8', timeout: 5000});
+}
+
+test('stock HDMI 1 filter preserves the server payload and the registration reply through stdin replay', () => {
+    // Receiver subsequence of stock events 59, 63, 65, 73, 80, 81, 83, 247.
+    // The receipt supplies ordering and resource names. IDs, state and index here are synthetic.
+    const clientCopy = {...acquire, method: 'acquireComplete', token: 83, payload};
+    const server = {...complete, payload: {...payload, resources: [{resource: 'VHDMIRX', index: 2}]}};
+    const request = {...acquire, payload: {connectionId, resources: ['HDMI_INPUT','VHDMIRX'].map(resource => ({resource, qty: 1}))}};
+    const rows = [b, registration, {...registered, sender: media}, request, server,
+        {...reply(acquire), sender: media}, clientCopy, {...reply(b), sender: hdmi}];
+    const unrelated = {...registration, destination: media + '.other'};
+    const ignoredMethod = {...registration, method: 'getStatus'};
+    const stream = stockFilter([unrelated, ignoredMethod, ...rows]);
+    assert.deepEqual(stream.trimEnd().split(/\r?\n/).slice(1,-1).map(line => JSON.parse(line)), rows);
+    const proc = spawnSync(process.execPath, [require.resolve('../../scripts/hdmi-receiver-decoder.cjs'), '--stock-hdmi1'],
+        {input: stream, encoding: 'utf8'});
+    assert.equal(proc.status, 0);
+    assert.equal(proc.stderr, '');
+    assert.deepEqual(JSON.parse(proc.stdout), {status: 'observed', events: [{operation: 'acquireComplete',
+        callLine: 5, registrationReplyLine: 3, kind: 'media_receiver_assigned', receiverIndex: 2, port: null}]});
+
+    for (const change of [{state: false}, {resources: [{resource: 'VHDMIRX'}]},
+        {state: undefined, resources: ['HDMI_INPUT','VHDMIRX']}]) {
+        const altered = rows.map(r => r === server ? {...server, payload: {...server.payload, ...change}} : r);
+        const report = decodeStock(stockFilter(altered));
+        assert.equal(report.status, 'unknown');
+        assert.equal(report.events.length, 1);
+        assert.equal(report.events[0].registrationReplyLine, 3);
+        assert.equal(report.events[0].receiverIndex, undefined);
+    }
+    assert.equal(decodeStock(stockFilter(rows.filter(r => r !== server))).reason, 'no_media_completion');
+});
+
+test('incomplete, capped or concatenated stock streams never export an earlier grant', () => {
+    const rows = [registration, {...registered, sender: media}, complete];
+    const stream = stockFilter(rows);
+    const capped = stockFilter([...rows, {...complete, payload: {private: 'x'.repeat(32768)}}]);
+    assert.match(capped, /FOCUSED_LINE_CAPPED/);
+    for (const [input, reason] of [
+        [capped, 'stock_line_capped'], [stream + stream, 'invalid_stock_stream'],
+        [stream.slice(0, stream.lastIndexOf('FOCUSED_STREAM_END')), 'incomplete_stock_stream'],
+        [stream.trimEnd(), 'incomplete_stock_stream'],
+        [stream.replace('FOCUSED_STREAM_END', '{"private-data":\nFOCUSED_STREAM_END'), 'invalid_jsonl'],
+        [stream.replace('FOCUSED_STREAM_END', '{}\n'.repeat(4096) + 'FOCUSED_STREAM_END'), 'line_limit'],
+        [stream + 'x'.repeat(3 * 1024 * 1024), 'size_limit']
+    ]) assert.deepEqual(decodeStock(input), {status: 'unknown', reason, events: []});
 });

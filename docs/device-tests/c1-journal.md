@@ -8,6 +8,14 @@ preparation wording is not current authorization or a replay queue. Current
 permission/bounds live in the [current plan](current-plan.md); interpretation
 corrections and saved-input locations live in the [evidence ledger](../research/c1-hdmi-evidence-ledger.md).
 
+## Stock HDMI 1 receiver grant window
+
+2026-11-22 (Athens), C1 firmware 03.53.45. The owner reported YouTube was open beforehand and confirmed a normal picture on HDMI 1 after the monitor-ready cue.
+
+The 46-second passive capture completed. The monitor and AWK filter both exited 0 and the SSH transport closed. The redacted receipt reports `unknown / no_media_completion` with zero events. The window yielded no reportable media receiver grant. The receiver index, its physical jack association and release time remain unknown.
+
+Private receipt: `build/phase-2/c1-stock-hdmi1-grant-20261121T230928.806Z/inventory.json`, SHA-256 `c44d5f6ce4ef259a8b18961b01f96272fda3ce9d811557bec4c3e3c6d6b82d9f`. The slot name uses UTC. [Capture procedure](../research/c1-receiver-decoder.md#bounded-stock-hdmi-1-monitor)
+
 ## HDMI 1 reconnect under observation
 
 2026-11-21, C1 03.53.45. The owner unplugged the laptop while Jellyfin was on screen. The passive monitor reported ready before reconnect. Jellyfin stayed on screen after reconnect. The owner then selected HDMI 1 with the remote, saw the laptop picture moving and returned to normal Jellyfin playback with the cable connected.
@@ -234,7 +242,7 @@ request carried a resource connection ID that could not be joined to HDMI 2.
 The first scaler request for stock HDMI 2 remains **unknown**.
 
 The read-only sessions closed. The app stayed closed and no trial ran.
-[Capture requirements](current-plan.md#hdmi-2-first-scaler-request)
+[Capture requirements](archive/c1-dual-hdmi-design.md#hdmi-2-first-scaler-request)
 
 ## C1 AV proxy wrapper — read-only capture
 

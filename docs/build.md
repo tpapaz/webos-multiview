@@ -4,7 +4,11 @@
 
 ## Offline host checks
 
-The [TVRM receiver decoder](device-tests/current-plan.md#existing-tvrm-decoder) runs with stock Node.js and reads HDMI backend and TVRM JSONL events from standard input. Its host acceptance tests run in `npm test` or separately with `node --test tests/host/hdmi-receiver-decoder.test.cjs`.
+The [offline receiver decoder](research/c1-receiver-decoder.md#offline-receiver-decoder) runs with stock Node.js. It reads one capture of HDMI backend, TVRM and media-server JSONL events from standard input, with optional ordered TVRM slot diagnostics. Its host acceptance tests run in `npm test` or separately with `node --test tests/host/hdmi-receiver-decoder.test.cjs`.
+
+The [stock HDMI 1 replay tests](research/c1-receiver-decoder.md#stock-hdmi-1-filter-replay) also run the saved monitor’s AWK selector against synthetic input. On Windows they use the AWK executable bundled with Git for Windows.
+
+`npm test` includes the [bounded monitor acceptance tests](../tests/host/stock-hdmi1-monitor.test.cjs). Run them separately with `node --test tests/host/stock-hdmi1-monitor.test.cjs`. They use an in-memory SSH substitute and a local Bash pipeline with a synthetic producer. On Windows the shell test uses Git Bash.
 
 From the repository root in PowerShell:
 
@@ -12,6 +16,16 @@ From the repository root in PowerShell:
 npm test
 npm run lint
 npm run test:controls
+~~~
+
+The default suite exercises the current prototype, both browser probes and the receiver decoder with simulated transports. The optional controls cover the retained passive and local-media code.
+
+<details>
+<summary>Reproduce host checks for the completed read-only collectors</summary>
+
+Run in a normal Windows user context for the owner-only file and directory ACL checks. The tests use synthetic transports or local loopback. The plan commands validate local pins. The original scopes and receipts are in the [collection archive](device-tests/archive/c1-hdmi-collection-2026-11-15-to-17.md).
+
+~~~powershell
 node tests/host/hdmi-element-collector.test.cjs
 node scripts/collect-hdmi-elements.cjs --plan
 node tests/host/hdmi-host-key-check.test.cjs
@@ -26,45 +40,7 @@ node tests/host/val-capability-reader.test.cjs
 node scripts/collect-val-capability.cjs --plan
 ~~~
 
-npm test exercises the current schema2 report/witness, evidence gate, shared
-controller/IO, native launch-authority rules, runner/foreground orchestration,
-registration role, exact UTP coverage, both browser HDMI probes and TVRM receiver attribution. These tests use synthetic inputs and run offline. Optional controls cover the retained passive/local-media code.
-The separate element-collector suite uses synthetic SFTP and fake transport inputs;
-its real local capture check verifies owner-only Windows ACLs through PowerShell 7.
-Run it in normal native Windows user context: a sandbox that prevents those ACLs
-causes a fail-closed refusal. The collector plan checks local pins only. Neither
-command authorizes or makes a TV connection. [Collector bounds and readiness](device-tests/c1-journal.md#passive-hdmi-collection).
-The host-key suite adds synthetic acceptance and a temporary loopback-only SSH
-server, closed afterward. It proves the installed client rejects the observed
-key before authentication; it reads no real profile/key. The TOFU plan is also
-offline. [Host-key check contract](device-tests/archive/c1-hdmi-collection-2026-11-15-to-17.md#tofu-host-key-check--single-pre-auth-observation).
-
-The resource-client suite uses synthetic SSH/SFTP and injected profile/key fixtures;
-it never reads a real profile or private key. Run it in native Windows user context
-for the owner-only directory/raw-file/inventory ACL acceptance. Its plan verifies
-only saved request/trust-receipt hashes and working-control pins, with no transport
-import or endpoint lookup. [One-candidate bounds and completed collection](device-tests/archive/c1-hdmi-collection-2026-11-15-to-17.md#resource-client-evidence--bounded-single-file-collection-complete).
-
-The video-output suite adds the exact descriptor-before-executable rule, inert
-Name/Exec binding, fixed zero-link paths, aggregate bounds, metadata/EOF/ELF
-checks, deadline/cancellation/late-callback behavior and private Windows outputs.
-It blocks real transport imports and profile/key reads. Use native Windows context
-for ACL acceptance. Its --plan command checks saved request/trust/control pins
-locally, with no endpoint lookup or connection. [Completed two-file outcome](device-tests/archive/c1-hdmi-collection-2026-11-15-to-17.md#video-output-service--bounded-two-file-collection).
-
-The VAL-reader suite covers its fixed single-file candidate, exact two-link
-namespace, mutation/refusal/byte/read/time bounds, ELF-header check, cancellation,
-late callbacks and confirmed cleanup. It blocks real transport and profile/key
-access, and uses native Windows context for private-output ACL acceptance.
-Its --plan binds only the immutable local request/trust/control pins. Neither
-command connects to the TV. [Completed VAL outcome](device-tests/archive/c1-hdmi-collection-2026-11-15-to-17.md#val-library--bounded-single-file-collection).
-
-The capability-reader suite validates the fixed64 KiB/two-read/zero-link scope,
-metadata, strict local JSON/plane interpretation and shared cleanup deadline with
-synthetic transport only. It blocks real profiles/keys and transport imports;
-native Windows context is required for private-output ACL acceptance. Its --plan
-checks saved request/control/evidence pins locally. No TV connection or ELF/IPK
-build is needed for this reader. [Completed capability read](device-tests/archive/c1-hdmi-collection-2026-11-15-to-17.md#val-capability-json--bounded-single-file-collection).
+</details>
 
 Native acceptance requires CMake/Ninja, json-c and GLib in the existing Ubuntu
 WSL environment. Use fresh output directories for the entry/trace/witness and

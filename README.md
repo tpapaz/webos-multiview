@@ -21,7 +21,7 @@ depend on the TV model and firmware.
   audio control, hardware resource release and compatibility with other
   models or firmware remain unverified. [Current status](STATUS.md)
 
-**Current investigation.** We are tracing which hardware receiver webOS assigns to each HDMI input. The C1 firmware can report a receiver index when it grants one to a media connection. The saved HDMI 1 recordings establish a port switch and a receiver request, but leave the assigned index and release time unknown. The next step uses saved evidence and host tests. [Receiver findings](docs/research/c1-hdmi-interface-map.md#where-does-the-separate-receiver-get-its-index) · [Current task](STATUS.md#single-next-task)
+**Working pair.** HDMI 4 and the laptop on HDMI 1 are the connected sources used in the pair trials. Start with the [pair plan](docs/device-tests/current-plan.md#hdmi-4-and-hdmi-1) for completed attempts, the untested ownership route and alternatives if it fails. [Current status](STATUS.md)
 
 The tested `0.1.12` IPK is a local research artifact under ignored `dist/`.
 A fresh checkout contains the source and host checks. Native builds use an

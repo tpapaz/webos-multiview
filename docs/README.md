@@ -10,7 +10,7 @@ Read [Status](../STATUS.md) for today's task and the [research history](research
 | [Research map](research/c1-hdmi-interface-map.md) | HDMI input selection, connector ownership, secondary display routing and receiver allocation in the saved C1 firmware. |
 | [Evidence ledger](research/c1-hdmi-evidence-ledger.md) | Chronological path decisions, reasons for switching or pausing, and parked alternatives. |
 | [Device journal](device-tests/c1-journal.md) | Actual lifecycle/physical outcomes and evidence hashes; concise earlier summary. |
-| [Device disposition](device-tests/current-plan.md) | Offline decoder acceptance criteria, completed capture procedures and the gates for a future dual-source trial. |
+| [Device disposition](device-tests/current-plan.md) | HDMI 4 + laptop HDMI 1 attempts, stop rules, remaining native candidate and alternatives. |
 | [Build guide](build.md) | Host tests, local native builds, registration helper and browser probe packages. |
 | [Layout/retention](repository-layout.md) | Shared production code, optional controls and private evidence. |
 | [Policy contract](../native/phase2-hdmi-window/policy/README.md) | Exact own-app/four-method grant, checker and saved-map semantics. |
@@ -22,6 +22,9 @@ Read [Status](../STATUS.md) for today's task and the [research history](research
 At the end of each task, update the record that owns its result. For a TV run, put observations and receipts in the journal. For an offline finding, put the evidence in the research map. When a route starts, pauses, resumes or closes, revise its history row with the reason and a link. Update Status in the same change whenever the current task, installed artifact or readiness changes. Revise the device procedure when the next test changes. Keep the roadmap for milestone or scope changes.
 
 ## Technical references
+
+- [Receiver decoder](research/c1-receiver-decoder.md) covers offline input, redaction, acceptance tests and the completed monitor procedure.
+- [Parked HDMI 1 + HDMI 2 design](device-tests/archive/c1-dual-hdmi-design.md) preserves the first-scaler checker and proposed two-input procedure.
 
 - [Prior art/licensing](research/prior-art.md) and [pinned source lock](research/source-lock.json).
 - [Browser architectures](research/webos-browser-architecture.md); Glasshouse's

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test": "npm run test:prototype && npm run test:hdmi-browser && node --test tests/host/hdmi-receiver-decoder.test.cjs",
+    "test": "npm run test:prototype && npm run test:hdmi-browser && node --test tests/host/hdmi-receiver-decoder.test.cjs tests/host/stock-hdmi1-monitor.test.cjs",
     "test:prototype": "node tests/host/physical-candidate-report.test.cjs && node tests/host/physical-candidate-gate.test.cjs && node tests/host/physical-candidate-runner.test.cjs && node tests/host/physical-candidate-foreground.test.cjs && node tests/host/hdmi-termination-evidence.test.cjs && node tests/host/hdmi-picture-controller.test.cjs && node tests/host/hdmi-picture-io.test.cjs && node tests/host/tv-launch-authority.test.cjs && node tests/host/hdmi-window-installed-role.test.cjs && node tests/host/hdmi-utp-coverage.test.cjs && node tests/host/hdmi2-scaler-evidence.test.cjs && npm run check:utp-policy",
     "check:utp-policy": "node scripts/check-hdmi-utp-policy.cjs",
     "test:controls": "node tests/host/probe.test.cjs && node tests/host/mixed-evidence.test.cjs && node tests/host/resource-log.test.cjs && node tests/host/sinks-evidence.test.cjs && node tests/host/endurance-evidence.test.cjs",

@@ -416,7 +416,7 @@ observation was requested or claimed. One read-only collection is the entire TV
 scope of this task. Subsequent saved-evidence review identifies the factory reuse
 predicate and port-based cleanup limit in the
 [research map](../../research/c1-hdmi-interface-map.md#independent-second-path-research).
-The [dual-source sequence](../current-plan.md#review-only-dual-source-experiment)
+The [dual-source sequence](c1-dual-hdmi-design.md#review-only-dual-source-experiment)
 is a review-only draft; it has not run and is not a runnable candidate.
 
 ### Media server descriptor — bounded absent-file result

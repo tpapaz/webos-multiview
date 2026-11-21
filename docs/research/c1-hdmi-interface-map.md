@@ -2,6 +2,8 @@
 
 LG OLED C1, firmware 03.53.45. [Current status](../../STATUS.md) · [Device journal](../device-tests/c1-journal.md)
 
+[HDMI 4 + HDMI 1 plan](../device-tests/current-plan.md#hdmi-4-and-hdmi-1) · [HDMI 1 ownership](#where-does-the-hdmi-video-connector-get-its-owner) · [Playback-frontend candidate](#can-the-playback-frontend-route-physical-hdmi-1-and-preserve-the-owner) · [Receiver decoder reference](c1-receiver-decoder.md)
+
 ## Verified result and limits
 
 Version 0.1.12 showed continuously moving HDMI 4 with audible sound during
@@ -27,7 +29,7 @@ receivers independently own their inputs.
 route before its first scaler request. It also has yet to show two physical
 sources moving together or one session releasing its resources while the
 other keeps playing.
-[Dual-input design under review](../device-tests/current-plan.md#review-only-dual-source-experiment)
+[Dual-input design under review](../device-tests/archive/c1-dual-hdmi-design.md#review-only-dual-source-experiment)
 
 ### What can a passive trace attribute to an HDMI port?
 
@@ -74,9 +76,32 @@ The [allocator trace](#how-does-the-hdmi-session-reach-the-receiver-allocator) i
 
 The indexed assignment also appears in the [pinned upstream resource manager](https://github.com/webosose/umediaserver/blob/af89f8ac3355027a90d7b299a78fb6fab9b6ffca/src/resource_manager/ResourceManager.cpp#L554-L626). To reproduce the C1-specific branches, inspect the saved provider under `build/phase-2/c1-resource-owner-provider-20261118-003/private/` or the local ARM SDK listing `build/phase-2/c1-receiver-completion-acquire-20261122.asm` (SHA-256 prefix `f3db98effc86`).
 
+### Can existing C1 logs establish a continuous slot lifetime?
+
+**Unknown on C1 firmware 03.53.45.** The two diagnostics use the same PmLog context, `TVRMSRV`, at different levels. The saved evidence does not establish its effective level during any HDMI capture. Even at Debug, the pipeline dump covers only the slots visited on a conditional branch. Leave `tvrmSlotCoverage` unset for these runs.
+
+| Observation | Verified in the saved TVRM executable |
+|---|---|
+| Pipeline and enabled slot | The level-7 **Debug** call prints slot, pipeline text and enabled flag at `0x45f36–0x45f68`. A non-null context at level 6 or lower skips it. A nonzero acquire condition bypasses the scan at `0x45a84–0x45a98`. Simulation also bypasses it at `0x45ee4–0x45eea` and `0x4621c–0x46220`. |
+| Slot and current connection | The level-6 **Info** call in `rmc_getAcquireCondition` reads the slot’s handle, gets its connection ID and emits `RMC_PROXY` at `0x3a890–0x3a8f6`. A non-null context at level 5 or lower bypasses the log and still returns the condition at `0x3a87a–0x3a888`, `0x3a8fa–0x3a912`. |
+| Handle copy, move and disconnect | The copy and move messages identify the source and destination slots at Info. Each precedes the actual store. The severity checks can skip the message while the operation proceeds. Copy leaves the source handle in place (`0x3ab12–0x3ab90`). Move stores the destination and clears the source (`0x3abc6–0x3ac80`). A shared disconnect can clear one slot without unregistering the connection (`0x39b3a–0x39b4c`, `0x39d4c–0x39d9a`, `0x39c2e`). |
+| Slot reset and reuse | The release path passes the slot to `_RM_InitTvPipeline` at `0x4ef64–0x4ef6a`. Its normal path clears the entire 0x828-byte record at `0x4bc08–0x4bc10`. The clear emits no lifetime marker of its own. A subsequent allocation can select a disabled slot at `0x4b85c–0x4b86c`, `0x4a696–0x4a6aa`. Equal slot numbers before and after a gap can therefore describe different lifetimes. |
+
+**Configuration evidence.** Under `build/phase-2/`, the TVRM binary is `hdmi-tvrm-allocator-evidence-20261116-001/tvrm.elf` (SHA-256 prefix `82b6ef471b79`). Its saved listing is `hdmi-tvrm-receiver-trace-20261116-001/raw/allocator.asm` (`1881603be61a`). `GetPmLogContext` resolves the context name at `0x24734–0x24754` (string `0x733c8`). In `admission-runtime-20261111/libPmLogLib.so.3` (`1b6311667b7c`), `PmLogLevelToString` at `0x2088` uses the table at `0x14c80`, whose entries for 6 and 7 name Info and Debug. File offsets `0x3d04`, `0x3d3c` and `0x3d4c` name `/etc/pmlog.d`, `default.conf` and `/var/preferences/pmloglib/overrides.conf`. The reviewed C1 inventory contains neither the corresponding configuration contents nor an effective-level readout.
+
+**Capture evidence.** The stock HDMI 1 monitor selected Luna calls and replies. The separate reconnect monitor also selected bus traffic. Neither sampled internal TVRM log messages. The stock HDMI 2 projection reached its 384-event cap. Its separate rotated-log reader processed 5,262 in-window lines without overflow, but its selectors omitted slot identities and transfers. An omitted record cannot establish that logging was disabled or that a slot stayed unchanged. The relevant selectors are in `c1-stock-hdmi2-log-20261118-001/capture.cjs:31–59` and `c1-stock-hdmi2-focused-log-20261118-001/read-rotated-switch.cjs:37–90` under the same build directory. [HDMI 1 receipts](../device-tests/c1-journal.md#hdmi-1-selected-with-the-lg-remote) · [HDMI 2 observations](../device-tests/c1-journal.md#stock-hdmi-2-switch--read-only-log-capture)
+
 ### Offline receiver decoder
 
-**Host-tested with synthetic traffic.** In the interleaved fixture, HDMI 4 received allocator index 1 and HDMI 1 received index 0. Both callers used token 70. HDMI 1's reply arrived first. Its release acknowledgment at line 12 (1,100 ms on the synthetic clock) points back to its allocation at line 6. The decoder also handles missing or contradictory replies, unrelated sessions, port rebinding, and release calls nested in a close. It emits no pipeline or endpoint IDs. [Acceptance cases](../../tests/host/hdmi-receiver-decoder.test.cjs) · [Input and output](../device-tests/current-plan.md#hdmi-pair-handoff)
+**Bounded capture path, host-tested with synthetic transport.** The monitor now calls the stock decoder after both output streams end and SSH closes. In the shell test, a substitute producer returned 17 after writing a valid callback. AWK still produced its normal end marker and exited 0. The independently reported producer status prevented a receipt. Tests also withhold a plausible grant on early EOF, cancellation, a short window or missing transport closure. A completed synthetic capture saved one connection-level grant with the jack unknown. Actual C1 receiver assignment remains unknown. [Monitor acceptance](../../tests/host/stock-hdmi1-monitor.test.cjs) · [Device procedure](c1-receiver-decoder.md#bounded-stock-hdmi-1-monitor)
+
+**Stock HDMI 1 filter replay, verified offline.** The [replay filter](../../scripts/stock-hdmi1-monitor.awk) reproduces the AWK program in `c1-stock-hdmi1-monitor-20261121-001/monitor.cjs:32–45` (monitor SHA-256 prefix `906a1e4a1a7a`). In the synthetic replay, the registration reply at filtered envelope 3 and server callback at 5 produced one redacted grant with receiver index 2 and `port: null`. The client duplicate carried index 0 and added no grant. Changing the server state to false or removing its index left the index unknown even with the successful client copy. The old stock projector’s resource-name list at lines 60–63 had discarded this distinction. The saved TV receipt still has no measured index. [Replay procedure](c1-receiver-decoder.md#stock-hdmi-1-filter-replay) · [Host acceptance tests](../../tests/host/hdmi-receiver-decoder.test.cjs)
+
+**Verified with synthetic C1 media traffic.** A callback from the media server to the registering client, carrying the returned connection ID, `state: true` and one indexed `VHDMIRX`, establishes a grant for that connection. In the host fixture, index 0 maps to HDMI 1 through the full backend pipeline ID and the current connection in enabled slot 5. With a gap, slot reuse or an ambiguous handle, the same fixture reports index 0 with the jack unknown. The client-originated callback adds no grant. The public report refers to the registration by reply line. [Decoder tests](../../tests/host/hdmi-receiver-decoder.test.cjs) · [Normalized slot evidence](c1-receiver-decoder.md#offline-receiver-decoder)
+
+**HDMI 1 controls checked separately.** The stock server callback at event 80 matches registration reply 65. In the browser run the corresponding events are 27 and 19. Both summaries retained resource names and omitted success state and index. The reconnect receipt retains `no_receiver_in_reply` at lines 17 → 19. Each receipt leaves the actual receiver index and release time unknown. [Capture references and digest prefixes](#what-can-a-passive-trace-attribute-to-an-hdmi-port) · [Reconnect receipt](../device-tests/c1-journal.md#hdmi-1-reconnect-under-observation)
+
+**Host-tested with synthetic traffic.** In the interleaved fixture, HDMI 4 received allocator index 1 and HDMI 1 received index 0. Both callers used token 70. HDMI 1's reply arrived first. Its release acknowledgment at line 12 (1,100 ms on the synthetic clock) points back to its allocation at line 6. The decoder also handles missing or contradictory replies, unrelated sessions, port rebinding, and release calls nested in a close. It emits no pipeline or endpoint IDs. [Acceptance cases](../../tests/host/hdmi-receiver-decoder.test.cjs) · [Input and output](c1-receiver-decoder.md#hdmi-pair-handoff)
 
 **Earlier ownership captures.** The saved browser and stock HDMI 1 ownership monitors each retained 24 calls. The combined stock HDMI 2 monitor retained 21. Among these 69 calls there were zero TVRM request or release exchanges. The saved HDMI 4 + HDMI 1 page log has 14 playback and UI events. It cannot supply receiver indices or release acknowledgments. During the later HDMI 1 reconnect, this decoder matched a successful port-bound TVRM reply with zero type-19 entries. The actual assignments and their lifetimes remain unknown. [Reconnect receipt](../device-tests/c1-journal.md#hdmi-1-reconnect-under-observation) · [Capture references](#what-can-a-passive-trace-attribute-to-an-hdmi-port) · [Pair receipt](../device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry)
 
@@ -97,6 +122,38 @@ creation as well as scaler preparation. The browser exposes no verified
 interval to apply `SUB0` to the fresh connector before it starts.
 
 ## Can HDMI 2 select SUB0 during setup?
+
+### Does the stock HDMI 2 caller select SUB0 before its first scaler request?
+
+**Unknown on the C1 running 03.53.45.** The saved stock switch identifies
+physical port 2 and its output on `MAIN`. The reviewed callers and captures
+do not establish who could apply the secondary type to that port's fresh
+video connector before its first scaler request.
+
+| Saved caller or capture | Where the evidence ends |
+|---|---|
+| Stock InputCommon app | `DisplayVideoModel.qml` maps HDMI 2 to port 2 and passes it to `switchExternalInput` (lines 1293–1302, 1323–1328). Its guide PiP handler returns immediately unless the input type is `TV` (148–158, 185–188). The stock open supplies the app and window IDs (both paths in `ExternalInputService.qml`, lines 61 and 90). Saved as `hdmi-discovery-20261111/route-5.qml` and `route-1.qml`, SHA-256 prefixes `d61ee398fef6` and `2ecc5608daa2`. |
+| Native HDMI video sink | Both element configurations create the same kind of video sink (`libextinput-service.so.1.0.0`, `0x40b76–0x40b92`, `0x41686–0x416a2`). The sink creates a proxy, saves it at offset `0x18c` and initializes it (`video-sink.elf`, `61fcee10303e`, `0xaf20`, `0xaf8a`, `0xb07e`). Its start builds a `MAIN` payload, reloads that proxy and sets render-ready (`0x9b8e–0x9bae`, `0x9c1c–0x9c20`). Load and play occur inside one switch (`0x97c22–0x97c4e` in the service library). If the connector still has its initial type 2 when eligible, it selects `MAIN_SCALER` (`libav-connector.so.1`, `c7cffeb1437f`, `0x12094`, `0x12df6–0x12e00`). This predicts the default request. It does not measure the hardware grant. |
+| Stock port-2 Luna capture | Backend switch 333 and output connection 395 share a context. Request 343 asks for `MAIN_SCALER`, but its connection lacks a matching registration and accepted owner. The same capture **does** join child registration 591, accepted ownership 595 and scaler request 623 for a different pipeline. The monitor omitted `setSink` from its method filter. See `c1-hdmi2-luna-join-20261118-001/monitor-result.json` (`b18967d046e7`) and adjacent `monitor.cjs:26–42`. |
+| Separate stock file captures | In `c1-stock-hdmi2-log-20261118-001/projection.json` (`eb9b65445162`), lines 56 and 111 contain `SUB0` before the HDMI 2 switch records at 495–499. Each retains only a line number, a video-connection tag and the word `SUB0`. Neither identifies a port, caller or child. This projection reached its cap. The separate rotated projection (`c1-stock-hdmi2-focused-log-20261118-001/rotation-projection.json`, `a9ad1107a8a1`) retains a `MAIN_SCALER` request at 719 but no ownership link from that requester to the port-2 switch. Each capture was evaluated independently. |
+
+The HDMI backend also contains the strings `multiview` and `hdmi2`.
+`AdapterApplicationManager` references them during construction at
+`0x62378` and `0x62402` in `extinput-integration.elf` (`4caec3536b68`).
+The adapter subscribes to foreground app changes at `0x6224a`. Its callback
+classifies the app ID by substring and gets an integer back
+(`0x629b2`, `0x61fc0–0x61fd4`). Those references identify app names.
+They provide no connector handle or secondary type assignment.
+
+**What would reopen the route.** A C1 physical-input caller would need to
+carry the port-2 binding to its own fresh video child and apply the
+secondary type to that child while scaler preparation is still held.
+A continuous trace could establish stock ordering if it records the binding,
+child registration and accepted owner, applied type, and first scaler request
+for that child. An accepted owner alone does not order the cached sink
+update against startup. [Ownership and ordering requirements](../device-tests/archive/c1-dual-hdmi-design.md#hdmi-2-first-scaler-request)
+
+## HDMI 1 ownership and secondary placement
 
 ### Could a native helper prepare HDMI 1 for the browser?
 
@@ -400,6 +457,17 @@ frontend table contains only the video entry with subtype 4 and flags 32
 (`0x4171a–0x41784`). A fresh lookup for the extra entry therefore fails
 (`0x870c8–0x870d0`, `0x8756c`). The video entry still matches, but successful
 completion of the whole switch or working audio cannot be inferred.
+
+**Which setting selects that branch?** In the saved service library
+(`7e497c76c377`), the HDMI watcher checks port 1 at `0x86a3e–0x86a46`.
+Its virtual call at `0x86cc2–0x86cc4` resolves through relocation
+`0xc8ad0` to `ExtinputConfig::getSoundPath()`. That function reads
+`audioDB.hdmi1SoundPath` (`0x52a44–0x52a80`). Its table maps `auto`
+to 0 and `av` to 2 (`0x52b64–0x52b9e`). A zero selects the audio
+input-map fallback (`0x86cd0–0x86cd6`, `0x86a4a–0x86a54`).
+The effective value on this C1 is **unknown**. A saved `av` value from
+the applicable configuration would explain why the extra entry is needed.
+The string table alone cannot establish the current setting.
 
 The saved remote-selected and JS HDMI 1 runs used ordinary opens. Neither
 tested a live helper registration with the playback frontend. Confirming this
