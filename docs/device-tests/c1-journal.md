@@ -8,6 +8,36 @@ preparation wording is not current authorization or a replay queue. Current
 permission/bounds live in the [current plan](current-plan.md); interpretation
 corrections and saved-input locations live in the [evidence ledger](../research/c1-hdmi-evidence-ledger.md).
 
+## HDMI 1 reconnect under observation
+
+2026-11-21, C1 03.53.45. The owner unplugged the laptop while Jellyfin was on screen. The passive monitor reported ready before reconnect. Jellyfin stayed on screen after reconnect. The owner then selected HDMI 1 with the remote, saw the laptop picture moving and returned to normal Jellyfin playback with the cable connected.
+
+The 100-second monitor retained 86 filtered envelopes. UTP accepted a port-1 switch at lines 1 → 36. The HDMI backend accepted its port-1 switch at 3 → 33. Between that call and reply, TVRM accepted a resource request for the same backend pipeline at 17 → 19. The returned resource list contained zero type-19 entries (`VHDMIRX`). The decoder reported `observed / no_receiver_in_reply`. The capture contained no selected open, close or TVRM release call. Session creation, receiver index and release time remain unknown.
+
+The stream and SSH connection closed normally with no cap, malformed envelope or partial line. Private receipt `build/phase-2/c1-hdmi1-receiver-20261121-002/monitor-result.json`, SHA-256 `aa8924c7ac7942ccf59a397d46ff1e22621c68d8c92bd51e56643da140d7750e`. The adjacent collector records the UTP, backend and TVRM filters. The receipt retains redacted switch exchanges and the decoder verdict.
+
+## HDMI 1 receiver capture from Jellyfin
+
+2026-11-21, C1 03.53.45. The owner connected the laptop to HDMI 1 while Jellyfin was on screen. After the passive monitor reported ready, the owner selected HDMI 1, saw the laptop picture moving and returned to Jellyfin. A preceding HDMI 4 listener ended with zero retained envelopes before this run.
+
+The HDMI 1 listener retained 42 filtered envelopes. The decoder matched a successful backend port-1 switch (call at line 1). The capture contained no selected backend open or close call and no TVRM allocation or release call. The decoder returned `unknown / no_tvrm_exchange`. The stream and SSH connection closed normally with no reported cap, malformed row or partial line. Recording began after cable reconnect. An earlier allocation, hardware release and receiver index remain unknown.
+
+Private receipt: `build/phase-2/c1-hdmi1-receiver-20261121-001/monitor-result.json`, SHA-256 `98c555c4c1fbdb27e207c68e137429644f6531cdc4e6c62b3073295fee33d22b`. Only counts and the redacted decoder result were saved. The adjacent `monitor.cjs` records the filter.
+
+## HDMI 1 selected with the LG remote
+
+2026-11-21, C1 03.53.45. The standalone read-only Luna monitor reported ready before the reconnect and input-selection cues. The owner selected HDMI 1 with the remote and saw the laptop. The monitor captured one HDMI open at each service layer and one port-1 selection at each layer. The exact package that issued the logical open remains unknown. The projector's exact `com.webos.app.hdmi` check did not match, and it retained no raw app name.
+
+| Observed exchange (call → reply) | What the saved aliases establish |
+|---|---|
+| UTP open 49 → 55, HDMI backend open 51 → 53 | Both returned success. Both omitted `options.mediaId` and `options.mediaFrontend`. Each caller used its own returned ID to select port 1 at 57 → 250 and 59 → 247 respectively. |
+| AV registration 106 → 108, ownership 111 → 114, scaler 134 → 140 | The same caller supplied its registered child ID and proposed the backend ID from 53 as owner. The service echoed that child and returned `false`. The same child then acquired `MAIN_SCALER`. |
+| Video output 146 → 154 | The accepted HDMI connection used the same backend ID as its context, with source index 3 on `MAIN`. The other AV child (206 → 208) received its own rejection at 210 → 214. |
+
+No preceding registration reply in this stream returned the proposed owner ID. The receiver registered separately at 63 → 65 and requested `HDMI_INPUT` and `VHDMIRX` at 73. The stream ended and the SSH connection closed with 300 matching envelopes, zero correlation conflicts, no malformed rows and no reported truncation. The monitor made no input, ownership or sink calls.
+
+Private receipt: `build/phase-2/c1-stock-hdmi1-monitor-20261121-001/monitor-result.json`, SHA-256 `383f6dde54ac59d14ee8a664b768f0c98650f6649610a5bbe8efd39567935c39`. The adjacent `monitor.cjs` is the collector used for this observation.
+
 ## Browser HDMI 1 connector ownership
 
 2026-11-18. On C1 firmware 03.53.45 the owner confirmed the laptop picture

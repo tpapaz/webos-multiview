@@ -339,8 +339,7 @@ These are adaptation candidates, not code adopted or work authorized now.
 
 ## 9. Ranked experiments and proposed roadmap amendments
 
-These proposals were recorded on 2026-11-13, before the later 0.1.4 installation/activation results; they are not a current task queue. No browser experiment was implemented/run. Device proposals require separate owner scope,
-bounds, sanitized capture and restoration where active.
+These proposals date from the 2026-11-13 browser survey. Later standalone C1 trials verified single-input HDMI playback and observed the default browser pair switching between inputs. The [research history](c1-hdmi-evidence-ledger.md#research-history) records those tests and the [current status](../../STATUS.md) identifies the active task.
 
 | Rank | Proposal | Feasibility / value for MultiView | Acceptance/boundary |
 |---|---|---|---|

@@ -26,17 +26,44 @@ Keep live research within the [standing read-only scope](../safety.md#standing-r
 
 ## Current read-only research procedure
 
-The current investigation uses saved C1 files. [Status](../../STATUS.md#single-next-task) names the ownership question and the evidence needed to proceed. The native two-input design below is for review. The capability, compositor and stock HDMI 2 collection scopes are complete. [Research history](../research/c1-hdmi-evidence-ledger.md#research-history) · [Device journal](c1-journal.md)
+The active procedure is offline receiver attribution. The HDMI 1 ownership capture is complete, and the native two-input design remains under review. [Status](../../STATUS.md#single-next-task) · [Research history](../research/c1-hdmi-evidence-ledger.md#research-history)
+
+### HDMI pair handoff
+
+Use saved records first. The [pair trial](c1-journal.md#browser-hdmi-pair--40-second-retry) recorded page playback and unload events. The later single-input monitor selected media registration and acquisition plus video output registration and connection (`c1-stock-hdmi1-monitor-20261121-001/monitor.cjs:27–38`). It omitted release and disconnect. Those captures cover different sessions and cannot identify when HDMI 4 lost the picture at the service level.
+
+The [pre-reconnect retry](c1-journal.md#hdmi-1-reconnect-under-observation) matched the HDMI 1 backend to a successful TVRM reply with no type-19 receiver entry. In the earlier [stock HDMI 1 trace](c1-journal.md#hdmi-1-selected-with-the-lg-remote), the media server sent a separate `acquireComplete` at event 80. Its recorder kept the resource names and omitted the grant state and index.
+
+#### Offline acceptance criteria
+
+Use the [C1 completion and slot findings](../research/c1-hdmi-interface-map.md#where-does-the-separate-receiver-get-its-index) to implement and test the following cases with synthetic data. Treat the saved summaries as incomplete evidence and keep their session boundaries intact.
+
+| Evidence in one run | Expected finding |
+|---|---|
+| Media-server-originated completion for the registered connection, `state: true`, one unambiguous `VHDMIRX` entry with an explicit nonnegative integer `index` | Report the indexed grant for that connection. The client-originated completion for the same request adds no second grant. |
+| The same grant, plus an accepted physical port switch, a diagnostic matching its full backend pipeline ID to an enabled slot, and a diagnostic matching that slot to the connection within one continuous lifetime | Attribute the receiver index to that HDMI jack. |
+| A valid indexed grant with a missing diagnostic, truncated ID, slot reuse, handle copy or move, ambiguous ordering, or a gap between observations | Retain the connection-level grant. Keep the physical jack unknown. |
+| Failed completion, quantity-only grant, missing index, or a saved summary with only resource names | Keep the receiver index unknown. A successful TVRM reply without type 19 still describes only that reply. |
+
+Preserve redaction and the existing TVRM decoder results. Receiver release time needs a separate release observation. This offline task requires no TV connection or cable change.
+
+#### Existing TVRM decoder
+
+The current CLI reads the HDMI backend and TVRM service exchanges for HDMI 1 and HDMI 4. From the repository root in PowerShell, set `$capturePath` to a private JSONL file from a single run.
+
+~~~powershell
+Get-Content -Raw -LiteralPath $capturePath | node scripts/hdmi-receiver-decoder.cjs
+~~~
+
+*Input.* Supply one run in arrival order with one JSON `ls-monitor` envelope per line, up to 4 MiB and 4,096 lines. Include calls to `com.webos.service.extinputs.hdmi` (switch, open and close) and `com.webos.service.tvrm` (request and release), together with returns and bus errors. Preserve unique endpoints, call and reply tokens, full payloads and TX/RX direction. Optionally retain a collector's nonnegative monotonic integer `elapsedMs` on each envelope. Start before the switches and retain the handoff and cleanup. The prior redacted projections and page logs omit required fields.
+
+*Output.* Events are sorted by call line. `receiver_assigned` gives the HDMI jack and the allocator's type-19 receiver index. `release_acknowledged` gives the call and reply lines, and elapsed times if supplied. When an immediately preceding, nonoverlapping allocation matches the session, caller, input and purpose, `priorAllocationReplyLine` points back to it. The release reply itself carries no receiver index. `no_receiver_in_reply` describes that one successful allocation list. A missing release leaves release timing unknown. A different port selection on the same backend ID makes attribution ambiguous for this decoder. Exit 0 means the reported target exchanges were decoded, while exit 1 accompanies partial or unknown results. Absence of a jack, hardware release, continued possession and simultaneous pictures cannot be inferred from exit status.
 
 ### HDMI 1 ownership from open
 
-The [saved JS trace](../research/c1-hdmi-interface-map.md#where-does-the-hdmi-video-connector-get-its-owner) already answers this for the pair app. Leave the laptop disconnected. A **candidate** for new evidence is a fresh HDMI 1 open by the stock input app. Even a successful stock association would establish ownership for that stock session only.
+**Completed capture, paused helper trial.** Both the remote-selected stock HDMI 1 session and the JS session reached the video connector. In each run webOS rejected its owner association. The stock capture matched each caller’s open to its port-1 switch and the backend to its video output. The exact stock app package remains unknown. [Stock HDMI 1 receipt](c1-journal.md#hdmi-1-selected-with-the-lg-remote) · [JS ownership trace](../research/c1-hdmi-interface-map.md#where-does-the-hdmi-video-connector-get-its-owner)
 
-For that observation, use the passive `ls-monitor` JSON stream over the input, media and video-output services. The saved monitor shows that it can see opens and token-matched ownership replies. Its historical projector reads only top-level `mediaId`. A stock capture must also distinguish the stock app at open, the UTP and HDMI backend requests, and absent, empty and populated `options.mediaId` at each layer. Retain whether `mediaFrontend` was supplied and use capture-local aliases for IDs. The stock QML's `OPEN_FIRSTLAUNCH` or `OPEN` and corresponding response can corroborate the logical open if those messages are available (`hdmi-discovery-20261111/route-1.qml:39–94`).
-
-The reconnect cue belongs **after the passive monitor reports ready**, before plugging in the laptop or manually selecting HDMI 1. The historical trial runner arms the JS app on readiness. A stock observation needs a monitor running by itself with fresh private output. No live capture is currently running.
-
-Within one bounded stream, match each open's returned ID to that caller's port-1 selection. Match the backend ID to the HDMI output context and proposed owner, then match the AV registration, scaler request and ownership reply to the same child and caller as in the saved trace. Record the echoed child and explicit true or false reply. To establish that the open supplied an already-registered parent, also match the nested ID to a registration reply preceding the open. A missing earlier registration leaves that part unknown even if the ownership reply is visible. A switch-only run, an ambiguous open, a missing reply, a bus error or a gap leaves the affected join unknown. End the observation at its bound.
+The registration helper is a local ARM executable. A distinct physical-input API that passes the helper’s registered parent to the HDMI video child would justify revisiting a device trial. [Reviewed interfaces](../research/c1-hdmi-interface-map.md#can-a-physical-hdmi-1-api-attach-the-helpers-media-id) · [Helper build](../build.md#native-media-registration-helper)
 
 ## HDMI 2 first scaler request
 

@@ -29,6 +29,57 @@ sources moving together or one session releasing its resources while the
 other keeps playing.
 [Dual-input design under review](../device-tests/current-plan.md#review-only-dual-source-experiment)
 
+### What can a passive trace attribute to an HDMI port?
+
+**C1 03.53.45, offline replay.** The saved service records can identify which port connected to a display output. They do not establish which port held or lost a video receiver during the browser pair handoff. The actual [HDMI 4 → HDMI 1 → HDMI 4 trial](../device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry) recorded page events. The service records below come from separate runs. Sequence numbers refer only to the named run.
+
+| Saved run | Port and display evidence | Receiver evidence |
+|---|---|---|
+| Browser HDMI 1 | Backend switch 15 and accepted HDMI output connection 96 use the same backend ID on `MAIN`. Child registration 59, owner proposal 63 and scaler request 80 identify the video child even though the owner proposal was rejected. | Receiver registration 17 returned the ID used for `HDMI_INPUT` and `VHDMIRX` at 21 and completion calls 27 and 32. The receiver ID appears in no recorded pipeline, owner, output context or media-ID field. |
+| Remote-selected HDMI 1 | Backend switch 59 and accepted output connection 146 match on `MAIN`. Child registration 106, owner proposal 111 and scaler request 134 give the same kind of video-child evidence. | Receiver registration 63 returned the ID used at 73 and completion calls 80 and 83. Again the receiver has no recorded identity link to the port. |
+| Stock HDMI 2 | Backend switch 333 matches output connection 395 on `MAIN`. Output connection 653 belongs to a different context. | The combined Luna record contains no `VHDMIRX` request. The earlier scaler request alone cannot identify the HDMI 2 receiver. |
+
+The saved HDMI 1 projectors retain resource names and a call's acknowledgment. They omit the completion payload's `state` and the returned resource indices. Counting two completion envelopes does not establish two allocations. The separate rotated HDMI 2 log projection retains explicit success for four acquisition responses, but none contains `VHDMIRX`. None of these records observes a port-specific receiver release during the pair handoff. A missing release cannot demonstrate continued possession. [HDMI 1 receipts](../device-tests/c1-journal.md#hdmi-1-selected-with-the-lg-remote) · [HDMI 2 capture](../device-tests/c1-journal.md#stock-hdmi-2-switch--read-only-log-capture)
+
+The [allocator trace](#how-does-the-hdmi-session-reach-the-receiver-allocator) identifies two possible observations for a future capture: a TVRM reply keyed to the backend session, and conditional diagnostics linking an internal request slot to the central media connection. Neither was retained during the handoff.
+
+**Reproduce offline.** Compare `events` within each `monitor-result.json` under `build/phase-2/`: `c1-hdmi1-app-owner-20261118-001` (`b457165d98af`), `c1-stock-hdmi1-monitor-20261121-001` (`383f6dde54ac`) and `c1-hdmi2-luna-join-20261118-001` (`b18967d046e7`). Match a successful backend switch's `pipeline` to the output's `context`. Separately compare the receiver registration's returned `child` to each receiver request and completion's `child`. The log cross-check uses `c1-stock-hdmi2-focused-log-20261118-001/rotation-projection.json` (`a9ad1107a8a1`), response lines 164, 782, 3690 and 3826. All digests here are SHA-256 prefixes.
+
+### How does the HDMI session reach the receiver allocator?
+
+**Verified in the saved C1 03.53.45 firmware for a fresh physical HDMI session.** The HDMI backend pipeline ID that accompanies the physical port switch also travels in the TV resource manager's `requestResource` call. Its matched reply therefore provides a candidate passive observation of what the allocator returned for that input. This route can identify the session even if the HDMI video child's owner proposal fails. The pair capture omitted TVRM, so its receiver handoff remains **unknown**.
+
+| Link | Evidence in the saved binaries |
+|---|---|
+| Physical port → backend pipeline → TVRM request | The [fresh backend trace](#can-the-playback-frontend-route-physical-hdmi-1-and-preserve-the-owner) follows the service key into the HDMI watcher and GIBB pipeline. In `libgibb-pipeline.so.1.0.0` (`98c22261bab5`), the physical-input load reads the pipeline string at offset 96 and passes it to the resource connector (`0x2519a–0x2523e`). The connector passes its string data to `tvrmclient_request_resource` at `0x295be–0x295c2`. In `libtvrm_client.so.1.0.0` (`db04ad77bd0b`), the client serializes that value as `pipelineId` and dispatches the request (`0x5dfa–0x5e42`, `0x5eb4–0x5eb6`). |
+| TVRM request → allocated resource list | In `tvrm.elf` (`82b6ef471b79`), `TVRMClass::request_resource` decodes the pipeline ID, input and purpose at `0x64f64–0x64f86` and passes the ID into `API_RM_RequestResource` at `0x64f96–0x64faa`. It serializes the returned list and reports `resources`, `tvcoResult`, `conflictResult` and `returnValue` (`0x64fc4–0x6509c`). The list serializer writes its own `pipelineId` at `0x5f0e8–0x5f140`. The client parses the resource records, including type and resource port, at `0x9c86–0x9e60`. The resource port belongs to the allocator. Use the original backend switch to identify the physical jack. |
+| Pipeline → internal request slot → central connection ID | The allocator looks up the pipeline text at record offset `0x803` (`0x467fc–0x46814`). It first checks occupied slots using a comparison of at most 31 bytes, otherwise it searches for a free slot among eight (`0x495a6–0x495ac`, `0x4af98–0x4afce`, `0x4b85c–0x4b86c`, `0x4a690–0x4a6aa`). One conditional diagnostic logs the slot, pipeline text and enabled flag (`0x45f08–0x45f68`, stride and loop bound at `0x45f8c–0x45f94`). The registration diagnostic at `0x39940–0x39974` can then tie a slot to a media connection ID during the same lifetime. Successful emission of these two diagnostics together remains unobserved. |
+| Copy, move and release | An existing client allows connect to return early (`0x3985c–0x39876`). Copy can leave two slots referencing one handle (`0x3ab68–0x3ab86`), move transfers it and clears the source (`0x3ac3e–0x3ac74`), and disconnect checks for other references before unregistering (`0x39b34–0x39b4c`, `0x39bb4`, `0x39d40–0x39d9a`). The ordinary TVRM `releaseResource` handler separately parses the session ID, input and purpose before calling the release API (`0x64b96–0x64bc0`). Its reply gives an operation result. It leaves physical release and the other input's continued motion unverified. |
+
+**What to retain in a passive trace.** Match each backend port switch to the TVRM request by full pipeline ID within one capture. Pair its reply by endpoints and call token. Check success, `resources.pipelineId`, and `resources.data[]` for TVRM type 19 (`VHDMIRX`) and its returned `port`. The client initializes the wire keys `data`, `type` and `port` at `0x31fa–0x320c`, `0x323a–0x324c` and `0x325a–0x326c`. GIBB's internal type for the same resource is 15. Keep request slots, central connection IDs, allocator resource ports and HDMI jack numbers distinct. Ambiguous truncated IDs, slot reuse without a recorded lifetime, an unrelated output, or an absent release leave the affected conclusion unknown. Two initial allocations alone cannot establish that HDMI 4 still held its receiver when HDMI 1 played.
+
+### Where does the separate receiver get its index?
+
+**Verified offline on C1 firmware 03.53.45, 2026-11-22.** The central media resource manager writes the assigned index into the successful `acquireComplete` payload for the registered media connection. For HDMI, look for `state: true` and an entry in `resources` with `resource: "VHDMIRX"` and an explicit nonnegative integer `index`. That number identifies a media resource unit. Attribution to an HDMI jack requires a separate identity match.
+
+| Evidence | What the saved C1 code or trace shows |
+|---|---|
+| Assignment | In `libresource_mgr.so.1.0.0` (SHA-256 prefix `241500b9b1ad`), `ResourceManager::acquire` writes initial state and connection ID at `0x21a80–0x21aae`, calls the resource pool and checks the result at `0x21d6c–0x21d74`, then sets success at `0x22370–0x22390`. On the indexed path it loads the acquired unit's index at `0x22462`, writes it under `index` at `0x22470–0x22472` and appends the entry at `0x224b8`. The common serializer writes `resources` at `0x2201a–0x2201e`. The shortage path also writes an index at `0x21e80`. A separate `no_index` path emits a quantity without an index at `0x2257c–0x225d8`. Either a failed completion or a missing index leaves the assignment unknown. |
+| Delivery | In `resource-client.elf` (`5f731199a4af`), `acquireCompleteResponse` reads `state` as a boolean and `connectionId` as a string at `0x10766–0x107ba`, then passes the ID, state and message to the waiting acquisition at `0x107ea–0x10826`. The saved stock HDMI 1 trace shows registration at 63 → 65, the receiver request at 73, and the **media-server-originated** completion at 80. The receiver caller sent another completion at 83 for the same ID. The browser trace has the same directions at 27 and 32. Both projectors kept the resource names and omitted the state and index. [Stock HDMI 1 receipt](../device-tests/c1-journal.md#hdmi-1-selected-with-the-lg-remote) |
+| Physical jack | In `tvrm.elf` (`82b6ef471b79`), the conditional slot dump at `0x45f0e–0x45f68` prints the pipeline text and enabled slot. A second conditional diagnostic in `rmc_getAcquireCondition` reads the slot's current client handle, obtains its connection ID and logs both slot and ID at `0x3a890–0x3a8f6`. The caller passes the same slot to the condition check and can use it for acquisition at `0x45a7e–0x45ab8`. The slot dump runs on a separate branch. Whether both diagnostics appear for one HDMI acquisition at the TV's existing log level is **unknown**. |
+
+**What the recordings can establish.** The stock and browser HDMI 1 completions identify the receiver connection. The [later reconnect](../device-tests/c1-journal.md#hdmi-1-reconnect-under-observation) identifies the backend for port 1 and contains a TVRM reply with no type-19 entry. These are separate sessions. An older stock HDMI 2 log mentions the receiver on request line 659 and completion-tagged line 761. That projection reached its cap and retained neither a success state nor an index (`c1-stock-hdmi2-log-20261118-001/projection.json`, SHA-256 prefix `eb9b65445162`). None of these receipts establishes either jack's receiver index or release time.
+
+**Candidate port match.** Within one continuously observed slot lifetime, match the accepted backend switch's full pipeline ID to the enabled-slot diagnostic, the same slot's current connection ID to the receiver registration, and that connection to the media server's successful indexed completion. A reused slot, a copied or moved handle, truncated or conflicting IDs, ambiguous overlapping requests, or missing coverage breaks attribution. An indexed completion can still be reported for the media connection alone. Release needs its own evidence.
+
+The indexed assignment also appears in the [pinned upstream resource manager](https://github.com/webosose/umediaserver/blob/af89f8ac3355027a90d7b299a78fb6fab9b6ffca/src/resource_manager/ResourceManager.cpp#L554-L626). To reproduce the C1-specific branches, inspect the saved provider under `build/phase-2/c1-resource-owner-provider-20261118-003/private/` or the local ARM SDK listing `build/phase-2/c1-receiver-completion-acquire-20261122.asm` (SHA-256 prefix `f3db98effc86`).
+
+### Offline receiver decoder
+
+**Host-tested with synthetic traffic.** In the interleaved fixture, HDMI 4 received allocator index 1 and HDMI 1 received index 0. Both callers used token 70. HDMI 1's reply arrived first. Its release acknowledgment at line 12 (1,100 ms on the synthetic clock) points back to its allocation at line 6. The decoder also handles missing or contradictory replies, unrelated sessions, port rebinding, and release calls nested in a close. It emits no pipeline or endpoint IDs. [Acceptance cases](../../tests/host/hdmi-receiver-decoder.test.cjs) · [Input and output](../device-tests/current-plan.md#hdmi-pair-handoff)
+
+**Earlier ownership captures.** The saved browser and stock HDMI 1 ownership monitors each retained 24 calls. The combined stock HDMI 2 monitor retained 21. Among these 69 calls there were zero TVRM request or release exchanges. The saved HDMI 4 + HDMI 1 page log has 14 playback and UI events. It cannot supply receiver indices or release acknowledgments. During the later HDMI 1 reconnect, this decoder matched a successful port-bound TVRM reply with zero type-19 entries. The actual assignments and their lifetimes remain unknown. [Reconnect receipt](../device-tests/c1-journal.md#hdmi-1-reconnect-under-observation) · [Capture references](#what-can-a-passive-trace-attribute-to-an-hdmi-port) · [Pair receipt](../device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry)
+
 ## Can the app wait for HDMI 2 to confirm SUB0?
 
 **Unknown on C1 03.53.45.** Fresh port selection creates and starts the
@@ -225,11 +276,15 @@ A **different native caller**, `UTPConnector::registerId` in
 `mediaFrontend` and a `mediaId`. Its constructor copies a caller-supplied
 string at `0x15752`, `0x15802–0x1580a`. The open builder serializes that
 string at `0x159a0–0x159c0`. Its port switch uses the fixed value 5 at
-`0x160bc–0x160dc`. This identifies a producer of the optional field.
-The port trace below resolves how that value is routed. Prior resource
-registration of the supplied string remains **unknown**.
+`0x160bc–0x160dc`. The [native caller trace](#which-native-caller-registers-the-parent-before-hdmi-open) identifies where Starfish obtains that string.
 
-**Stock ownership remains unknown at runtime.** The saved HDMI 2 monitor
+**Remote-selected HDMI 1.** The 2026-11-21 capture saw both HDMI opens omit
+`options.mediaId`. The video child proposed the backend ID as its owner,
+received an explicit rejection, then acquired `MAIN_SCALER`. The owner saw
+the laptop on HDMI 1. Exact caller package attribution remains unknown.
+[Matched exchanges and receipt](../device-tests/c1-journal.md#hdmi-1-selected-with-the-lg-remote)
+
+**Stock HDMI 2 ownership remains unknown at runtime.** The saved HDMI 2 monitor
 contains zero HDMI open calls. Its request projection also retained only top-level
 `mediaId` (`c1-hdmi2-luna-join-20261118-001/monitor.cjs:76–85`, adjacent
 `monitor-result.json` SHA-256 prefix `b18967d046e7`). Events 331 and 333 select port 2, and 395/398 tie its backend
@@ -240,6 +295,118 @@ requested `VDEC` at 612 and had a separate output context at 653. Thus the
 stock capture establishes neither acceptance nor rejection for HDMI 2's
 video connector. By contrast, the app's HDMI 1 capture recorded two explicit
 rejections. [Stock HDMI 2 capture](../device-tests/c1-journal.md#stock-hdmi-2-switch--read-only-log-capture) · [App HDMI 1 trace](../device-tests/c1-journal.md#browser-hdmi-1-connector-ownership)
+
+### Which native caller registers the parent before HDMI open?
+
+**Verified in saved C1 code, firmware 03.53.45.** Starfish can register a media
+pipeline and use the returned connection ID as `options.mediaId` in an HDMI
+open. Its subsequent port selection is fixed at 5. No reviewed native caller
+combines that registration with selection of physical HDMI 1 or 2. **Unknown
+on the TV:** whether the Starfish branch ran or its video child received an
+accepted ownership reply. [Port 5 mapping](#what-does-the-native-callers-fixed-port-5-select)
+
+| Step in the Starfish path | Evidence in the saved ARM binaries |
+|---|---|
+| Register the parent | In `libplayerAPIs.so.1`, the player constructs its resource manager at `0x39bf8` and retains it at `0x39c00`. With an empty incoming ID the manager calls `registerPipeline("media", …)` at `0x74abc`. It does not check the boolean result at `0x74ac0`. A nonempty incoming ID follows the existing-ID constructor at `0x74c2c–0x74c3e`. |
+| Follow the returned ID | In `resource-client.elf`, the client sends registration at `0x8fae`, waits at `0x8fe6`, and on a successful reply reads `connectionId` into its ID string at offset 28 (`0xf71c–0xf74e`, short-string branch `0xfa38`). The player's `getMediaID` reads that same client's string (`libplayerAPIs.so.1`, `0x37244–0x37248`, `0x744c4–0x744c8`). |
+| Follow the ID to the port switch | On the qualifying `o208k` playback branch, the player gets the ID at `0x3a6ce`, copies it into the proxy builder at `0x3a75c–0x3a760` and constructs the proxy at `0x3a7d2`. `libav-proxy.so.1` copies that field at `0x58e2–0x58e6`. `libav-connector.so.1` passes it to the UTP connector at `0x1925c–0x1929a`, writes it as the nested `mediaId` at `0x159a0–0x159c0`, then writes literal 5 as `portId` at `0x160bc–0x160dc`. |
+
+**The configurable-port callers have a different ID flow.** In C1
+`libcbe.so`, the PHC `InputPlayer` constructs options containing
+`appId` and `windowId` (`0x1d7893e–0x1d78a14`). Its open callback reads
+the returned `pipelineId` at `0x1d784ee–0x1d78544`. The switch uses that
+ID and parses the requested port at `0x1d782ec–0x1d783ae`. The DOM
+external-input player likewise constructs those two options at
+`0x328d9d6–0x328da48`. In the legacy backend, physical port selection
+reaches `API_TVPipelineMng_PlayAction` at `0x18beda` on a legacy pipeline.
+Its imported `AdapterAvmutemanager::registerPipeline` belongs to audio/video
+mute handling. UTP also adds its own logical key before backend open
+(`utp-atsc.elf`, `0x5c4088`, `0x5c410e`), to a map of `TVPlayerResource`
+objects at `0x61a7ce`. Neither operation supplies a media-server registration
+reply for the HDMI owner. [Observed physical HDMI 1 replies](../device-tests/c1-journal.md#hdmi-1-selected-with-the-lg-remote)
+
+Our native 0.1.12 control registers its app name on Luna. Its HDMI open supplies
+`appId`, `windowId` and `windowType`, and its switch uses the returned pipeline
+ID with fixed port 4. Its successful picture test establishes no pre-open media
+registration. [Luna setup](../../native/phase2-hdmi-dispatch/adapter.h) · [Request builder](../../native/phase2-hdmi-picture/session.cpp)
+
+**Search coverage.** The offline search screened 88 distinct loose 32-bit ARM
+ELF images under `build/phase-1` and `build/phase-2` for the UTP and backend
+external-input service names, `switchExternalInput`, `inputSourceType` and
+`ext://hdmi`. Eight vendor images matched, including both regional UTP service
+providers. The screen excluded G4, archives and object files. Dynamically
+assembled routes, delegated calls and uncollected binaries remain possible.
+Saved binary SHA-256 prefixes for reproduction: Starfish player
+`0b0f665415e6`, resource client `5f731199a4af`, AV proxy `bcbd9740e258`,
+AV connector `c7cffeb1437f`, browser `2eb542f9011c`, legacy backend
+`7d6ed117b10a` and ATSC UTP `721394f165f3`.
+
+### Would our native helper keep its registered media ID on HDMI 1?
+
+**Ordinary HDMI open on C1 03.53.45: no.** Even if the helper obtains a valid
+media-server connection ID, adding it to the existing `NormalWindow` open
+leaves the HDMI video child without that parent. UTP clears the supplied ID
+during open when `mediaFrontend` is absent or empty. The later port-1 switch
+uses whichever HDMI backend session the open actually established.
+
+| Stage | What the offline check establishes |
+|---|---|
+| Obtain the helper's ID | **SDK compile and link verified.** A minimal ARM program constructed `StarfishMediaAPIs(nullptr)` and called the public `const char *getMediaID()` before `Load`. The installed SDK's `StarfishMediaAPIs.h:35–46` declares both. The saved C1 binary reads the connection ID populated by the [constructor's registration path](#which-native-caller-registers-the-parent-before-hdmi-open). The program was linked against `libplayerAPIs` and never run. A nonempty ID and successful registration for the HDMI helper's own session remain **unknown**. Phase 1 exercised that constructor for a local clip without recording its pre-load ID. |
+| Open a fresh HDMI session | **Verified in firmware.** The 0.1.12 native HDMI control sends its app ID, exported window ID and `NormalWindow`. The separate registration helper only calls the media-ID getter after constructing its player. Even with an added `options.mediaId`, the ATSC and DVB handlers take the empty-frontend branch and clear it (`0x562734–0x5627be` and `0x562684–0x56270e`). The HDMI backend then takes its ID-generation path at `0x51842`. The distinct playback-frontend branch can forward a supplied ID. On successful fresh backend open, the service key passed to `createService` at `0x51482–0x51486` also populates the returned `pipelineId` in the success reply at `0x51790–0x517b8` in `extinput-integration.elf`. |
+| Select physical port 1 | **Verified in firmware.** ATSC UTP reads the backend's returned `pipelineId` at `0x5c74ca–0x5c74ee` and saves it in the logical session's `extinputs` record at `0x5c7538–0x5c7562`. On switch it resolves that record with `toTVPlayerId`, writes the backend ID as `pipelineId`, and sends the port separately (`0x5c6658–0x5c6692`, `0x5c66be–0x5c66e2`). The backend looks up the existing service by that ID at `0x4e480–0x4e488`. Selecting 1 preserves the established backend binding. It cannot restore a parent discarded at open. |
+
+The [playback-frontend trace](#can-the-playback-frontend-route-physical-hdmi-1-and-preserve-the-owner) follows the branch that retains the ID through physical port selection and fresh video-sink creation.
+
+The cross-link check used the existing WSL SDK's
+`arm-webos-linux-gnueabi-g++ -std=c++14 -Wall -Wextra -Werror -x c++ - -x none -lplayerAPIs -o /dev/null`
+with the two calls above in `main` on standard input. The current 0.1.12
+HDMI control has no media-ID registration or getter in its session. Its four
+additional UTP permissions establish no result for a media-server registration
+under the helper's identity. [Native request builder](../../native/phase2-hdmi-picture/session.cpp) · [Grant scope](../../native/phase2-hdmi-window/policy/README.md)
+
+The [registration helper](../build.md#native-media-registration-helper) now exists as a local ARM executable. The installed SDK's `StarfishMediaAPIs.h` declares the getter and accepts opaque payloads for `Load` and `SetProperty`. It declares no physical HDMI selector or connector-owner attachment method. The header alone therefore supplies no contract for attaching that ID to the laptop input.
+
+### Can a physical HDMI 1 API attach the helper's media ID?
+
+**No such app-facing operation was identified in the reviewed C1 03.53.45 files.** A positive result would require a physical port-1 session and evidence that its video connector acquired the helper's own registered pipeline as parent. The [stock and browser observations](../device-tests/c1-journal.md#hdmi-1-selected-with-the-lg-remote) established a working picture and an explicit rejection for that child. The [ordinary open handler](#would-our-native-helper-keep-its-registered-media-id-on-hdmi-1) also explains why adding an ID to the stock request would lose it before backend open.
+
+| Candidate | What the saved implementation does |
+|---|---|
+| `extinputs/bind` | The ATSC UTP callback delegates to `UtpBindCall::process` at `0x564bd8`. It resolves a TV resource from hints or current state, tracks the subscription and stores a string-to-string binding in UTP's own TV resource map (`0x51cc56–0x51cc68`, `0x51ce8e–0x51cfdc`, `0x61a938–0x61a94a`). Its response carries `broadcastId`, `binded`, `status` and `subscribed` (`0x51d600–0x51d696`). There is no helper media ID or AV connector ID in this binding result. |
+| `setPipelineWindowId` | The HDMI handler parses two strings, `windowId` and `pipelineId`, looks up the existing service with the pipeline ID and passes the window ID to its watcher. This updates the display window. See `extinput-integration.elf` at `0x4ce40–0x4ce68` and `0x4cf38–0x4cf5e`, and `Watcher::setWindowId` in `libextinput-service.so.1.0.0` at `0x992c0`. |
+| `pin` and `setProperties` | The stock caller pins an existing session with its `pipelineId` and a boolean `matched` (`ExternalInputService.qml:226–229`, HDMI parser at `0x4f318–0x4f334`). On the traced HDMI controller path, the property handler extracts a key and integer value and sends the fixed `setDiagnosticsExpertSetting` command to the video element (`libextinput-service`, `0x646d6–0x647b2`). Neither trace supplies a parent and video child to the media server. |
+| Sink connection and window ownership | Both stock sink wrappers send an existing `context` and `sinkType: MAIN` (`PlayerVideoSinkService.qml:21–23`, `VideoSinkManagerService.qml:29–32`). Window publication supplies an app ID, window ID and dimensions (`InputWindowControlService.qml:37–40`). The HDMI 1 app manifest declares `owner` inside `windowGroup` (`appinfo.json:26–31`). These records describe the app's display objects. None identifies a registered parent for the HDMI video child. |
+
+**Coverage.** The saved UTP policy lists 37 external-input method names (`hdmi-discovery-20261111/policy-4.txt:419–455`, SHA-256 prefix `f80033f99cdb`). The saved provider map routes HDMI to the HDMI backend. The [app's grant](../../native/phase2-hdmi-window/policy/hdmiwindow-utp.api.json) covers open, switch, stop and close. The table describes the vendor handlers independently of app permissions. The offline review used stock QML, the ATSC UTP ELF (`721394f165f3`), the HDMI service ELF (`4caec3536b68`) and its service library (`7e497c76c377`). Other firmware or uncollected callers remain unknown.
+
+### Can the playback frontend route physical HDMI 1 and preserve the owner?
+
+**Candidate on C1 firmware 03.53.45.** For a fresh session on the ordinary
+sound-path branch, the saved code targets the model-mapped HDMI 1 input and
+carries the supplied media ID to the video connector's ownership request. If
+the parent and child are both registered when that request reaches the C1
+resource manager, its inspected method links them and returns true. A moving
+laptop picture and an accepted reply for this combination remain **unknown**.
+
+| Question | Evidence in the saved C1 files |
+|---|---|
+| Does port 1 still select a video configuration? | In `libextinput-service.so.1.0.0`, a nonempty frontend installs one video entry with source index 12 (`0x830d4–0x83120`). On the ordinary sound path, selecting port 1 changes only the source index to 8 (`0x8377c–0x83796`, `0x82a14–0x82a1e`). The frontend configuration lookup compares key offset 0 and offsets 8 through 40, skipping the source at offset 4 (`0x41f64–0x41f76`, `0x41fc8–0x42016`). The entry still matches the configured `video-hdmi` and `video-sink` pair. |
+| Which input does that configuration target? | The watcher copies the updated input type and index into the load parameters (`0x870fc–0x8712e`). For HDMI source 8 the pipeline calls the TV resource manager to request resources and checks the result. Source 12 has a separate branch that skips this request (`libgibb-pipeline.so.1.0.0`, `0x251f8–0x25200`, `0x25b98–0x25ba0`, `0x2523e–0x25246`). If setup proceeds, the HDMI controller uses port 1's model-map entry. Only port 5 takes the fixed-index branch (`libextinput-service`, `0x654e2–0x6551c`). The video plugin stores the resulting hardware index at `0x38132`. Ordinary HDMI 1 previously reported index 3 on this TV. This frontend has no recorded receiver grant or physical output. |
+| Which ID reaches the video child? | The HDMI service key passes unchanged into `WatcherHDMI`, then into its `WatchPipeline` (`libextinput-service`, `0x7b918–0x7b91e`, `0x7aef0–0x7aefc`, `0x9552e–0x95556`, `0x67ecc`). GIBB stores that string in the pipeline and passes it into element open (`0x15d4e–0x15d52`, `0x255a2–0x255c0`). Both frontend nodes have `isHwElement=false` and resource type 255 (`libextinput-service`, `0x416a4–0x416c4`). On this fresh path GIBB calls `getNewElement` with selector 255 (`0x1f206–0x1f224`, `0x1ecbe–0x1ecd6`). That selector is separate from the physical port. The fresh sink uses its first pipeline record's ID as the proposed owner of its own registered AV child. [Sink and proxy ID flow](#where-does-the-hdmi-video-connector-get-its-owner) · [C1 ownership decision](#which-resource-id-did-hdmi-1-propose-as-its-owner) |
+
+**Sound-path exception.** When `getSoundPath()` returns 2, the watcher also
+adds an entry with subtype 5 and flags 64 (`0x837c6–0x838d6`). The saved
+frontend table contains only the video entry with subtype 4 and flags 32
+(`0x4171a–0x41784`). A fresh lookup for the extra entry therefore fails
+(`0x870c8–0x870d0`, `0x8756c`). The video entry still matches, but successful
+completion of the whole switch or working audio cannot be inferred.
+
+The saved remote-selected and JS HDMI 1 runs used ordinary opens. Neither
+tested a live helper registration with the playback frontend. Confirming this
+candidate would require a receipt tying the helper's registration, fresh
+backend key, port-1 binding and accepted ownership reply to the same video
+child, alongside a visibly advancing HDMI 1 source. Secondary placement and
+simultaneous inputs remain separate questions. [HDMI 1 device record](../device-tests/c1-journal.md#hdmi-1-selected-with-the-lg-remote)
 
 ### What does the native caller's fixed port 5 select?
 
@@ -393,5 +560,4 @@ the C1 implementation offline.
 identity, binding an independent tuner session to the secondary window while
 HDMI 4 stays live, and closing only that tuner session. The code for a lone
 preview gives no evidence of a secondary assignment or of coexistence with
-an owned HDMI session. The next offline gate is to trace those three steps
-through the saved C1 browser and broadcast evidence.
+an owned HDMI session. If the tuner route resumes, those three steps can be traced through the saved C1 browser and broadcast evidence.

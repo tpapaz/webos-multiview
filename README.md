@@ -21,6 +21,8 @@ depend on the TV model and firmware.
   audio control, hardware resource release and compatibility with other
   models or firmware remain unverified. [Current status](STATUS.md)
 
+**Current investigation.** We are tracing which hardware receiver webOS assigns to each HDMI input. The C1 firmware can report a receiver index when it grants one to a media connection. The saved HDMI 1 recordings establish a port switch and a receiver request, but leave the assigned index and release time unknown. The next step uses saved evidence and host tests. [Receiver findings](docs/research/c1-hdmi-interface-map.md#where-does-the-separate-receiver-get-its-index) · [Current task](STATUS.md#single-next-task)
+
 The tested `0.1.12` IPK is a local research artifact under ignored `dist/`.
 A fresh checkout contains the source and host checks. Native builds use an
 existing webOS SDK and retained device libraries. [Build and package details](docs/build.md)
@@ -47,13 +49,14 @@ npm run lint
 
 These checks run offline after dependency installation. The tests exercise the
 native prototype's launch rules, both browser HDMI probes, cleanup and evidence
-reporting with simulated transports. Lint checks JavaScript and JSON syntax,
+reporting with simulated transports. Synthetic TV resource manager (TVRM)
+exchanges exercise the offline receiver decoder. Lint checks JavaScript and JSON syntax,
 Markdown links, source references and policy consistency. The device runner
 requires retained private files. [Native checks and build guide](docs/build.md)
 
 ## Follow or contribute to the research
 
-For the progression from the native HDMI prototype to the Glasshouse-style JS probe and the native ownership investigation, read the [research history](docs/research/c1-hdmi-evidence-ledger.md#research-history). Each stage records what ran on the C1, why the route changed, and the evidence behind that decision.
+For the progression from the native HDMI prototype to the Glasshouse-style JS probe, connector ownership and receiver allocation, read the [research history](docs/research/c1-hdmi-evidence-ledger.md#research-history). Each stage records what ran on the C1, why the route changed, and the evidence behind that decision.
 
 - Read the [current status](STATUS.md) for the next task and the [roadmap](ROADMAP.md)
   for the planned milestones.

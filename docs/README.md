@@ -7,11 +7,11 @@ Read [Status](../STATUS.md) for today's task and the [research history](research
 | [Status](../STATUS.md) | Verified first-picture result, limits, current artifact and one next task. |
 | [Roadmap](../ROADMAP.md) | Product phases and acceptance gates. |
 | [Prototype contract](../native/phase2-hdmi-candidate-0.1.12/README.md) | Current actions, native/report/witness/runner contract and exact artifacts. |
-| [Research map](research/c1-hdmi-interface-map.md) | Verified HDMI 4 result, secondary-route findings and open ownership questions. |
+| [Research map](research/c1-hdmi-interface-map.md) | HDMI input selection, connector ownership, secondary display routing and receiver allocation in the saved C1 firmware. |
 | [Evidence ledger](research/c1-hdmi-evidence-ledger.md) | Chronological path decisions, reasons for switching or pausing, and parked alternatives. |
 | [Device journal](device-tests/c1-journal.md) | Actual lifecycle/physical outcomes and evidence hashes; concise earlier summary. |
-| [Device disposition](device-tests/current-plan.md) | Spent ResourceManager lookup, completed scopes, review-only dual-source gates and active-trial stop rules. |
-| [Build guide](build.md) | Offline checks, toolchain and current prototype build. |
+| [Device disposition](device-tests/current-plan.md) | Offline decoder acceptance criteria, completed capture procedures and the gates for a future dual-source trial. |
+| [Build guide](build.md) | Host tests, local native builds, registration helper and browser probe packages. |
 | [Layout/retention](repository-layout.md) | Shared production code, optional controls and private evidence. |
 | [Policy contract](../native/phase2-hdmi-window/policy/README.md) | Exact own-app/four-method grant, checker and saved-map semantics. |
 | [Contributor rules](../AGENTS.md) / [safety](safety.md) | Standing owner permission for bounded read-only research, operational safety and privacy. |

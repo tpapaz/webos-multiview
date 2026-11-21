@@ -4,6 +4,8 @@
 
 ## Offline host checks
 
+The [TVRM receiver decoder](device-tests/current-plan.md#existing-tvrm-decoder) runs with stock Node.js and reads HDMI backend and TVRM JSONL events from standard input. Its host acceptance tests run in `npm test` or separately with `node --test tests/host/hdmi-receiver-decoder.test.cjs`.
+
 From the repository root in PowerShell:
 
 ~~~powershell
@@ -26,8 +28,7 @@ node scripts/collect-val-capability.cjs --plan
 
 npm test exercises the current schema2 report/witness, evidence gate, shared
 controller/IO, native launch-authority rules, runner/foreground orchestration,
-registration role, exact UTP coverage and both browser HDMI probes. It uses synthetic transports; it never
-loads a TV profile. Optional controls cover the retained passive/local-media code.
+registration role, exact UTP coverage, both browser HDMI probes and TVRM receiver attribution. These tests use synthetic inputs and run offline. Optional controls cover the retained passive/local-media code.
 The separate element-collector suite uses synthetic SFTP and fake transport inputs;
 its real local capture check verifies owner-only Windows ACLs through PowerShell 7.
 Run it in normal native Windows user context: a sandbox that prevents those ACLs
@@ -123,6 +124,16 @@ local ELF using retained provider inventories. Native/ASan/UBSan acceptance and
 the one actual lifecycle/physical TV result are recorded with the artifact;
 build success alone never establishes firmware runtime behavior or dual HDMI.
 ThreadSanitizer could not start in the tested host environment; no pass is claimed.
+
+## Native media registration helper
+
+Build the [registration helper](../native/phase2-media-registration/main.cpp) from the repository root with the existing WSL SDK and an existing local output directory.
+
+~~~powershell
+wsl -d Ubuntu --exec /home/tasos/.cache/webos-multiview/202608/arm-webos-linux-gnueabi_sdk-buildroot/bin/arm-webos-linux-gnueabi-g++ -std=c++14 -Wall -Wextra -Werror -Os native/phase2-media-registration/main.cpp -lplayerAPIs -o build/phase-2/c1-helper-media-registration.elf
+~~~
+
+The local build produced an 8,368-byte ELF32 ARM executable, SHA-256 `cc55a6296d8cb9571f902a430a136657194515d08c2f60af8929b48e454924b8`. The helper checks whether the SDK returns a nonempty pre-load media ID. Its eight-second alarm covers player construction, the getter and destruction. Its own output reports only presence or absence. This artifact has no HDMI open, selection or ownership calls. Packaging, target execution and runtime registration are unverified.
 
 ## Current package and immutable records
 
