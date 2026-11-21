@@ -476,6 +476,37 @@ backend key, port-1 binding and accepted ownership reply to the same video
 child, alongside a visibly advancing HDMI 1 source. Secondary placement and
 simultaneous inputs remain separate questions. [HDMI 1 device record](../device-tests/c1-journal.md#hdmi-1-selected-with-the-lg-remote)
 
+### Does the port-1 open reply establish a fresh session?
+
+**No freshness signal was found in the reviewed C1 reply path.** On
+03.53.45 the ATSC UTP manager can queue a new backend open or adopt its
+stored boot session. Both paths reach `0x5c46a0` and populate the same
+call-chain object with `key` and `pipelineId` (`0x5c46c4–0x5c471c`).
+On completion, `onAsyncDone` removes the internal `key` and `results`
+(`0x5c8614–0x5c8626`). The open handler’s delayed reply action,
+`UtpLSUtils::replyAsync`, serializes the supplied JSON and sends it
+(`0x564de0–0x564e02`). An accepted reply with a logical ID is compatible
+with either history. Saved image: `utp-atsc.elf`, SHA-256 prefix `721394f165f3`.
+
+Even a nested backend open needs interpretation. `HdmiService::open` calls
+`ServiceManager::createService` at `0x51486`. The service manager first
+looks up the key at `0x7b7b8`. A populated result takes the existing-service
+return path (`0x7b7de–0x7b82e`). The HDMI creation branch calls
+`createWatcher` at `0x7b91e`. Observing that branch for the correct key
+would help distinguish backend creation, but would still need the same
+app's registered parent and physical port-1 binding. Saved images:
+`extinput-integration.elf` (`4caec3536b68`) and `libextinput-service.so.1.0.0`
+(`7e497c76c377`).
+
+The two saved HDMI 1 monitors each observed a backend open and a port-1
+switch. In the browser receipt the video child's owner reply at 63 → 67
+was false. In the stock receipt the corresponding reply at 111 → 114 was
+also false. Neither receipt records service creation. The reviewed native
+caller that does supply its registered parent selects port 5. The saved
+evidence therefore leaves the combined port-1 requirement **unknown**.
+[Browser receipt](../device-tests/c1-journal.md#browser-hdmi-1-connector-ownership) ·
+[Stock receipt](../device-tests/c1-journal.md#hdmi-1-selected-with-the-lg-remote)
+
 ### What does the native caller's fixed port 5 select?
 
 **Verified in the saved C1 firmware (03.53.45).** Logical HDMI port 5 selects
@@ -614,18 +645,8 @@ did not produce concurrent pictures. Secondary assignment before the second
 connector's first scaler request remains **unknown**.
 [Device result](../device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry)
 
-## HDMI 4 with a built-in tuner feed
+## Built-in tuner preview
 
-**Candidate.** The saved Glasshouse source plays a single tuner preview
-using a broadcast preview media type and a `tv://` channel source. The
-maintainer reports that this preview worked on a G3. The saved C1 browser
-engine contains the broadcast preview media type and `tv://` strings.
-Those observations give us a known caller and a starting point for tracing
-the C1 implementation offline.
-[Glasshouse call site](https://github.com/rorygallagher2024/glasshouse/blob/43ec5ac020838ebee985b1a392c0f9afe7d8f95e/server/assets/home.html#L2299-L2379) · [C1 browser capture](../device-tests/c1-journal.md#c1-browser-engine--read-only-capture)
+**Candidate for HDMI 1 + broadcast TV on C1 firmware 03.53.45.** The saved Glasshouse caller chooses a broadcast preview source for a tuner channel and an external-input source for HDMI. It puts the selected source in one preview element. The maintainer reports that the tuner preview worked on a G3 running webOS 9.2.2. Internet TV takes a separate stream path. [Pinned caller and G3 observation](https://github.com/rorygallagher2024/glasshouse/blob/43ec5ac020838ebee985b1a392c0f9afe7d8f95e/server/assets/home.html#L2299-L2379)
 
-**Unknown on C1.** The missing chain is preview creation under the app's own
-identity, binding an independent tuner session to the secondary window while
-HDMI 4 stays live, and closing only that tuner session. The code for a lone
-preview gives no evidence of a secondary assignment or of coexistence with
-an owned HDMI session. If the tuner route resumes, those three steps can be traced through the saved C1 browser and broadcast evidence.
+The saved C1 browser library `libcbe.so` (SHA-256 prefix `2eb542f9011c`) contains `service/webos-broadcast-preview` at file offset `0x485b0ac` and `tv://` at `0x4e72f30`. The C1 owner observed HDMI 1 alone on the main output. App-owned tuner preview, secondary placement, concurrent motion and tuner-only close on this C1 remain **unknown**. The preview would use one physical HDMI input, so investigating this pair can proceed independently of the parked second-HDMI ownership test. [C1 browser capture](../device-tests/c1-journal.md#c1-browser-engine--read-only-capture) · [HDMI 1 trial](../device-tests/c1-journal.md#browser-hdmi-1-connector-ownership) · [Mixed-source procedure](../device-tests/current-plan.md#hdmi-1-and-a-live-tv-channel)

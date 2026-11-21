@@ -1,6 +1,14 @@
-# C1 device plan for HDMI 4 and the laptop on HDMI 1
+# C1 Phase 2 device plan
 
 [Current status](../../STATUS.md) · [Trial receipts](c1-journal.md) · [Route history](../research/c1-hdmi-evidence-ledger.md#research-history)
+
+## HDMI 1 and a live TV channel
+
+**Current task — offline feasibility.** Use laptop HDMI 1 as the known moving primary picture and one already-tuned, receivable antenna or cable channel as the proposed secondary picture. An internet channel uses a different playback path. [Tuner preview evidence](../research/c1-hdmi-interface-map.md#built-in-tuner-preview)
+
+- **Before a TV run**, trace the C1 browser preview open, window assignment and close. Require an app-owned tuner session that can target the secondary surface and release only its own session. A MIME string, two HTML rectangles or a successful play callback alone leaves this unresolved.
+- **If those checks pass**, prepare one separately scoped trial with two nonoverlapping windows. First confirm HDMI 1 motion, then observe the channel and laptop advancing together. Close only the tuner preview and confirm HDMI 1 keeps moving. Exit and confirm normal viewing, sound and remote operation.
+- **Stop** if the preview replaces HDMI 1, either picture freezes, the channel changes unexpectedly or teardown is ambiguous. If ownership or placement cannot be established offline, park this combination and use the [clip workaround](#workarounds-if-native-ownership-ends-here).
 
 ## HDMI 4 and HDMI 1
 
@@ -15,13 +23,14 @@
 
 ### One remaining native candidate
 
-1. **Prepare one HDMI 1 ownership-only test.** Keep a newly registered player alive in the same app for the whole fresh port-1 session. The playback frontend is the one reviewed open path that can preserve its parent ID. The standalone helper destroys its player before returning and the 0.1.12 control selects port 4. Running those two binaries in sequence cannot exercise the candidate. Preparation must account for the frontend's physical-port use, the effective port-1 sound path and cleanup of a fresh session using its own returned ID. An unresolved reused session, unsupported frontend or ambiguous cleanup leaves the trial parked. [Candidate and sound-path branch](../research/c1-hdmi-interface-map.md#can-the-playback-frontend-route-physical-hdmi-1-and-preserve-the-owner) · [Helper source](../../native/phase2-media-registration/main.cpp) · [Control session](../../native/phase2-hdmi-picture/session.cpp)
+1. **Parent lifetime prepared and tested offline. Device adapter unresolved.** The [native probe core](../../native/phase2-media-registration/ownership.cpp) holds its Starfish player through playback, stop, close and local teardown. The host fixture supplies the fresh, rejected and uncertain open outcomes. For the C1 the adapter still needs an evidenced app-owned physical port-1 open and a way to distinguish fresh creation from boot-session reuse before touching the logical session. The open reply's ID alone cannot establish this. The applicable frontend and effective port-1 sound path are unresolved. The ARM artifact is a linked core without a launch entry point. Keep the trial parked until the device adapter can meet this contract. [Build and test record](../build.md#hdmi-1-ownership-probe-core) · [Physical branch](../research/c1-hdmi-interface-map.md#can-the-playback-frontend-route-physical-hdmi-1-and-preserve-the-owner)
 2. **Test ownership once if preparation succeeds.** This would be a separately scoped single-input trial. Pass only with a moving laptop picture and one ordered receipt joining the app's fresh parent registration, backend open, port-1 selection, video child's registration and accepted owner reply for that child. Close the owned session while the parent is alive, then release the parent and confirm restoration. A denial, missing join, failed picture or inconclusive cleanup ends this version of the experiment. A repeat needs a named change that addresses the recorded failure.
 3. **Test the move before starting HDMI 4.** Only after ownership passes and an app-permitted selector uniquely targets that video path, observe the same HDMI 1 context move from MAIN to SUB0, MAIN clear and the laptop resume motion. A setter acknowledgment alone is insufficient. If the move fails, stop there. [Move and observation contract](../research/c1-hdmi-interface-map.md#move-hdmi-1-to-sub0-before-opening-hdmi-4)
 4. **Test overlap once after the move passes.** Start HDMI 4 on MAIN, verify the pass condition above, close each owned session and record restoration. A freeze or handoff closes this configuration. Record which gate failed in the journal before considering a different mechanism.
 
 ### Workarounds if native ownership ends here
 
+- **Controlled alternative if the tuner route stalls.** The [freshness review](../research/c1-hdmi-interface-map.md#does-the-port-1-open-reply-establish-a-fresh-session) leaves the native probe parked. Prepare the HDMI 4 + silent clip test offline. Inject stalls in clip startup, feed and unload and verify that HDMI can still submit stop and close within its existing deadlines. A stalled clip leaves its cleanup uncertain. If that check passes and worker teardown is bounded, the first C1 mixed-source trial should show both pictures advancing, then HDMI 4 continuing with sound after clip close. [Timing and cleanup constraints](../research/c1-smp-ndl-resource-path.md#isolating-clip-playback-from-hdmi-cleanup)
 - **Use the laptop as the second feed.** Keep the physical HDMI 4 picture and send an owner-selected laptop window over the LAN. A silent local clip on the secondary surface is the smaller coexistence test before adding network transport. HDMI plus that clip, and HDMI plus a laptop stream, both remain untested on this C1. [Mixed-source feasibility](../research/c1-smp-ndl-resource-path.md#hdmi-4-with-a-secondary-local-clip)
 - **Combine the two cables upstream.** A two-input HDMI multiviewer can compose one output for the C1. The external device controls the layout. This solves the two-picture viewing goal independently of C1 connector ownership. [External multiviewer reference](../research/c1-hdmi-evidence-ledger.md#remaining-options)
 

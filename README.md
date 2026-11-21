@@ -21,7 +21,7 @@ depend on the TV model and firmware.
   audio control, hardware resource release and compatibility with other
   models or firmware remain unverified. [Current status](STATUS.md)
 
-**Working pair.** HDMI 4 and the laptop on HDMI 1 are the connected sources used in the pair trials. Start with the [pair plan](docs/device-tests/current-plan.md#hdmi-4-and-hdmi-1) for completed attempts, the untested ownership route and alternatives if it fails. [Current status](STATUS.md)
+Follow the [roadmap](ROADMAP.md#phase-2-route-to-two-pictures) for the route from one working HDMI picture to two independently live sources. [Status](STATUS.md) identifies the next experiment and its readiness.
 
 The tested `0.1.12` IPK is a local research artifact under ignored `dist/`.
 A fresh checkout contains the source and host checks. Native builds use an

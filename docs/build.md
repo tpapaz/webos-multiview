@@ -111,6 +111,23 @@ wsl -d Ubuntu --exec /home/tasos/.cache/webos-multiview/202608/arm-webos-linux-g
 
 The local build produced an 8,368-byte ELF32 ARM executable, SHA-256 `cc55a6296d8cb9571f902a430a136657194515d08c2f60af8929b48e454924b8`. The helper checks whether the SDK returns a nonempty pre-load media ID. Its eight-second alarm covers player construction, the getter and destruction. Its own output reports only presence or absence. This artifact has no HDMI open, selection or ownership calls. Packaging, target execution and runtime registration are unverified.
 
+## HDMI 1 ownership probe core
+
+The [core](../native/phase2-media-registration/ownership.cpp) uses the SDK player as the parent. It passes the parent ID only to open and uses the fresh logical session ID for selection and cleanup. A failed stop still leads to one close attempt. The result records both acknowledgments and local teardown separately. A completed observation window provides no owner-association or picture evidence.
+
+Run from PowerShell with the existing WSL environment and a fresh output directory under ignored `build/`:
+
+~~~powershell
+$probeBuild = 'build/phase-2/hdmi1-ownership-offline-local'
+New-Item -ItemType Directory -Path $probeBuild -ErrorAction Stop | Out-Null
+wsl -d Ubuntu --exec cmake -S . -B "$probeBuild/host" -G Ninja -DCMAKE_BUILD_TYPE=Release
+wsl -d Ubuntu --exec cmake --build "$probeBuild/host" --target hdmi1-ownership-test
+wsl -d Ubuntu --exec ctest --test-dir "$probeBuild/host" -R hdmi1-ownership-lifetime --output-on-failure
+wsl -d Ubuntu --exec /home/tasos/.cache/webos-multiview/202608/arm-webos-linux-gnueabi_sdk-buildroot/bin/arm-webos-linux-gnueabi-g++ -std=c++14 -Wall -Wextra -Wpedantic -Werror -Os -fPIC -shared '-Wl,-z,defs' native/phase2-media-registration/ownership.cpp -lplayerAPIs -o "$probeBuild/libhdmi1-ownership.so"
+~~~
+
+**2026-11-22, offline.** All four root CTest cases passed. The [lifetime test](../tests/host/hdmi1_ownership_test.cpp) compiles the same core against a substitute SDK and port-1 session. It covers the complete sequence, failed registration, unusable IDs, ambiguous open, cancellation, failed selection, interrupted observation and teardown failures. The separate SDK link produced an 8,380-byte ARM32 shared library with SHA-256 `566332c59555dfac3ca8e68d15b79a99b2ae58c5cf9ebaaadd0cdbfeb8390201`. Its constructor, getter and destructor imports match exports in the saved C1 `libplayerAPIs.so.1` (`0b0f665415e6`). This checks those three symbols only. The [device adapter requirements](device-tests/current-plan.md#one-remaining-native-candidate) remain open. Packaging and TV execution have not occurred.
+
 ## Current package and immutable records
 
 IPK: dist/io.github.tpapaz.multiview.hdmiwindow_0.1.12_arm.ipk,51,124 bytes,

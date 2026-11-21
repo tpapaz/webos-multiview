@@ -10,7 +10,7 @@ Read [Status](../STATUS.md) for today's task and the [research history](research
 | [Research map](research/c1-hdmi-interface-map.md) | HDMI input selection, connector ownership, secondary display routing and receiver allocation in the saved C1 firmware. |
 | [Evidence ledger](research/c1-hdmi-evidence-ledger.md) | Chronological path decisions, reasons for switching or pausing, and parked alternatives. |
 | [Device journal](device-tests/c1-journal.md) | Actual lifecycle/physical outcomes and evidence hashes; concise earlier summary. |
-| [Device disposition](device-tests/current-plan.md) | HDMI 4 + laptop HDMI 1 attempts, stop rules, remaining native candidate and alternatives. |
+| [Device disposition](device-tests/current-plan.md) | Active mixed-source procedure, physical HDMI pair attempts, stop rules and alternatives. |
 | [Build guide](build.md) | Host tests, local native builds, registration helper and browser probe packages. |
 | [Layout/retention](repository-layout.md) | Shared production code, optional controls and private evidence. |
 | [Policy contract](../native/phase2-hdmi-window/policy/README.md) | Exact own-app/four-method grant, checker and saved-map semantics. |

@@ -38,6 +38,12 @@ its readiness and latest test results live only in [Status](STATUS.md).
 | 5 | Compatibility matrix and community beta | ABI and device tests for every claimed model/firmware/backend. |
 | 6 | More sources, app surfaces and advanced layouts | Research until device evidence supports each combination. |
 
+## Phase 2 route to two pictures
+
+1. **One physical input — verified.** The native app displayed HDMI 4 with sound. The browser probe also displayed laptop HDMI 1.
+2. **Two physical inputs — parked.** The available HDMI 4 + HDMI 1 pair handed off between sources. Reopen that route when the app can establish fresh ownership and address its video connector. The defining milestone remains independently live HDMI 1 + HDMI 2.
+3. **Mixed sources — candidate.** HDMI plus a broadcast channel tests whether the app can present a tuner session beside a physical input and close it independently. HDMI plus a local clip is the controlled alternative. Record each combination separately. [Current task](STATUS.md#single-next-task) · [Device plan](docs/device-tests/current-plan.md)
+
 ## Phase 2 evidence rules
 
 Distinguish input selection, receiver activation, frame access, presentation

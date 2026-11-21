@@ -2,7 +2,7 @@
 
 Research date: **2026-11-13**. Target: rooted LG OLED C1, webOS 6.5.3,
 firmware 03.53.45. [Status](../../STATUS.md) · [Roadmap](../../ROADMAP.md) ·
-[HDMI evidence map](c1-hdmi-interface-map.md) · [Our candidate](../../native/phase2-hdmi-window/README.md)
+[HDMI evidence map](c1-hdmi-interface-map.md) · [Native prototype](../../native/phase2-hdmi-candidate-0.1.12/README.md)
 
 ## 1. Executive summary
 
