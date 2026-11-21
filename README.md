@@ -16,16 +16,44 @@ depend on the TV model and firmware.
   displayed continuously moving video from physical HDMI 4 in a fixed, centered
   app window with audible sound during one eight-second trial. The app exited
   and normal picture, sound and remote control returned. [Device test and evidence](docs/device-tests/c1-journal.md#0112-physical-hdmi-4--moving-picture-and-sound)
-- **Verified in the standalone JS probe.** HDMI 4 played with sound. With HDMI 4 and laptop HDMI 1 both connected, the second picture took over and the first resumed after it closed. [Browser pair trial](docs/device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry)
-- **Unknown.** Simultaneous HDMI 1 and HDMI 2, sustained stability, independent
-  audio control, hardware resource release and compatibility with other
-  models or firmware remain unverified. [Current status](STATUS.md)
+- **HDMI 4 and HDMI 1 played in sequence on the C1.** In the standalone browser
+  probe, the laptop on HDMI 1 took over the HDMI 4 picture. HDMI 4 resumed when
+  the probe closed HDMI 1. The pair experiment is parked because the app cannot
+  yet tell whether opening HDMI 1 created a session it owns or reused an existing
+  one. [Pair trial](docs/device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry) · [Ownership finding](docs/research/c1-hdmi-interface-map.md#does-the-port-1-open-reply-establish-a-fresh-session)
 
-Follow the [roadmap](ROADMAP.md#phase-2-route-to-two-pictures) for the route from one working HDMI picture to two independently live sources. [Status](STATUS.md) identifies the next experiment and its readiness.
+## Which sources play together?
 
-The tested `0.1.12` IPK is a local research artifact under ignored `dist/`.
-A fresh checkout contains the source and host checks. Native builds use an
-existing webOS SDK and retained device libraries. [Build and package details](docs/build.md)
+Each cell summarizes whether two pictures of the selected source types advanced
+together on the **LG OLED C1, firmware 03.53.45**. The diagonal pairs two
+distinct sources of the same type, such as two HDMI devices or two local clips.
+
+| Source type | HDMI | Live TV (tuner) | Local clip | Network video | webOS app |
+|---|---|---|---|---|---|
+| **HDMI** | **Took turns in trial** | Untested | Untested | Untested | Untested |
+| **Live TV (tuner)** | Untested | Untested | Untested | Untested | Untested |
+| **Local clip** | Untested | Untested | **Together** | Untested | Untested |
+| **Network video** | Untested | Untested | Untested | Untested | Untested |
+| **webOS app** | Untested | Untested | Untested | Untested | Untested |
+
+- **Together** — two local clips briefly advanced in separate windows. Audio ownership and sustained playback remain open. [Local clip trial](docs/device-tests/c1-journal.md#phase-1)
+- **Took turns in trial** — the browser probe showed HDMI 4 → HDMI 1 → HDMI 4. Simultaneous playback on other HDMI pairs or routes remains unknown. [HDMI pair trial](docs/device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry)
+- **Untested** — no recorded C1 playback trial for that pair. Live TV means a channel from the built-in tuner. Network video includes IPTV. [Source definitions and research leads](docs/research/c1-hdmi-evidence-ledger.md#source-combinations)
+
+Three or more sources need their own trial even when every pair plays together.
+
+## Next experiment
+
+**HDMI 1 + a live TV channel is at the offline research stage.** The laptop
+provides a known moving picture on HDMI 1. Before a C1 trial, we need to
+establish whether the app can open an already-tuned antenna or cable channel
+in a second window and close that preview independently. A trial passes only
+if both pictures advance together and HDMI 1 keeps moving after the preview
+closes. [Current status](STATUS.md) · [Tuner experiment](docs/device-tests/current-plan.md#hdmi-1-and-a-live-tv-channel)
+
+The primary hardware milestone remains **independently live HDMI 1 + HDMI 2**.
+Simultaneous physical HDMI playback on the C1 is still unverified.
+[Phase 2 roadmap](ROADMAP.md#phase-2-route-to-two-pictures)
 
 ## Concept layouts
 
@@ -37,6 +65,10 @@ still unverified on the TV.
 | ![Concept grid with HDMI 1, a stream, HDMI 2 and live TV](docs/images/concepts/four-source-grid.jpg) | ![Concept split with HDMI 1 on the left and a stream above HDMI 2 on the right](docs/images/concepts/three-source-split.jpg) | ![Concept with a stream in a corner over HDMI 1](docs/images/concepts/picture-in-picture.png) |
 
 ## Run the host checks
+
+The tested `0.1.12` IPK is a local research artifact under ignored `dist/`.
+A fresh checkout contains the source and host checks. Native builds use an
+existing webOS SDK and retained device libraries. [Build and package details](docs/build.md)
 
 Run these commands from the repository root in PowerShell. The quick start
 was verified with Node.js 24 and npm 11.
