@@ -28,6 +28,16 @@ Keep live research within the [standing read-only scope](../safety.md#standing-r
 
 The current investigation uses saved C1 files. [Status](../../STATUS.md#single-next-task) names the ownership question and the evidence needed to proceed. The native two-input design below is for review. The capability, compositor and stock HDMI 2 collection scopes are complete. [Research history](../research/c1-hdmi-evidence-ledger.md#research-history) · [Device journal](c1-journal.md)
 
+### HDMI 1 ownership from open
+
+The [saved JS trace](../research/c1-hdmi-interface-map.md#where-does-the-hdmi-video-connector-get-its-owner) already answers this for the pair app. Leave the laptop disconnected. A **candidate** for new evidence is a fresh HDMI 1 open by the stock input app. Even a successful stock association would establish ownership for that stock session only.
+
+For that observation, use the passive `ls-monitor` JSON stream over the input, media and video-output services. The saved monitor shows that it can see opens and token-matched ownership replies. Its historical projector reads only top-level `mediaId`. A stock capture must also distinguish the stock app at open, the UTP and HDMI backend requests, and absent, empty and populated `options.mediaId` at each layer. Retain whether `mediaFrontend` was supplied and use capture-local aliases for IDs. The stock QML's `OPEN_FIRSTLAUNCH` or `OPEN` and corresponding response can corroborate the logical open if those messages are available (`hdmi-discovery-20261111/route-1.qml:39–94`).
+
+The reconnect cue belongs **after the passive monitor reports ready**, before plugging in the laptop or manually selecting HDMI 1. The historical trial runner arms the JS app on readiness. A stock observation needs a monitor running by itself with fresh private output. No live capture is currently running.
+
+Within one bounded stream, match each open's returned ID to that caller's port-1 selection. Match the backend ID to the HDMI output context and proposed owner, then match the AV registration, scaler request and ownership reply to the same child and caller as in the saved trace. Record the echoed child and explicit true or false reply. To establish that the open supplied an already-registered parent, also match the nested ID to a registration reply preceding the open. A missing earlier registration leaves that part unknown even if the ownership reply is visible. A switch-only run, an ambiguous open, a missing reply, a bus error or a gap leaves the affected join unknown. End the observation at its bound.
+
 ## HDMI 2 first scaler request
 
 The [offline checker](../../scripts/hdmi2-scaler-evidence.cjs) uses a private,

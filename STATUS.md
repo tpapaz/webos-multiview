@@ -1,12 +1,12 @@
 # Current status
 
-LG OLED C1 · firmware 03.53.45 · updated 2026-11-18. [Research history](docs/research/c1-hdmi-evidence-ledger.md#research-history) · [Roadmap](ROADMAP.md) · [Device procedure](docs/device-tests/current-plan.md)
+LG OLED C1 · firmware 03.53.45 · updated 2026-11-21. [Research history](docs/research/c1-hdmi-evidence-ledger.md#research-history) · [Roadmap](ROADMAP.md) · [Device procedure](docs/device-tests/current-plan.md)
 
 ## Single next task
 
 **The HDMI move is paused pending ownership evidence for a physical input.** The stock input app opens HDMI without a parent media ID. The separate native caller that supplies one uses logical port 5. On the saved C1 firmware, that selects a special media-frontend path with fixed hardware index 4. Our HDMI 1 and stock HDMI 2 captures reported indices 3 and 2 respectively. This caller provides no selector for either jack. [Port 5 mapping](docs/research/c1-hdmi-interface-map.md#what-does-the-native-callers-fixed-port-5-select) · [Stock caller and ownership evidence](docs/research/c1-hdmi-interface-map.md#does-the-stock-hdmi-caller-supply-a-registered-parent)
 
-**Next evidence needed.** Reopen the helper path when a new source can link a registered parent to a physical HDMI 1 or 2 open and an accepted ownership reply for that same video child. The stock monitor's switch-only evidence cannot make that link. A subsequent move would need to show the laptop advancing on `SUB0` with `MAIN` free before opening HDMI 4. The defining milestone remains independently live HDMI 1 + HDMI 2 and isolated close. No device trial is queued. [Proposed move](docs/research/c1-hdmi-interface-map.md#move-hdmi-1-to-sub0-before-opening-hdmi-4)
+**Next evidence needed.** The saved JS HDMI 1 trace covers the open and shows webOS rejecting the owner of the exact child that acquired `MAIN_SCALER`. The remaining comparison is a fresh stock HDMI 1 open. A passive monitor could show whether that caller obtains an accepted association. The saved stock trace covers a switch only. Keep the laptop disconnected until a stock monitor is ready to capture the open. No device trial is queued. [Verified JS event chain](docs/research/c1-hdmi-interface-map.md#where-does-the-hdmi-video-connector-get-its-owner) · [Stock capture requirements and reconnect cue](docs/device-tests/current-plan.md#hdmi-1-ownership-from-open)
 
 ## Verified milestone
 

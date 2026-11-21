@@ -163,14 +163,26 @@ app-scoped caller and moving only the video connector remain **unverified**.
 
 ### Where does the HDMI video connector get its owner?
 
-**Verified for the observed HDMI 1 startup on C1 03.53.45.** The backend
-returned its pipeline ID at event 9. Port selection began at event 15. The
-receiver registered at events 17–19 and requested `HDMI_INPUT` and `VHDMIRX`
-at event 21. The video connector registered at events 59–61 and proposed the
-backend ID as its owner at event 63. The service rejected it at event 67.
-The receiver's registration ID therefore did not exist when this backend
-open completed. Event numbers refer to the saved 0.1.3 bus capture.
-[Device trace](../device-tests/c1-journal.md#browser-hdmi-1-connector-ownership)
+**Verified for the JS probe on C1 03.53.45.** The saved read-only Luna bus
+trace covers HDMI 1 from both open calls. webOS rejected the proposed owner
+of the same connector that went on to acquire the main scaler. The table
+uses call → reply sequence numbers from the 0.1.3 receipt. Each reply
+matches the call token and the two endpoints in reverse order.
+
+| Question | Events | Identity check in the saved rows |
+|---|---|---|
+| Which input opened? | UTP 5 → 11 and backend 7 → 9. Port selection 13 → 204 and 15 → 202. | Each open identifies the pair app and HDMI. At each layer the same caller used its own returned pipeline ID to select port 1. The two IDs differ. Selection began at 15 and its reply arrived after the resource requests. |
+| Which connector handled video? | Registration 59 → 61, scaler acquisition 80 → 89, output connection 96 → 101. | The same caller used its returned AV connector ID for the accepted `MAIN_SCALER` request. The accepted HDMI connection on `MAIN` used the backend open's ID as its output context. The receiver had its own registration at 17 → 19 and requested `VHDMIRX` at 21. |
+| Did webOS accept that connector's owner? | Ownership 63 → 67. | The registered caller sent the child ID from 61 and proposed the backend ID from 9 as its owner. The reply echoed that child as `mediaId` and returned `false`. No earlier registration reply in this capture returned that proposed parent ID. The other AV connector has a separate rejection at 166 → 170. |
+
+**How to reproduce the read.** In the private directory
+`build/phase-2/c1-hdmi1-app-owner-20261118-001/`, read
+`monitor-result.json` (`events`, keyed by `sequence` and `replySequence`).
+The adjacent `verification.json` records the summary and receipt digest.
+The receipt has both stream markers, zero malformed rows and conflicts, and
+no reported cap. The as-used `monitor.cjs` builds its `associations` summary
+from successful replies only. Use the event rows for rejections.
+[Receipt hash and observed laptop picture](../device-tests/c1-journal.md#browser-hdmi-1-connector-ownership)
 
 The saved C1 code explains how that ID reaches the connector. In
 `gibb-load.asm`, the load path takes the string at `PipelineBase+96` at
