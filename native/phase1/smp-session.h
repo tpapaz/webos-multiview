@@ -31,9 +31,10 @@ public:
         }
         player_.reset();
         if (window_[0]) {
-            SDL_webOSDestroyExportedWindow(window_);
+            if (ownsWindow_) SDL_webOSDestroyExportedWindow(window_);
             window_[0] = '\0';
         }
+        ownsWindow_ = false;
         positioned_ = false;
         return clean;
     }
@@ -49,6 +50,15 @@ public:
             return fail("invalid window identifier");
         }
         std::strcpy(window_, id);
+        ownsWindow_ = true;
+        return true;
+    }
+
+    bool useExportedWindow(const char* id) {
+        const auto length = strnlen(id, sizeof(window_));
+        if (window_[0] || !length || length >= sizeof(window_) || std::strpbrk(id, "\"\\\r\n\t"))
+            return false;
+        std::memcpy(window_, id, length + 1);
         return true;
     }
 
@@ -63,12 +73,10 @@ public:
 
     bool load(const char* root, bool softwareVideo = false, VideoSink sink = VideoSink::automatic) {
         const char clip = label_ == 'A' ? 'a' : 'b';
-        char path[4096];
-        if (std::strlen(root) + sizeof("clip-x.frames") > sizeof(path)) return fail("asset path too long");
-        std::snprintf(path, sizeof(path), "%sclip-%c.h264", root, clip);
-        media_.open(path, std::ios::binary);
-        std::snprintf(path, sizeof(path), "%sclip-%c.frames", root, clip);
-        index_.open(path);
+        if (std::strlen(root) + sizeof("clip-x.frames") > 4096) return fail("asset path too long");
+        const auto stem = std::string(root) + "clip-" + clip;
+        media_.open(stem + ".h264", std::ios::binary);
+        index_.open(stem + ".frames");
         if (!media_ || !index_) return fail("fixture open failed");
 
         char load[1200];
@@ -213,7 +221,7 @@ private:
     int fed_ = 0, loopStartFed_ = 0;
     unsigned loops_ = 0;
     bool looping_ = false;
-    bool positioned_ = false, loadAttempted_ = false, eosSent_ = false;
+    bool positioned_ = false, ownsWindow_ = false, loadAttempted_ = false, eosSent_ = false;
     bool feeding_ = false, automaticPlay_ = false, manualPlay_ = false;
 };
 

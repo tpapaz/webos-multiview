@@ -4,12 +4,14 @@
 
 ## Objective and position
 
-Build a standalone, root-assisted Homebrew app that can show **more than two
-independently live sources at once** on the TV's hardware. The goal is to
-combine physical HDMI inputs, live TV, webOS apps and network streams in
-movable and resizable picture-in-picture, split-screen or grid layouts where
-the TV can support the combination. The next hardware milestone is
-independently live **HDMI 1 + HDMI 2**.
+Build a standalone, root-assisted homebrew app that can show **two or more
+independently live sources at once** on the TV's hardware. The viewer opens
+MultiView and selects sources there. MultiView opens the selected inputs and
+manages their playback, panes and layout within the same app. Physical HDMI
+and the built-in tuner are the first hardware targets. The next dual-HDMI
+milestone remains **HDMI 1 + HDMI 2**. Movable, resizable split-screen, grid
+and inset layouts follow once concurrent playback is proven. Other app
+surfaces and network streams remain longer-term source types.
 
 Reference device: LG OLED C1 (2021), firmware 03.53.45 / SDK 6.5.3.
 The [research history](docs/research/c1-hdmi-evidence-ledger.md#research-history) records how the native and JS approaches developed and why each changed.
@@ -23,8 +25,8 @@ unknown combinations explicitly rather than promising the C1 result everywhere.
 
 **Active phase: Phase 2 HDMI acquisition and application-owned window research.**
 Phase 0 is complete. Phase 1 has useful device evidence but remains partially
-validated; its remaining gates are deferred, not passed. The selected next task,
-its readiness and latest test results live only in [Status](STATUS.md).
+validated and its remaining gates are deferred. See [Status](STATUS.md)
+for trial readiness and the evidence needed to resume each route.
 
 ## Phases and acceptance gates
 
@@ -32,7 +34,7 @@ its readiness and latest test results live only in [Status](STATUS.md).
 |---|---|---|
 | 0A–C | Pinned research, host checks, passive metadata and redacted report | Complete: C1 passive report and clean lifecycle. [Device record](docs/device-tests/c1-journal.md#phase-0) |
 | 1 | Two independent local clips on movable video surfaces | Partially validated: explicit main/sub live playback and B geometry observed. Audio, wider geometry, final-build repeatability and full recovery remain open/deferred. [Journal](docs/device-tests/c1-journal.md#phase-1) |
-| 2 — current | One live HDMI in our fixed window; then independently live HDMI 1 + 2 in two fixed windows | First-picture gate achieved once on C1/HDMI 4 with moving content, termination evidence and owner restoration. [Result](docs/device-tests/c1-journal.md#0112-physical-hdmi-4--moving-picture-and-sound). Next require two distinct moving sources to keep advancing together without freezing or switching. Dual-port proof needs an independent receiver/presentation path and explicit owner scope. Move/resize, layouts, remote workflows and audio selection follow concurrency proof. |
+| 2 — current | One live HDMI in MultiView, then two independently live sources in fixed panes inside the same app | First-picture gate achieved once on C1/HDMI 4. [Result](docs/device-tests/c1-journal.md#0112-physical-hdmi-4--moving-picture-and-sound). Pass a pair when both sources keep advancing together and closing either pane leaves the other live. Dual-port proof needs an independent receiver and presentation path. Move/resize, layouts, remote workflows and audio selection follow concurrency proof. |
 | 3 | Source management for proven inputs; local/network sources where resources permit | Stable playback and predictable buffering, reconnection and resource contention. |
 | 4 | Remote-first picker, PiP/split/grid layouts, focus, audio selection and presets | Complete workflows for each verified combination, including reset and uninstall. |
 | 5 | Compatibility matrix and community beta | ABI and device tests for every claimed model/firmware/backend. |
@@ -42,7 +44,8 @@ its readiness and latest test results live only in [Status](STATUS.md).
 
 1. **One physical input — verified.** The native app displayed HDMI 4 with sound. The browser probe also displayed laptop HDMI 1.
 2. **Two physical inputs — parked.** The available HDMI 4 + HDMI 1 pair handed off between sources. Reopen that route when the app can establish fresh ownership and address its video connector. The defining milestone remains independently live HDMI 1 + HDMI 2.
-3. **Mixed sources — candidate.** HDMI plus a broadcast channel tests whether the app can present a tuner session beside a physical input and close it independently. HDMI plus a local clip is the controlled alternative. Record each combination separately. [Current task](STATUS.md#single-next-task) · [Device plan](docs/device-tests/current-plan.md)
+3. **HDMI + built-in tuner — parked on C1.** The tested browser setup handed off between sources. The gate remains a separate app-owned output for each input and independent cleanup. [Device plan](docs/device-tests/current-plan.md#hdmi-4-and-a-live-tv-channel)
+4. **Two built-in TV channels — parked on C1.** The same-multiplex allocator checks returned no second decoder grant. A trial needs an app-owned path to attach a second service and acquire its own decoder and output. [DVB findings](docs/research/c1-hdmi-interface-map.md#dvb-attachment-candidates)
 
 ## Phase 2 evidence rules
 
@@ -52,10 +55,9 @@ compilation, two local clips or a display/scaler capture tap do not prove two
 live HDMI inputs. Keep verified, candidate, unknown, unsupported and unsafe-to-test
 findings distinct. [Current trial stop/restoration rules](docs/device-tests/current-plan.md#restoration-and-stop-rules)
 
-If only selected-HDMI plus an overlay proves possible, report that limitation.
-If a second physical-input path cannot be supported by evidence, publish the
-measured limits before reconsidering scope. An IPTV pivot needs a separate
-product decision. [Prior art and open questions](docs/research/prior-art.md#physical-input-research-gaps)
+Record concurrency by source pair and setup. A failed pair limits that test
+configuration. Report the tested limits before reconsidering source scope.
+[Prior art and open questions](docs/research/prior-art.md#physical-input-research-gaps)
 
 ## Deferred and closed work
 

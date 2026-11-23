@@ -11,7 +11,7 @@ function probe(context, saved = new Map()) {
     const action = Object.assign(new EventTarget(), {focus() {}});
     const status = {};
     const trace = {};
-    const elements = {action, status, trace};
+    const elements = {action, status, trace, 'second-label': {}};
     for (const name of ['first', 'second']) {
         elements[name] = Object.assign(new EventTarget(), {
             appendChild(source) { this.source = source; },
@@ -37,11 +37,13 @@ function probe(context, saved = new Map()) {
     return {
         events, status, trace, saved,
         press() { action.dispatchEvent(new Event('click')); },
-        arm(age = 0, traceHdmi1 = false) {
+        arm(age = 0, traceHdmi1 = false, tunerChannelId) {
             document.dispatchEvent(new CustomEvent('webOSRelaunch', {
-                detail: {armHdmiPair: true, issuedAtMs: Date.now() - age, traceHdmi1}
+                detail: {armHdmiPair: true, issuedAtMs: Date.now() - age, traceHdmi1,
+                    ...(tunerChannelId === undefined ? {} : {tunerChannelId})}
             }));
         },
+        source(key) { return elements[key].source; },
         playing(key) { elements[key].dispatchEvent(new Event('playing')); },
         hide() { document.hidden = true; document.dispatchEvent(new Event('visibilitychange')); }
     };
@@ -126,4 +128,32 @@ test('rejects a stale arm before opening any source', context => {
     assert.equal(app.status.textContent, 'Trial launch expired.');
     assert.equal(app.trace.textContent, 'previous completed trial');
     assert.equal(saved.get(key), app.trace.textContent);
+});
+
+test('opens the requested tuner preview after HDMI 4 and releases it first without logging the channel', context => {
+    const app = probe(context);
+    const channelId = 'channel-private-123';
+    app.press();
+    app.arm(0, false, channelId);
+    app.playing('first');
+    assert.deepEqual(app.events, ['ext://hdmi:4']);
+    assert.match(app.status.textContent, /Live TV/);
+    app.press();
+    assert.equal(app.source('second').type, 'service/webos-broadcast-preview');
+    assert.equal(app.source('second').src, 'tv://' + channelId);
+    app.playing('second');
+    context.mock.timers.tick(5000);
+    assert.deepEqual(app.events, ['ext://hdmi:4', 'tv://' + channelId, 'second removed']);
+    context.mock.timers.tick(2000);
+    assert.equal(app.events.at(-1), 'first removed');
+    assert.match(app.trace.textContent, /unloaded-tuner/);
+    assert(!app.trace.textContent.includes(channelId));
+});
+
+test('rejects malformed tuner IDs and does not mix tuner and HDMI 1 trace modes', context => {
+    const app = probe(context);
+    app.press();
+    app.arm(0, false, 'bad/id');
+    app.arm(0, true, 'valid');
+    assert.deepEqual(app.events, []);
 });

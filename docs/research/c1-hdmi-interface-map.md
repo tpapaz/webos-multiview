@@ -1,8 +1,12 @@
-# C1 HDMI evidence map
+# C1 HDMI and tuner evidence map
 
 LG OLED C1, firmware 03.53.45. [Current status](../../STATUS.md) · [Device journal](../device-tests/c1-journal.md)
 
-[HDMI 4 + HDMI 1 plan](../device-tests/current-plan.md#hdmi-4-and-hdmi-1) · [HDMI 1 ownership](#where-does-the-hdmi-video-connector-get-its-owner) · [Playback-frontend candidate](#can-the-playback-frontend-route-physical-hdmi-1-and-preserve-the-owner) · [Receiver decoder reference](c1-receiver-decoder.md)
+- [Receiver allocation and passive decoding](#independent-second-path-research)
+- [HDMI 2 first-scaler assignment](#can-hdmi-2-select-sub0-during-setup)
+- [HDMI 1 ownership and placement](#hdmi-1-ownership-and-secondary-placement)
+- [HDMI 4 and built-in tuner routing](#built-in-tuner-preview)
+- [Two built-in DVB channels](#two-built-in-dvb-channels) and [tested attachment candidates](#dvb-attachment-candidates)
 
 ## Verified result and limits
 
@@ -572,7 +576,7 @@ The connector can request `SUB_SCALER` when the secondary type is applied
 early enough. The saved C1 callers provide no verified way for the app to
 force that ordering on its own HDMI 2 connector. A later `SUB0` descriptor
 shows the later route. The first scaler request remains **unknown**.
-[Remaining options](c1-hdmi-evidence-ledger.md#remaining-options)
+[Trial reopening conditions](../../STATUS.md#c1-trial-readiness)
 
 ## Glasshouse preview source and owner observation
 
@@ -647,6 +651,343 @@ connector's first scaler request remains **unknown**.
 
 ## Built-in tuner preview
 
-**Candidate for HDMI 1 + broadcast TV on C1 firmware 03.53.45.** The saved Glasshouse caller chooses a broadcast preview source for a tuner channel and an external-input source for HDMI. It puts the selected source in one preview element. The maintainer reports that the tuner preview worked on a G3 running webOS 9.2.2. Internet TV takes a separate stream path. [Pinned caller and G3 observation](https://github.com/rorygallagher2024/glasshouse/blob/43ec5ac020838ebee985b1a392c0f9afe7d8f95e/server/assets/home.html#L2299-L2379)
+**Candidate for HDMI + broadcast TV on C1 firmware 03.53.45.** The saved Glasshouse caller chooses a broadcast preview source for a tuner channel and an external-input source for HDMI. It puts the selected source in one preview element. The maintainer reports that the tuner preview worked on a G3 running webOS 9.2.2. Internet TV takes a separate stream path. [Pinned caller and G3 observation](https://github.com/rorygallagher2024/glasshouse/blob/43ec5ac020838ebee985b1a392c0f9afe7d8f95e/server/assets/home.html#L2299-L2379)
 
-The saved C1 browser library `libcbe.so` (SHA-256 prefix `2eb542f9011c`) contains `service/webos-broadcast-preview` at file offset `0x485b0ac` and `tv://` at `0x4e72f30`. The C1 owner observed HDMI 1 alone on the main output. App-owned tuner preview, secondary placement, concurrent motion and tuner-only close on this C1 remain **unknown**. The preview would use one physical HDMI input, so investigating this pair can proceed independently of the parked second-HDMI ownership test. [C1 browser capture](../device-tests/c1-journal.md#c1-browser-engine--read-only-capture) · [HDMI 1 trial](../device-tests/c1-journal.md#browser-hdmi-1-connector-ownership) · [Mixed-source procedure](../device-tests/current-plan.md#hdmi-1-and-a-live-tv-channel)
+The offline trace used the saved C1 browser library `libcbe.so` (SHA-256
+prefix `2eb542f9011c`, ELF inventory Evidence
+`ev_8a733ead8d639f15350dce6faef6434517b9bed4d5ad27416b9a865e5c14bff9`)
+and the retained regional UTP binaries. Addresses below are ELF virtual
+addresses. [C1 browser capture](../device-tests/c1-journal.md#c1-browser-engine--read-only-capture) · [Regional UTP collection](../device-tests/archive/c1-hdmi-preparation-2026-11-14.md)
+
+| Gate | Static evidence and remaining check |
+|---|---|
+| Open | The browser's preview MIME match reaches the `TvPipeline` constructor (`0x3296e18–0x3296e52`, `0x3296fcc–0x3296fde`, `0x329096c`). Its load method at `0x32938b8` takes the compositor-generated window ID and builds an open request with `options.appId`, `options.windowId` and `updateLastChannelId:false` on the preview branch (`0x3293a88–0x3293b82`, `0x3294012–0x3294028`). Service table entry `0x52a6870` selects UTP broadcast for the call built at `0x3293c12–0x3293c2a`. The 0.1.5 browser probe **verified** playback of the built-in channel. The native probe's direct broadcast open has permission-map coverage and has yet to be tested. [Trial](../device-tests/c1-journal.md#hdmi-4-and-live-tuner-playback) |
+| Secondary placement | Both UTP handlers read a separate `options.windowType` (DVB `0x527272`, ATSC `0x527322`). The reviewed preview request supplies the compositor window ID and leaves the window type unspecified. The saved UTP path can forward a window type, but the trace does not establish an app-accessible assignment of the tuner to the secondary video path or scaler. The Glasshouse placement code moves the rectangle of a single preview element. [Pinned placement code](https://github.com/rorygallagher2024/glasshouse/blob/43ec5ac020838ebee985b1a392c0f9afe7d8f95e/server/assets/home.html#L2131-L2154) |
+| Close | `TvPipeline` unload calls its close routine when it has a broadcast ID. The routine issues broadcast stop and close with that instance's `broadcastId` (`0x3291122–0x3291178`, `0x3290f50–0x3290fc2`, `0x3290fee–0x329101c`). UTP close forwards the same key to `TVPlayerManager::close` (DVB `0x527aec–0x527b2e`, ATSC `0x527b9c–0x527bde`). This establishes session-scoped requests in code. Whether teardown leaves a concurrent HDMI 4 picture advancing remains **unknown**. Glasshouse pauses, clears and reloads its single preview element. [Pinned release code](https://github.com/rorygallagher2024/glasshouse/blob/43ec5ac020838ebee985b1a392c0f9afe7d8f95e/server/assets/home.html#L2207-L2215) |
+
+**DVB placement follow-up, C1 03.53.45.** In `legacy-broadcast-dvb.elf`
+(SHA-256 prefix `aca6401ce435`), `API_PathMgr_SetWindowType`
+(`0x5763c0–0x576486`) distinguishes `InitialWindow` and `NoWindow` and
+passes a type flag and string to the pipeline record setter at `0x57cf24`.
+The traced handler establishes window metadata. The video renderer converts
+`sub_video` to a distinct mode at `0x69d89c–0x69d8dc`. Direct callers include
+`vsm_openAvRenderer` at `0x69e848` and `vsm_setAvRendererMode` at
+`0x69ed84`. Broadcast `setSink` unwraps the session's `avSink.videoSink`
+(`0x294668–0x2946a2`) and dispatches it to the VSM sink path
+(`0x294780`, `0x227ea6`, `0x69cfe0`). Placement through the explicit sink
+selector remains unverified.
+
+The saved browser's `setSink` caller is in the stock Live HbbTV path.
+The app-ID check at `0x32cd9e2–0x32cd9f4` precedes its session-bound UTP
+request at `0x32cda82–0x32cdb12`. Current permission replies cover
+`utp.broadcast` open, volatile tune, stop and close for the native probe. They show
+zero coverage for `setSink` on UTP broadcast and legacy broadcast. The
+unresolved gate is secondary placement under the app's own identity.
+[C1 checks and receipt hashes](../device-tests/c1-journal.md#hdmi-4-and-live-tuner-preparation)
+[Default tuner overlap trial](../device-tests/c1-journal.md#hdmi-4-and-live-tuner-playback)
+
+### Tuner secondary allocation
+
+The stock C1 live channel was **verified** on `MAIN` with a tuner-owned
+`VDEC` context. `SUB0` was disconnected at the time of the query. The saved
+permission maps cover videooutput `register`, `unregister`, `connect` and
+`disconnect` for the native probe. UTP broadcast `setSink` has an exact rule
+with zero group coverage for either probe. The examined videosinkmanager
+routing methods also had zero coverage for either identity. These maps
+establish group coverage. Runtime admission for direct calls remains
+**unknown**. [Read-only checks and hashes](../device-tests/c1-journal.md#live-tuner-and-secondary-output-read-only-checks)
+
+- The DVB backend builds a render-ready descriptor with its backend pipeline
+  ID as `context`, `VDEC` as `source`, a resource-derived `sourcePort`, and
+  `MAIN` as `sink` (`legacy-broadcast-dvb.elf`, `0x69dc2e–0x69dc42`,
+  `0x69dcc6–0x69dd24`). The trace has yet to link the UTP `broadcastId`
+  returned to an app to that internal pipeline ID. The stock snapshot supplies
+  no app-owned identifier.
+- The saved AV connector starts at type 2 (`libav-connector.so.1`, SHA-256
+  prefix `c7cffeb1437f`, `0x12094`). It reads that type when preparing the
+  first scaler request (`0x12df6`, `0x1b5a6`, `0x1b644`). Type 2 requests
+  `MAIN_SCALER`. The subsequent output stage can emit `SUB0` (`0x13ede`).
+  An output connection alone therefore cannot establish acquisition of
+  `SUB_SCALER`. [Shared connector trace](#does-the-port-1-open-reply-establish-a-fresh-session)
+- `videooutput.elf` (SHA-256 prefix `e3f86a398e68d`) reads context and app
+  ID on registration (`0x695ca`, `0x695fe`). Its connect handler reads the
+  context, source, port and sink (`0x6fa38–0x6fb0c`) and can disconnect the
+  incumbent on that sink (`0x702d0`). This routes an already-allocated video
+  source. The DVB Multi View wrapper at `0x68f29c` returns immediately. The
+  internal ExSub reconnect path uses a previously connected logical index and
+  saved connection (`0x69c902–0x69c934`). Neither establishes an initial
+  secondary grant for an app-opened tuner.
+- Native UTP broadcast `open` reads `options.windowType` (`utp-dvb.elf`,
+  SHA-256 prefix `745ff06f5eef`, `0x527272`) and dispatches to
+  `TVPlayerManager::open` (`0x527440`). `TVPlayer::open` forwards `appId`,
+  `windowId`, `windowType` and `aliveMode` (`0x5d1b24–0x5d1c36`). Its
+  request builder omits `options.sink`.
+- Legacy broadcast `open` parses both window type and sink and writes them
+  to the pipeline record (`legacy-broadcast-dvb.elf`, `0x29a180–0x29a1f2`,
+  `0x5763c0`, `0x5764cc`). Its next call splits into video and audio
+  initialization (`0x29a1fe`, `0x227a14–0x227a2e`). The video hook
+  `API_PathMgr_OpenAvRenderer` returns zero immediately (`0x57668c`);
+  the audio initializer reads the stored window type (`0x5766fc`). The
+  open-time sink setter in this sequence writes metadata. The separate
+  runtime sink handler is the operation that can update the AV proxy. The
+  covered UTP open therefore gives no evidenced early secondary type write.
+
+### HDMI 4 secondary allocation
+
+The verified HDMI 4 control opens `NormalWindow` and sends port 4 with the
+returned ID. The common HDMI backend switch parses only `pipelineId`,
+`portId` and `inputSourceType` before resolving its watcher
+(`extinput-integration.elf`, SHA-256 prefix `4caec3536b68`,
+`0x4e306–0x4e350`, `0x4e480–0x4e488`). The backend window-ID handler
+uses `NormalWindow` (`0x4cf6e`). The internal sub-scaler callback computes
+availability from resource and Dolby conflict state, then relays availability
+to the HDMI video element (`libextinput-service.so.1.0.0`, SHA-256 prefix
+`7e497c76c377`, `0x855de–0x8570a`, `0x64c7c–0x64dc2`). These paths give
+no evidenced selection or grant of a secondary scaler for port 4.
+[HDMI 4 control](../device-tests/c1-journal.md#0112-physical-hdmi-4--moving-picture-and-sound)
+
+The AV connector has a [running-session move path](#move-hdmi-1-to-sub0-before-opening-hdmi-4).
+The current permission map shows zero coverage for either probe on
+`com.webos.media/setSink` and `utp.extinputs/setSink`. The permissions read
+also found zero coverage for the native HDMI control's open and switch methods
+in the current configuration. The regular browser path was tested separately.
+No move was attempted. [Read-only receipt](../device-tests/c1-journal.md#hdmi-4-secondary-selector-read-only-check)
+
+**Reopen gate.** Find an app-accessible way to acquire the secondary scaler
+for an owned physical source. An initial secondary grant or a move that
+verifiably releases the main scaler before the other source opens would give
+a distinct trial. The device pass condition is independently advancing
+physical HDMI 4 and built-in tuner pictures.
+
+## Two built-in DVB channels
+
+A read-only model query identified this C1 as **OLED55C14LB** running
+**03.53.45**. LG lists this model without Multi Tuner support. The German
+OLED55C11LB is a separate C1 variant that LG lists with two tuners.
+A trial on this TV cannot assume two independent RF tuning paths for channels
+on different frequencies. [Model receipt](../device-tests/c1-journal.md#built-in-tuner-model-identification) · [LG OLED55C14LB specifications](https://www.lg.com/gr/tileoraseis/lg-oled55c14lb) · [LG OLED55C11LB specifications](https://www.lg.com/de/tvs-und-soundbars/oled/oled55c11lb/)
+
+**Same multiplex remains a candidate.** In the saved DVB backend
+(`legacy-broadcast-dvb.elf`, SHA-256 prefix `aca6401ce435`),
+`CM_IsTuneSameChannel` compares the front end's current frequency with the
+requested channel's frequency (`0x40aabc`, `0x40ab28–0x40ab36`).
+`CM_TuneDigitalChannel` checks that result at `0x461656–0x46165c` and has a
+dedicated same-multiplex branch at `0x46180c–0x461860`. Its callee looks up
+the existing pipeline ID and tuner port (`0x460cbe`, `0x460cd8`). It calls
+`CM_SetPids` for that pipeline (`0x460dea–0x460dfa`), which can program its
+audio and video PIDs through `CM_SetAudioVideoPIDs` (`0x3f23f6–0x3f2400`).
+That approach retunes the selected playback path within a multiplex. A
+separate path that attaches another service and acquires a decoder is
+**unknown**. [Offline comparison](#same-multiplex-watch-comparison)
+
+Playback requires its own resources. The legacy channel change reaches
+`API_TVPipelineMng_PlayAction` at `0x195780`. `PipelineMgr_PlayPipeline`
+requests resources before starting the pipeline (`0x673aca`, `0x673ae0`).
+The usual app preview has no evidenced early secondary assignment and its
+separate sink selector has zero group coverage for both probe identities.
+Two logical `broadcastId` replies or a same-frequency tune do not establish
+two independently advancing pictures. [Tuner placement evidence](#tuner-secondary-allocation)
+
+For a same-multiplex trial, first establish a second app-owned watch path
+with its own decoder and a secondary output while the first stays live.
+The two services must be distinct and share the same RF multiplex. A
+successful TV trial must show both moving inside MultiView and leave the
+first advancing after the second closes.
+
+### Tuner sharing and same-app ownership
+
+The installed config returned `false` for `tv.hw.supportDualTuner`,
+`tv.hw.supportTripleTuner` and `tv.hw.supportNewDualTuner`. In the DVB
+backend, frontend pre-initialization calls the tuner-count check before
+creating frontend tasks (`0x21f082–0x21f088`). The count check consults the
+model's dual- and triple-tuner flags (`0x56cade–0x56cafc`, `0x3a9e60`,
+`0x3a9ea0`). This ties the hardware configuration to the running firmware's
+initialization path. [Read-only receipt](../device-tests/c1-journal.md#built-in-tuner-model-identification)
+
+- **Tuner sharing is an explicit allocator operation.** In the saved C1
+  `tvrm.elf` (SHA-256 prefix `82b6ef471b79`), the transaction setup evaluates
+  `_PM_NeedToShareTuner` and stores the result in its working records
+  (`0x4b550–0x4b558`). The non-dual branch returns true
+  (`0x440d8–0x440ea`). The sharing decision gives no evidence of a second
+  video decoder or of two successful watch allocations.
+- **Foreground priority is app-wide in the traced decision.** The allocator's
+  screen lookup reads the pipeline's app ID and calls `is_foreground_app_id`
+  (`0x42e4a–0x42e58`, also `0x42d88–0x42d94`). Separate window IDs inside one
+  app cannot distinguish two panes for that check. The DVB reconnect branch
+  separately looks up an existing output connection before reconnecting it
+  (`0x195420`, `0x19630c`). A new app window alone supplies no such connection.
+- **Status must be tied to the individual session.** In `utp-dvb.elf` (SHA-256
+  prefix `745ff06f5eef`), `getCurrentVideoInfo` reads the global active
+  broadcast ID (`0x52ab3e–0x52ab8e`), and `bind` resolves an existing
+  broadcast (`0x51cba6–0x51cbb8`). The successful tune reply can update which
+  broadcast is active (`0x5efedc–0x5eff4c`). The corresponding `inactive`
+  hook returns without stopping playback (`0x5d42b4–0x5d42c8`). Changing the
+  active ID therefore does not prove the earlier decoder stopped. For an owned
+  session, `getChannelChangeStatus` reads `broadcastId` (`0x52b0f4`). Such a
+  callback would need a matching backend decoder grant and visible motion
+  to establish simultaneous playback. Runtime admission and response
+  coverage for that subscription remain **unknown**.
+
+### Can the allocator forecast a second channel?
+
+**Candidate for an isolated host test.** The saved `tvrm.elf` registers
+`simulateResource` at `0x96098`. The handler parses input, purpose and channel
+information (`0x651f8–0x6521e`). It enters simulation mode, registers a
+conflict callback, runs the regular resource request on a temporary pipeline,
+reads the result, restores the callback, and exits simulation
+(`0x65224–0x652ea`). Entering simulation copies resource and pipeline state
+(`0x4e166`, `0x4e16a`, `0x4bb74`, `0x427ec`). The mode flag is shared within
+the allocator process (`0x48fe0`). Keep this investigation off the running TV.
+
+The comparison to reproduce is one already allocated watch session and a
+distinct second service on its multiplex, with a different-multiplex request
+as a control. Check whether the allocator forecasts a second decoder without
+reclaiming the first. A forecast would answer the allocation question for the
+test fixture. App ownership, separate output placement and actual simultaneous
+playback would still require independent evidence.
+[Offline comparison](#same-multiplex-watch-comparison)
+
+#### Isolated host run
+
+The saved C1 ARM executable ran in Unicorn 2.1.4 on Windows. The guest
+had no OS or device transport. The harness loaded the retained ARM C++
+runtime for selected container routines and supplied host implementations of
+memory, logging and single-thread synchronization imports. Unhandled imports
+stop the run.
+
+- **Simulation setup verified.** The executable completed the ELF
+  initializers and `API_RM_InitializeRM`. Its native simulation setup made
+  five state copies, and the mode flag read back as `1` on entry and `0`
+  after exit.
+- **First-watch control incomplete.** A synthetic DVB watch request reached
+  `_PM_GetVisibleTuner` via `0x4b528`. The seven tuner inventory bytes in
+  the sandbox were all zero at `0x438d0`. The selector returned zero before
+  the resource-list builder and the request returned `-1` with an untouched
+  output buffer. This run had no device resource inventory. It supplies
+  no result for decoder contention on the TV.
+
+The runner and receipts are under ignored `build/phase-2/c1-tuner-simulation-host/`.
+`simulation.json` SHA-256 prefix `e27dbbfab8ba`; `first-watch.json` SHA-256
+prefix `70cc8a2effe7`. Run `python build/phase-2/c1-tuner-simulation-host/run.py simulation`
+or use the `watch` mode for the first-watch control. The latter exits with
+status 1 when the control produces no resource list.
+
+#### Replay with C1 tuner counts
+
+The allocator resolves the provider registered for the resource kind
+(`tvrm.elf` `0x47fb8–0x48028`). The DVB backend registers handled kinds
+at `0x6791e8`. The saved client library handles a `getData` query with
+`queryType:getPhysicalResourceNum` (`0x7394–0x73c8`). A bounded device read
+joined the registered service to the legacy DVB executable and retained only
+numeric counts. The tuner kinds `0–2` reported `1`, `0`, and `0` for the
+DTV input. [TV receipt](../device-tests/c1-journal.md#built-in-dvb-resource-inventory)
+
+The host runner replays the pinned response at the two resource-query
+boundaries (`0x27c74`, `0x29168`) and rejects a missing input or kind. With
+these counts the allocator reached `MRCCalcVdecResources` at `0x46cd2`.
+The initial replay stopped at `__newlocale`
+(`first-watch-with-inventory.json`, SHA-256 prefix `015be8994d37`).
+The completed sandbox loads retained ARM libc, initializes its single-thread
+C locale and static TLS, and binds the matching C++ stream functions. It
+registers the saved provider locally as both a valid client and the handler
+for those resource kinds. That enables the bulk tuner selection
+(`0x42524`) and the scalar capacity check (`0x4975c`).
+
+The calculator's embedded H.264 table (file offset `0x7d80`, library SHA-256
+prefix `f7e86c495370`) charges one `VDEC` unit for 720p30 and two for its
+1088p30 profile. These are per-profile costs. The watch comparison uses the
+firmware's default request configuration for synthetic channel identities.
+
+#### Same-multiplex watch comparison
+
+The saved C1 03.53.45 TVRM code ran in separate guest processes per case.
+The harness used the C1 DVB inventory and submitted two distinct pipeline
+IDs and window IDs under one synthetic app ID. Paired runs committed the
+first request in the guest, copied its state through TVRM's simulation
+entry point, and then submitted the second request. Physical channel and
+transport ID held constant for the same-multiplex case. The service ID
+changed. The comparison reached no TV transport or physical playback.
+
+| Fixture | Native allocator result |
+| --- | --- |
+| First watch with saved inventory | Status `0`. The returned acquire list reports `ADTU` index `0` and `VDEC` index `0`. The guest committed the first pipeline. |
+| Different service on the same multiplex | Status `-1`, empty acquire list. At `0x4dc62–0x4dc86` the allocator saw one `ADTU` available in total, one used, and one requested. The first pipeline's resource table stayed intact. |
+| Different service on another multiplex | Status `-1`, the same tuner capacity check, and only the first pipeline retained. |
+| Same service with a new pipeline ID | Status `-1`, the same tuner capacity check. A second ID alone does not enable tuner sharing. |
+| Same-multiplex second service alone | Status `0` and `VDEC` index `0`. |
+
+The caller-facing index is the first set bit written into the resource list
+at `0x47caa–0x47cba`. The internal pipeline table also contains decoder
+configuration rows. Read the returned acquire entry for its index. In the
+paired cases the raw simulation flag remained `1` (`Possible_NoConflict`).
+The stock handler explicitly maps a failed request with that flag to `6`
+(`Impossible_Conflict`, `0x652c0–0x652d8`, `0x653d0–0x65408`).
+The actual request and resource list show why the raw flag alone is
+insufficient.
+
+In the saved DVB backend, the normal play path calls
+`Pipeline_RequestAllocateResource` before `Pipeline_Play`
+(`0x673aca–0x673ae0`). Its resource-manager skip check returns zero
+(`0x65e83c`, `0x6752e8–0x6752ea`). The direct callers found for the
+shared-pipeline list query belong to CI module detection and debug code
+(`0x333e94`, `0x333f5e`, `0x57880a`). The PVR shared-pipeline registration
+is reached from `DASY_StartRecordInTS` (`0x517e4e`). These leads establish
+lookup and recording paths. An app-owned second watch entry remains unknown.
+
+**Verified offline for ordinary `WATCH_NORMAL` requests.** The second
+request needed another tuner allocation and failed before a second decoder
+grant. The first allocation survived.
+[Alternate DVB routes](#dvb-attachment-candidates)
+
+Run the local `build/phase-2/c1-tuner-simulation-host/run.py` with Python and
+one of the modes below. The runner and redacted receipts remain in that
+ignored directory with the retained offline inputs.
+
+| Mode | Receipt | SHA-256 |
+| --- | --- | --- |
+| `watch-with-inventory` | `first-decoder-grant-001.json` | `c0eaf8966a98fb59144d4dd75f5f91daede8a3041520bcc9112242cc7e339a31` |
+| `same-multiplex` | `same-multiplex-001.json` | `9ea5f514abe937aaf1cf2716465b7d1e6bf3abd621dd25c15ca86e8f911b00fc` |
+| `different-multiplex` | `different-multiplex-control-001.json` | `7abde3b0fa5a472671555911aa7f519680c1133a4a3b27e04b643ed5cabdb571` |
+| `same-service` | `same-service-control-001.json` | `3d5d6dc4fa09fd8fecc28980caf6cc8fa696a0a109c91f426c74b9d7f25e1f71` |
+| `second-alone` | `second-alone-control-001.json` | `245502618325b47983c3b54851d7573480b126c6c5d397a229652a517b266ad9` |
+
+#### DVB attachment candidates
+
+The follow-up ran on the saved C1 03.53.45 DVB and TVRM binaries. In each
+paired run a normal watch committed `ADTU` index 0 and `VDEC` index 0
+under the first pipeline ID. Separate guests ran each case. The first
+pipeline's committed resource table matched before and after every check.
+The copied simulation table also retained only the first pipeline after
+each alternate watch request.
+
+| Candidate | Offline result |
+| --- | --- |
+| `WATCH_DUAL_STREAM` in TVRM | Alone, it returned `VDEC` index 0 as the sole acquire entry. With the first watch allocated, same- and different-multiplex requests reached the same `G1_MSVC` capacity check and returned empty lists. The sandbox lacked a provider for that decoder bandwidth count. |
+| `WATCH_VIDEO_NORMAL` in TVRM | The resource configuration lookup at `0x4b5c0–0x4b5c4` returned zero both alone and alongside the first watch. Both requests returned an empty list. |
+| DVB dual-stream caller | The observer handles a 3D detection event and calls `tv_path_configDualStreamPipeline` at `0x1e9ad8`. The saved function at `0x1fda50–0x1fda5c` returned zero without calling pipeline setup. The isolated execution reached no dependency boundary. |
+| DVB `setPipHotkey` caller | The saved function requires factory mode and multi-tuner capability before the action path at `0x1fc644`. The guest ran the native gate at `0x1fc610–0x1fc640` and its native capability check at `0x3a9eec–0x3a9f2c`. Replaying both C1 tuner flags as false caused the rejection in normal mode and in a synthetic factory-mode control. Neither probe reached the action path. |
+
+The bandwidth diagnostic supplied eight synthetic units to the two decoder
+bandwidth comparisons at `0x4dc66`. This carried the request past
+`G1_MSVC` and `G1_H264` to the `VDEC` capacity check, which also lacked a
+saved count. The diagnostic left the first pipeline intact and yielded no
+grant. The zero counts in these decoder checks are sandbox gaps. The
+decoder-only list and the DVB caller's lack of setup rule out
+`WATCH_DUAL_STREAM` as an identified second tuner-service attachment.
+
+`API_SDEC_Connect` first looks up a demux port under the supplied pipeline
+ID (`0x584c64–0x584c8c`) and resolves or loads its transport path before
+setting input configuration (`0x584cb4`, `0x584cda`, `0x584dac`). This
+connects a pipeline that already owns a demux. The reviewed watch routes
+provide no separate demux for a second service on the first tuner.
+The route is parked pending a caller that establishes that attachment and
+owns a distinct decoder. Physical playback of two channels remains
+**unknown**.
+
+The redacted `dvb-attach-candidates-001.json` receipt is in
+`build/phase-2/c1-tuner-simulation-host/` with SHA-256
+`3c5535ca95648780b56fca13e2d29f0b60b7d63247477326b09b7fe5a22dce02`.
+The same local `run.py` accepts `dvb-callers` for the native entry checks,
+or `same-multiplex --second-purpose dual-stream` and
+`same-multiplex --second-purpose video-normal` for the alternate allocator
+checks. Substitute `second-alone` for the matching isolated controls.

@@ -3,7 +3,7 @@
 > Research/tool record. [Current status](../../STATUS.md) · [Documentation index](../README.md). Earlier next steps and untested labels describe that stage; use Status and later device records for current results.
 
 Historical upstream audit, retained for provenance and licensing boundaries.
-For subsequent work, see the [research history](c1-hdmi-evidence-ledger.md#research-history) and [current task](../../STATUS.md#single-next-task).
+For subsequent work, see the [research history](c1-hdmi-evidence-ledger.md#research-history) and [trial readiness](../../STATUS.md#c1-trial-readiness).
 
 Audit date: 2026-11-09 UTC. Default branches were downloaded as shallow trees and
 pinned below. This is static source/documentation research, **not TV testing**.

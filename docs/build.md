@@ -1,6 +1,6 @@
 # Build and validate the current prototype
 
-[Status](../STATUS.md) · [Contract](../native/phase2-hdmi-candidate-0.1.12/README.md) · [Layout](repository-layout.md)
+[Status](../STATUS.md) · [Contract](../native/phase2-hdmi-candidate-0.1.12/README.md) · [Layout](README.md#repository-layout)
 
 ## Offline host checks
 
@@ -18,7 +18,9 @@ npm run lint
 npm run test:controls
 ~~~
 
-The default suite exercises the current prototype, both browser probes and the receiver decoder with simulated transports. The optional controls cover the retained passive and local-media code.
+The default suite exercises the current prototype, both browser probes, the
+silent-clip runner and the receiver decoder with simulated transports. The
+optional controls cover the retained passive and local-media code.
 
 <details>
 <summary>Reproduce host checks for the completed read-only collectors</summary>
@@ -61,13 +63,13 @@ retains its validated header input at
 build/phase-2/entry-diagnostic-host-0.1.11/include. That is a local dependency,
 not another installed app. Do not delete all build evidence as a cache cleanup.
 
-On 2026-11-18 the offline review passed `npm test`, `npm run lint`,
-`npm run test:controls`, the six collector suites and their plan commands.
-The root, native 0.1.12 and dispatch projects passed all ten WSL CTest cases
-in Release builds. The ABI version test and report schema test passed.
-The source-only checkout also passed the default tests and lint with the
-installed npm dependencies. The retained 0.1.12 artifact passed its local
-hash checks. These checks cover host behavior and package integrity.
+The 2026-11-23 consolidation passed `npm test`, `npm run lint` and
+`npm run test:controls`. Fresh Release builds with Ninja in Ubuntu WSL
+passed all five CTest cases across the repository root and the
+`native/phase2-hdmi-clip` project. The earlier 2026-11-18 review also passed
+the six collector suites and their plan commands, the 0.1.12 and dispatch
+native checks, the ABI version and report schema tests, and the 0.1.12
+package hash checks.
 
 ## Browser HDMI preview
 
@@ -82,7 +84,7 @@ The browser apps use the existing webOS CLI and require no ARM compilation. The 
 | App | Package and behavior |
 |---|---|
 | Single HDMI preview | `io.github.tpapaz.multiview.hdmipreview_0.1.0_all.ipk`. Explicit opt-in opens HDMI 4 for a bounded observation. [TV result](device-tests/c1-journal.md#browser-hdmi-4--moving-picture-and-sound) |
-| HDMI pair probe | `io.github.tpapaz.multiview.hdmipair_0.1.4_all.ipk`. A fresh owner-armed relaunch starts HDMI 4, then a separate OK starts HDMI 1. The `traceHdmi1: true` mode opens HDMI 1 alone. The last trial log survives an idle reopen or stale arm. Host-tested and packaged locally. The TV evidence is from pair 0.1.2 and 0.1.3. [Device disposition](device-tests/current-plan.md#browser-hdmi-4-preview) |
+| Browser pair probe | `io.github.tpapaz.multiview.hdmipair_0.1.5_all.ipk`. A fresh owner-armed relaunch starts HDMI 4. A separate OK opens the requested tuner preview or HDMI 1. Version 0.1.5 was TV-tested with the tuner and produced a picture handoff. The HDMI 1 evidence is from 0.1.2 and 0.1.3. [Tuner trial](device-tests/c1-journal.md#hdmi-4-and-live-tuner-playback) |
 
 ## ARM build and saved ABI inputs
 
@@ -110,6 +112,42 @@ wsl -d Ubuntu --exec /home/tasos/.cache/webos-multiview/202608/arm-webos-linux-g
 ~~~
 
 The local build produced an 8,368-byte ELF32 ARM executable, SHA-256 `cc55a6296d8cb9571f902a430a136657194515d08c2f60af8929b48e454924b8`. The helper checks whether the SDK returns a nonempty pre-load media ID. Its eight-second alarm covers player construction, the getter and destruction. Its own output reports only presence or absence. This artifact has no HDMI open, selection or ownership calls. Packaging, target execution and runtime registration are unverified.
+
+## HDMI 4 and silent clip probe
+
+The [0.1.13 native probe](../native/phase2-hdmi-clip/main.cpp) was built with
+the existing ARM32 SDK. Direct ABI verification matched 168 imports across
+11 dependencies. The offline packager checked the IPK contents and bound the
+installed-file hashes. The 257,874-byte IPK is
+`dist/io.github.tpapaz.multiview.hdmiwindow_0.1.13_arm.ipk` with SHA-256
+`79f4d189113667a384ffac2ad0cb4825aa353ea05060a228a6698a47ac1f103b`.
+The build, ABI and package receipts are under `build/phase-2/hdmi-clip-0.1.13/`.
+
+From the repository root in PowerShell:
+
+~~~powershell
+$probe = 'build/phase-2/hdmi-clip-0.1.13'
+$root = '/mnt/d/Development/webos-multiview'
+$sdk = '/home/tasos/.cache/webos-multiview/202608/arm-webos-linux-gnueabi_sdk-buildroot'
+wsl -d Ubuntu --exec cmake -S native/phase2-hdmi-clip -B "$probe/host" -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DJSON_C_INCLUDE_DIR=$root/build/phase-2/entry-diagnostic-host-0.1.11/include"
+wsl -d Ubuntu --exec cmake --build "$probe/host"
+wsl -d Ubuntu --exec ctest --test-dir "$probe/host" --output-on-failure
+wsl -d Ubuntu --exec cmake -S native/phase2-hdmi-clip -B "$probe/arm" -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel "-DCMAKE_TOOLCHAIN_FILE=$sdk/share/buildroot/toolchainfile.cmake" "-DLUNA_LIBRARY=$root/build/phase-1/firmware-inspection/native-idle/libluna-service2.so.3" "-DJSON_C_LIBRARY=$root/build/phase-1/firmware-inspection/native-idle/libjson-c.so.4" "-DCLOCK_LIBRARY=$root/build/phase-2/admission-runtime-20261111/librt.so.1" "-DPTHREAD_LIBRARY=$root/build/phase-2/admission-runtime-20261111/libpthread.so.0"
+wsl -d Ubuntu --exec cmake --build "$probe/arm"
+# Create an ABI receipt only in a fresh output slot.
+wsl -d Ubuntu --exec python3 scripts/verify-hdmi-window-abi.py "$probe/arm/multiview-hdmi-clip" $probe --with-clip
+wsl -d Ubuntu --exec python3 scripts/package-hdmi-clip.py
+node --test tests/host/hdmi-clip-runner.test.cjs
+node scripts/run-hdmi-clip.cjs --plan
+~~~
+
+The native test exercises normal overlap, cancellation, worker stalls
+during startup, feed and unload, and worker termination on parent exit.
+It also checks that missing exit status leaves cleanup uncertain. The runner test
+simulates two connections, installed-file checks, a witnessed lifecycle,
+and rejection of an attempt on a different boot. Version 0.1.13 passed the
+C1 installation and idle lifecycle check. Mixed playback remains untested.
+[C1 lifecycle result](device-tests/c1-journal.md#hdmi-4-and-silent-clip-0113-lifecycle)
 
 ## HDMI 1 ownership probe core
 

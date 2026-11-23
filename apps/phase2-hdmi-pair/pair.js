@@ -6,6 +6,7 @@
     var action = document.getElementById('action');
     var status = document.getElementById('status');
     var trace = document.getElementById('trace');
+    var secondLabel = document.getElementById('second-label');
     var startMs = 3000;
     var overlapMs = 5000;
     var firstOnlyMs = 2000;
@@ -20,6 +21,10 @@
     var startupDeadline;
     var phaseTimer;
     var overallTimer;
+
+    function label(input) {
+        return input.channelId ? 'Live TV' : 'HDMI ' + input.port;
+    }
 
     try { trace.textContent = window.localStorage.getItem(traceKey) || ''; }
     catch (error) { trace.textContent = 'Saved log unavailable.'; }
@@ -72,18 +77,18 @@
         phase = starting;
         startupDeadline = performance.now() + startMs;
         action.textContent = 'Stop preview';
-        status.textContent = 'Opening HDMI ' + input.port + '…';
+        status.textContent = 'Opening ' + label(input) + '…';
         var source = document.createElement('source');
         input.source = source;
-        source.type = 'service/webos-external';
-        source.src = 'ext://hdmi:' + input.port;
+        source.type = input.channelId ? 'service/webos-broadcast-preview' : 'service/webos-external';
+        source.src = input.channelId ? 'tv://' + input.channelId : 'ext://hdmi:' + input.port;
         input.video.muted = true;
         function failed(reason) {
-            if (input.source === source) finish('HDMI ' + input.port + ' reported a playback error.', reason + '-' + input.port);
+            if (input.source === source) finish(label(input) + ' reported a playback error.', reason + '-' + input.port);
         }
         source.addEventListener('error', function () { failed('source-error'); });
         input.video.appendChild(source);
-        function timeout() { finish('HDMI ' + input.port + ' startup timed out.', 'startup-timeout-' + input.port); }
+        function timeout() { finish(label(input) + ' startup timed out.', 'startup-timeout-' + input.port); }
         phaseTimer = setTimeout(timeout, startMs);
         try {
             record('load-' + input.port);
@@ -96,13 +101,13 @@
         } catch (error) { failed('media-call-error'); }
     }
 
-    function secondStartExpired() { finish('HDMI 1 start window expired.', 'start-window-expired-1'); }
+    function secondStartExpired() { finish(label(second) + ' start window expired.', 'start-window-expired-' + second.port); }
 
     function showSecondStart() {
         if (phase !== 'first-ready') return;
         var remaining = deadline - performance.now() - secondRunMs;
         if (remaining <= 0) { secondStartExpired(); return; }
-        status.textContent = 'Press OK when HDMI 4 is moving. HDMI 1 start ends in ' + Math.ceil(remaining / 1000) + ' s.';
+        status.textContent = 'Press OK when HDMI 4 is moving. ' + label(second) + ' start ends in ' + Math.ceil(remaining / 1000) + ' s.';
         phaseTimer = setTimeout(showSecondStart, Math.min(remaining, 1000));
     }
 
@@ -112,7 +117,7 @@
         clearTimeout(phaseTimer);
         record('playing-4');
         phase = 'first-ready';
-        action.textContent = 'Start HDMI 1';
+        action.textContent = 'Start ' + label(second);
         showSecondStart();
     });
     second.video.addEventListener('playing', function () {
@@ -128,17 +133,17 @@
         if (phase !== 'starting-second') return;
         var now = performance.now();
         if (now >= startupDeadline || now + overlapMs + firstOnlyMs >= deadline) {
-            finish('HDMI 1 started too late for the observation.', 'late-playing-1');
+            finish(label(second) + ' started too late for the observation.', 'late-playing-' + second.port);
             return;
         }
         clearTimeout(phaseTimer);
-        record('playing-1');
+        record('playing-' + second.port);
         phase = 'observing';
         status.textContent = 'Watch both windows. Press Back if either feed stops moving.';
         phaseTimer = setTimeout(function () {
             phase = 'first-after-close';
-            if (!unload(second)) { finish('HDMI 1 cleanup failed.', 'second-cleanup-failed'); return; }
-            status.textContent = 'HDMI 1 closed. Check that HDMI 4 keeps moving.';
+            if (!unload(second)) { finish(label(second) + ' cleanup failed.', 'second-cleanup-failed'); return; }
+            status.textContent = label(second) + ' closed. Check that HDMI 4 keeps moving.';
             phaseTimer = setTimeout(function () { finish('Observation ended.', 'observation-ended'); }, firstOnlyMs);
         }, overlapMs);
     });
@@ -147,18 +152,28 @@
             if (input.source && !input.loaded) { input.loaded = true; record('loadeddata-' + input.port); }
         });
         input.video.addEventListener('error', function () {
-            if (input.source) finish('HDMI ' + input.port + ' reported a media error.', 'media-error-' + input.port);
+            if (input.source) finish(label(input) + ' reported a media error.', 'media-error-' + input.port);
         });
     });
 
     document.addEventListener('webOSRelaunch', function (event) {
         var params = event.detail;
         if (phase !== 'ready' || !params || params.armHdmiPair !== true || document.hidden) return;
+        var hasTuner = Object.prototype.hasOwnProperty.call(params, 'tunerChannelId');
+        if (hasTuner) {
+            if (params.traceHdmi1 === true || typeof params.tunerChannelId !== 'string' ||
+                !/^[A-Za-z0-9_.:%-]{1,192}$/.test(params.tunerChannelId)) return;
+        }
         var issuedAt = params.issuedAtMs;
         var age = Date.now() - issuedAt;
         if (typeof issuedAt !== 'number' || !isFinite(age) || age < 0 || age >= 3000) {
             finish('Trial launch expired.', 'arm-expired');
             return;
+        }
+        if (hasTuner) {
+            second.channelId = params.tunerChannelId;
+            second.port = 'tuner';
+            secondLabel.textContent = label(second);
         }
         deadline = performance.now() + trialMs - age;
         record('armed');
@@ -181,7 +196,7 @@
         if (phase === 'ready') return;
         var remaining = deadline - performance.now();
         if (phase === 'first-ready') {
-            record('owner-start-1');
+            record('owner-start-' + second.port);
             if (remaining <= secondRunMs) { secondStartExpired(); return; }
             clearTimeout(phaseTimer);
             open(second, 'starting-second');

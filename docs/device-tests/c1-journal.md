@@ -8,6 +8,157 @@ preparation wording is not current authorization or a replay queue. Current
 permission/bounds live in the [current plan](current-plan.md); interpretation
 corrections and saved-input locations live in the [evidence ledger](../research/c1-hdmi-evidence-ledger.md).
 
+## Built-in tuner model identification
+
+2026-11-23 (Athens). One pinned read-only connection queried only the model
+and firmware through `getSystemInfo` and closed. The TV returned public model
+`OLED55C14LB` and firmware `03.53.45`. No tuning or playback calls were made.
+Private receipt `build/phase-2/c1-tuner-placement-20261123-001/tuner-model-summary.json`,
+SHA-256 `081233a4eb1469296b959cee3d24acfa51327056c4c30e5df61054a24dbd9a83`.
+
+A separate pinned read queried three model flags through `getConfigs` and
+closed. `supportDualTuner`, `supportTripleTuner` and `supportNewDualTuner`
+all returned `false`. No playback or configuration changes were requested.
+Private receipt `build/phase-2/c1-tuner-placement-20261123-001/tuner-flags-summary.json`,
+SHA-256 `f6ed06b978753107878c0fb3577b0a74106da0d88a53addb13cd67cbb9df78e6`.
+[Two-channel analysis](../research/c1-hdmi-interface-map.md#two-built-in-dvb-channels)
+
+## Built-in DVB resource inventory
+
+2026-11-23 (Athens), OLED55C14LB on 03.53.45. A pinned read-only connection
+found one registered DVB resource provider belonging to the legacy broadcast
+backend and queried four physical resource kinds for the DTV input. Kinds
+`0`, `1`, `2` and `3` returned `1`, `0`, `0` and `1` respectively. In the
+saved allocator the tuner selector reads kinds `0–2`. No tune, open, or
+simulator request was issued on the TV. The connection closed. A first
+provider lookup also closed and issued no resource queries.
+
+A separate bounded SFTP read retained the ARM `libpbnjson_cpp.so.2` required
+by the decoder calculator. The handle, subsystem and pinned connection
+closed. [Host replay](../research/c1-hdmi-interface-map.md#replay-with-c1-tuner-counts)
+
+| Private receipt | SHA-256 |
+|---|---|
+| `c1-tuner-placement-20261123-001/tuner-resource-counts-002.json` | `001175125f57d75c16a68794792b175be0b279251d7222862e61b61f003ba6e5` |
+| `c1-tuner-simulation-host/json-runtime-private/inventory.json` | `5aa1016dd18af64c9d60aadeea2abedc19a6d415dddfaa17fea1c902d9c4097a` |
+
+## HDMI 4 and live tuner playback
+
+2026-11-23 (Athens), C1 03.53.45, browser probe 0.1.5. The owner authorized
+one install and one 40-second trial. Both sources were muted. The owner saw
+HDMI 4 moving, pressed OK to start the already-tuned broadcast channel, then
+saw the channel while HDMI 4 stopped showing. HDMI 4 came back when the
+tuner preview closed. The owner confirmed normal picture, sound and remote
+control afterward. **Simultaneous playback failed for this browser path.**
+
+The redacted browser log recorded HDMI 4 `playing` 99 ms after arming and
+the tuner `playing` 74 ms after the second OK. Tuner unload came about 5.02
+seconds after the tuner callback and about 2.01 seconds before HDMI 4 unload.
+The scheduled app close was acknowledged and the process was absent at
+40.301 seconds. The trial and trace-read connections closed. Callbacks timed
+the sequence. The owner observation established the visible handoff.
+
+Private receipts under `build/phase-2/c1-tuner-placement-20261123-001/`:
+
+| Receipt | SHA-256 |
+|---|---|
+| `tuner-install.json` | `ada41b4d7056db8b5d8b45464d04e1fa47c28ac8ddfdc4ff62b61708db04ad76` |
+| `tuner-trial.json` | `66db725193226066b207604525bbfdaa3d29747d23c866615a53f535d643bd34` |
+| `tuner-trace.json` | `357ccb710ab73cf00b74c124c57238033739259484662f4f72f8c97e26e22333` |
+
+## Live tuner and secondary output read-only checks
+
+2026-11-23 (Athens), C1 03.53.45. Six permission queries checked the native
+and browser probe identities. The native identity had group coverage for
+videooutput register, unregister, connect and disconnect. The explicit UTP
+broadcast `setSink` rule covered neither probe identity. In a separate
+connection, after the owner confirmed a normal live channel was showing, one
+videooutput status query found a stock tuner-owned `VDEC` context on `MAIN`
+and `SUB0` disconnected. Both connections closed. These checks issued no
+playback or output-routing requests. [Interpretation](../research/c1-hdmi-interface-map.md#tuner-secondary-allocation)
+
+A later bounded read searched display, TV-service and broadcast registration
+filenames in the available service directories for the exact `tv.display`
+service name. The selected files yielded no registration. The owning process
+remains unknown. The connection closed without invoking the service.
+
+Private receipts under `build/phase-2/c1-tuner-placement-20261123-001/`
+
+| Receipt | SHA-256 |
+|---|---|
+| `secondary-permission-summary.json` | `a3881ff0055bfe324a815e515b0b11b898344f8804f9a51886e9bf6695829563` |
+| `builtin-tuner-videooutput-summary.json` | `fae3c5505287b2fac31843dfda27c2b8edfa6f9192b300311cca76056e1e2203` |
+| `display-registration-summary.json` | `d6ee2fc6c01acf524713783388b587a860ed3bdce30e016659fcb883efe2a67c` |
+
+## HDMI 4 secondary selector read-only check
+
+2026-11-23 (Athens), C1 03.53.45. One pinned connection completed five bus
+permission queries and closed. Neither the native nor the browser probe had
+group coverage for the examined media-server or UTP external-input sink
+selectors. The current map gave the native probe zero coverage for UTP
+external-input open and switch. The check issued no playback or routing calls.
+Private receipt `build/phase-2/c1-tuner-placement-20261123-001/hdmi-secondary-permission-summary.json`,
+SHA-256 `dcebe10efbb135de6e89be9bdc2a212e72d3ab378c7b9d8a0f33883fcd71aedf`.
+[HDMI 4 code findings](../research/c1-hdmi-interface-map.md#hdmi-4-secondary-allocation)
+
+## HDMI 4 and live tuner preparation
+
+2026-11-23 (Athens), C1 03.53.45. The owner confirmed a live channel from the
+built-in tuner and reported that Quick Settings on HDMI 4 had no stock
+Multi View or PIP option.
+
+One pinned read-only SFTP connection retrieved the DVB broadcast backend
+(10,710,536 bytes) and closed the file, subsystem and connection. A separate
+pinned read-only connection completed three bus permission queries and
+closed. The app's group coverage included UTP tuner open, volatile tune, stop
+and close. Both queried broadcast services showed zero coverage for the
+sink selector. The preparation connections made no playback requests. [DVB trace](../research/c1-hdmi-interface-map.md#built-in-tuner-preview)
+
+Private receipts under `build/phase-2/c1-tuner-placement-20261123-001/`:
+
+| Receipt | SHA-256 |
+|---|---|
+| `private/inventory.json` | `95e9eb03b7a48a3a69d46404cc1c3eafc2d550c6f0c24df590fb36e31e7bfa1f` |
+| `tuner-permission-summary.json` | `bd856bc786ea761d182c002365037c79aa28852a1dbb48304c059621256cd470` |
+
+## HDMI 4 and silent clip 0.1.13 lifecycle
+
+2026-11-23 (Athens), C1 firmware 03.53.45. The previous native probe was absent.
+The owner authorized one install and idle lifecycle launch. The installer
+verified the staged IPK hash and installed version, removed its staging
+files, and closed its connection.
+
+The C1 accepted one idle launch. Both report aliases matched and recorded
+completed setup and local cleanup, worker readiness and reaping, and exit
+intent 0. Both independent witness records observed app termination.
+Collection began 27.181 seconds after dispatch. Both SSH connections closed
+and the app was absent afterward. The owner saw an immediate return to Home
+and confirmed normal picture, sound and remote control. The OS exit status
+and hardware release remain unknown. This action opened neither playback path.
+
+Private receipts under `build/phase-2/`:
+
+| Receipt | SHA-256 |
+|---|---|
+| `hdmi-clip-install-20261123-002.json` | `6fe47147db0d10a85551703dd245530ec5f68de789ec4d3029f6fcb4880d7400` |
+| `clip-c1-lifecycle-20261123-001/capture.json` | `e59ba39092075d8bb784325187832beb4f5f5336717c8eaf8fea97e6ebe4ec28` |
+| `clip-c1-lifecycle-20261123-001/owner-restoration.json` | `06897a0c21044aa05e40768b95dd007e2367e42a94d5d13250c4a19a2ae78b0e` |
+
+### HDMI 4 and silent clip playback preflight
+
+The owner separately authorized one mixed playback trial. The runner read the
+installed files and current bus coverage. Two queries returned zero coverage
+for each of the four app-specific UTP methods and the grant group was absent
+from the replies. The connection closed after 2.897 seconds with zero launch
+submissions. Mixed playback and actual admission remain unknown.
+
+The runner initially labeled the permission queries as launch cues. It now
+emits the timer cue only at SAM launch submission. Offline replay covers the
+missing-admission case and confirms that it emits zero cues.
+
+Private receipt `build/phase-2/clip-c1-playback-20261123-001/capture.json`,
+SHA-256 `80ac2ce6c69513ecba4b6c045227f7c3f87acad3ca6fed40537f8977d83be4c4`.
+
 ## Stock HDMI 1 receiver grant window
 
 2026-11-22 (Athens), C1 firmware 03.53.45. The owner reported YouTube was open beforehand and confirmed a normal picture on HDMI 1 after the monitor-ready cue.

@@ -1,10 +1,9 @@
 # Contributor Instructions — webOS MultiView
 
-Read `STATUS.md` first for the current result and single next task, then
+Read `STATUS.md` first for the current results and trial readiness, then
 `ROADMAP.md` and the linked research/decision records relevant to the change.
-Use `docs/README.md` as the documentation index. Historical “next steps” in dated
-records do not override `STATUS.md`; do not append chronological updates to the
-roadmap or active handoff.
+Use `docs/README.md` as the documentation index. Use `STATUS.md` for current
+decisions and keep the roadmap focused on milestones.
 Before finishing each task, apply the [documentation update rules](docs/README.md#keeping-the-record-current). The [research history](docs/research/c1-hdmi-evidence-ledger.md#research-history) owns route transitions and their reasons.
 Keep device testing in `docs/device-tests/c1-journal.md` (concise actual outcomes)
 and `docs/device-tests/current-plan.md` (one current procedure). Do not create a
@@ -29,14 +28,14 @@ IWC setter work is paused; screensaver/Glasshouse work is closed/separate; Phase
 remains partial. Preserve current prototype dependencies/IPK and original private
 evidence/frozen inputs. Superseded standalone diagnostics may be retired after
 checking current imports, recording useful findings and validating the prototype;
-do not keep old implementations solely for historical purposes. Read
-`docs/handoff/hdmi-next-chat.md`, the current plan, decision 0003 and build guide
-before preparing an experiment. Build locally in the existing WSL SDK; no GitHub
+do not keep old implementations solely for historical purposes. Follow the
+[documentation index](docs/README.md) before preparing an experiment.
+Build locally in the existing WSL SDK; no GitHub
 Actions (including on push), automatic commit or push.
 
 ## Mission
 
-Build a standalone, root-assisted Homebrew MultiView application for supported LG webOS televisions. The **defining research objective** is simultaneous, independently live **HDMI 1 + HDMI 2**, displayed in movable/scalable PiP or split-screen windows using the TV's own hardware. HDMI+tuner, apps and IP streams are additional goals, not replacements for the primary one.
+Build a standalone, root-assisted Homebrew MultiView application for supported LG webOS televisions. MultiView is the foreground app, provides source selection and owns the panes for **two or more independently live sources**. The defining dual-HDMI research milestone is **HDMI 1 + HDMI 2** using the TV's own hardware. HDMI plus the built-in tuner is a separate hardware pairing. Layouts such as split-screen, grid and inset panes are managed inside the app.
 
 ## Evidence and accuracy
 

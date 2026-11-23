@@ -7,7 +7,9 @@ import subprocess
 import sys
 
 root = Path(__file__).resolve().parents[1]
-binary, output = map(Path, sys.argv[1:])
+binary, output = map(Path, sys.argv[1:3])
+extra = sys.argv[3:]
+assert extra in ([], ['--with-clip'])
 runtime = root / 'build/phase-2/admission-runtime-20261111'
 old = json.loads((root / 'build/phase-1/abi-endurance-0.1.3.json').read_text())['firmwareLibrarySha256']
 files = {}
@@ -20,6 +22,8 @@ for inventory in ['inventory.json', 'transitive-inventory.json']:
 for name in ['libluna-service2.so.3', 'libjson-c.so.4']:
     files['/usr/lib/' + name] = root / 'build/phase-1/firmware-inspection/native-idle' / name
 files['/usr/lib/libSDL2-2.0.so.0'] = root / 'build/phase-1/firmware-inspection/libSDL2-2.0.so.0'
+if extra:
+    files['/usr/lib/libplayerAPIs.so.1'] = root / 'build/phase-1/firmware-inspection/libplayerAPIs.so.1'
 for file in files.values():
     if file.name in old:
         assert hashlib.sha256(file.read_bytes()).hexdigest() == old[file.name]

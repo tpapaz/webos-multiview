@@ -64,11 +64,11 @@ steps, so its 24 seconds is a different measure from compact startup.
 | Check HDMI motion and sound in the primary rectangle | 1.00 s |
 | Start the silent clip and see first motion | 2.25 s |
 | Observe both pictures advancing | 2.00 s |
-| Unload the clip and remove its window | 0.25 s |
+| Unload the clip and observe worker exit | 0.35 s |
 | Observe HDMI motion and sound after clip close | 2.00 s |
-| Total | 7.50 s |
+| Total | 7.60 s |
 
-This leaves 0.50 seconds in the existing eight-second window. Two seconds
+This leaves 0.40 seconds in the existing eight-second window. Two seconds
 of overlap is a proposed mixed-source smoke criterion. Using the saved
 startup and slower close measurements, five seconds of overlap and two
 seconds after close already total 8.970 seconds before checking HDMI motion.
@@ -85,7 +85,7 @@ cleanup. The native alarm bounds process lifetime.
 
 ### Isolating clip playback from HDMI cleanup
 
-**The current code cannot isolate a stalled clip call.** The clip session
+**The shared clip session calls the SDK synchronously.** The clip session
 calls `Load`, `Feed`, `Play`, `Unload` and the player destructor synchronously
 on its caller. The same thread would need to poll for Back, focus loss or
 deadline expiry and return from observation before HDMI stop and close can
@@ -102,23 +102,24 @@ is precedent for isolation of the caller. Its detached worker supplies no
 completion bound for our clip or its resources.
 [Wren player source](https://github.com/sostk/webos-wpe-browser/blob/89fbd973ed25189afc19ed1f195a04673fb6b1e7/browser/lg_media_player.cpp#L292-L304)
 
-**Candidate design.** Keep SDL events, exported windows and HDMI control on
-the main thread. Let one separate worker own the clip player from creation
-through destruction, including feed buffers and callback state. Pass it the
-secondary window ID and read progress without waiting for the worker or
-taking a lock it holds across a player call. On timeout or cancellation, stop
-issuing clip work and let HDMI submit stop and close, even if the clip worker
-is still blocked. Preserve the issue+17 and issue+22 cutoffs and the existing
-two-second HDMI exchanges. A timed-out clip close fails the continuity check.
+**Implemented in 0.1.13.** The app owns SDL events, both exported windows
+and HDMI. A worker launched from the same executable owns the clip player,
+feed buffers and callback state. A private socket sends the secondary window
+ID and a deadline to the worker. It reports only readiness, frame progress
+and close outcomes. The app waits for close and process exit before starting
+the HDMI-only continuity window. The secondary SDL window is destroyed at
+final cleanup.
 
-Safe worker affinity, bounded clip completion, and the interaction of a
-stalled player with SDL and the common media services remain **unknown**.
-Window destruction and callback-owner teardown need a proven lifetime rule
-for late calls and callbacks. A blocked worker cannot certify full local
-cleanup. The native alarm bounds process lifetime, while release remains
-unknown. If this design is revisited, the smallest host check is to inject
-stalls in clip startup, feed and unload and verify that HDMI stop and close
-are still submitted on time, with an uncertain result for the clip.
+**Deadline behavior verified with host fixtures.** On timeout or cancellation
+the app submits a termination signal to its worker and returns to HDMI stop
+and close. It polls for worker exit after the HDMI exchanges, up to 200 ms
+within the existing cleanup deadline. The issue+17 and issue+22 cutoffs and
+the two-second HDMI exchanges are preserved. Clip close timeout fails the
+continuity check and leaves clip cleanup uncertain. If worker exit stays
+unconfirmed, the app exits without explicitly destroying the shared windows.
+The native alarm bounds app lifetime. Backend release, cross-process window
+use, simultaneous playback and restoration on the C1 remain **unknown**.
+[Worker and observation](../../native/phase2-hdmi-clip/observation.h) · [Stall fixture](../../tests/host/hdmi_clip_test.cpp)
 
 ## App-scoped screensaver review
 

@@ -1,0 +1,11 @@
+{
+  "id": "io.github.tpapaz.multiview.hdmiwindow",
+  "version": "0.1.13",
+  "vendor": "tpapaz",
+  "type": "native",
+  "main": "multiview-hdmi-clip",
+  "title": "MultiView HDMI and Local Clip Probe",
+  "icon": "icon.png",
+  "transparent": true,
+  "requiredACG": []
+}

@@ -57,4 +57,4 @@ an evidenced per-port path. Retain the existing safety rules: no `/dev/mem`,
 forced capture, modules, firmware writes, persistent policy edits, critical
 service restarts or protection bypass.
 
-The [next-chat handoff](../handoff/hdmi-next-chat.md) is the entry point.
+Start with [Status](../../STATUS.md) and the [documentation index](../README.md).

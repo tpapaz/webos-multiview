@@ -1,19 +1,33 @@
 # Current status
 
-LG OLED C1 · firmware 03.53.45 · updated 2026-11-22. [Research history](docs/research/c1-hdmi-evidence-ledger.md#research-history) · [Roadmap](ROADMAP.md) · [Device procedure](docs/device-tests/current-plan.md)
+LG OLED55C14LB · firmware 03.53.45 · updated 2026-11-23.
+[Research history](docs/research/c1-hdmi-evidence-ledger.md#research-history) · [Roadmap](ROADMAP.md) · [Device procedure](docs/device-tests/current-plan.md)
 
-## Single next task
+MultiView is the foreground app. It opens the selected sources and owns the
+panes where they advance independently. The Phase 2 hardware milestone is
+independent HDMI 1 + HDMI 2 playback. [Roadmap](ROADMAP.md#objective-and-position)
 
-**Assess HDMI 1 + a live channel from the C1’s built-in tuner offline.** The browser probe already showed the laptop moving on HDMI 1. The open question is whether an app-owned channel preview can use a separate video window and close independently while that picture continues. No mixed-source device trial is ready. [Current procedure](docs/device-tests/current-plan.md#hdmi-1-and-a-live-tv-channel)
+## C1 trial readiness
 
-The physical HDMI 4 + HDMI 1 trial remains parked. The ARM-linked ownership core passed its lifetime tests. A port-1 reply can describe a new or adopted session, and the known parent-carrying caller selects port 5. Keep HDMI 4 + a silent local clip as the alternative if the tuner route cannot meet its gate. [Physical pair findings](docs/research/c1-hdmi-interface-map.md#does-the-port-1-open-reply-establish-a-fresh-session) · [Workarounds](docs/device-tests/current-plan.md#workarounds-if-native-ownership-ends-here)
+**All pair trials are parked or deferred.** Each row names the missing
+evidence that would justify reopening that route.
 
-## Verified milestone
-
-| Path | Latest evidence and disposition |
+| Route | Result and reopening condition |
 |---|---|
-| Native direct UTP | **Verified** moving HDMI 4 with sound in 0.1.12. Keep that package as the single-input control. The native HDMI 1 + 2 design paused before a two-input launch. [Native history and pause](docs/research/c1-hdmi-evidence-ledger.md#research-history) |
-| JavaScript external-input player | **Verified** moving HDMI 4 with sound in preview 0.1.0. Pair 0.1.2 showed HDMI 4 → laptop HDMI 1 → HDMI 4 in sequence. Both moving together remains **unknown** for a secondary route. [Pair observation](docs/device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry) |
-| JS probe with native ownership tracing | Installed pair 0.1.3 traced HDMI 1 on `MAIN` and closed normally. Moving it to `SUB0` remains **untested**. Pair 0.1.4 preserves the previous trial log through idle opens and stale launch requests. It is host-tested and packaged locally. The last TV-tested version is 0.1.3. [Trace](docs/device-tests/c1-journal.md#browser-hdmi-1-connector-ownership) · [Build guide](docs/build.md#browser-hdmi-preview) |
+| HDMI 1 + HDMI 2 | Native pair design paused before a two-input launch. Verify HDMI 2 can acquire its own receiver and select the secondary scaler before its first scaler request. [Parked design](docs/device-tests/archive/c1-dual-hdmi-design.md) |
+| HDMI 4 + HDMI 1 | Browser sources took turns. The offline ownership core preserves the registered parent, but the C1 port-1 reply cannot distinguish a fresh session from adoption. Identify an app-owned physical open that proves freshness and gives the app control of the video child. [Ownership finding](docs/research/c1-hdmi-interface-map.md#does-the-port-1-open-reply-establish-a-fresh-session) |
+| HDMI 4 + built-in tuner | The tuner replaced HDMI 4 in browser probe 0.1.5. Verify an app-owned secondary scaler at startup, or show that moving the first source to `SUB0` frees `MAIN` before the second starts. [Device result](docs/device-tests/c1-journal.md#hdmi-4-and-live-tuner-playback) · [Secondary allocation](docs/research/c1-hdmi-interface-map.md#tuner-secondary-allocation) |
+| Two built-in TV channels | The paired offline checks preserved the first allocation and yielded no second decoder grant. Identify an app-owned path that attaches the second service's demux to the tuned front end and acquires its own decoder and output. [DVB attachment checks](docs/research/c1-hdmi-interface-map.md#dvb-attachment-candidates) |
+| HDMI 4 + silent local clip | Native 0.1.13 passed its idle lifecycle check. The playback preflight found zero coverage for the four HDMI methods. This local-media control is deferred. [Device result](docs/device-tests/c1-journal.md#hdmi-4-and-silent-clip-playback-preflight) |
 
-**Parked.** HDMI 2 is the roadmap milestone and has its own [paused first-scaler design](docs/device-tests/archive/c1-dual-hdmi-design.md). The [stock HDMI 1 receiver window](docs/device-tests/c1-journal.md#stock-hdmi-1-receiver-grant-window) closed with an unknown index. The captured app-specific UTP grant awaits cleanup. First-scaler assignment for stock HDMI 2, independent receiver release, audio ownership and sustained stability remain unknown. [Grant disposition](docs/research/archive/c1-hdmi-admission-2026-11-14.md) · [Source combinations](docs/research/c1-hdmi-evidence-ledger.md#source-combinations)
+## Verified controls and artifacts
+
+- Native **0.1.12** is the retained single-input control. It showed moving
+  physical HDMI 4 with sound and restored normal viewing on exit. The same
+  app ID now has **0.1.13** installed, tested for idle lifecycle.
+  [First picture](docs/device-tests/c1-journal.md#0112-physical-hdmi-4--moving-picture-and-sound) · [Installed native probe](docs/device-tests/c1-journal.md#hdmi-4-and-silent-clip-0113-lifecycle)
+- Browser preview **0.1.0** also showed HDMI 4 with sound. The separately
+  installed browser pair probe **0.1.5** was tested with the tuner.
+  [Browser builds and results](docs/build.md#browser-hdmi-preview)
+- The stock HDMI 1 receiver capture ended with an unknown receiver index.
+  [Receiver receipt](docs/device-tests/c1-journal.md#stock-hdmi-1-receiver-grant-window)

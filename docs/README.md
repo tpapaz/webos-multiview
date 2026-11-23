@@ -1,31 +1,42 @@
 # Documentation index
 
-Read [Status](../STATUS.md) for today's task and the [research history](research/c1-hdmi-evidence-ledger.md#research-history) for the decisions that led to it.
+Start with [Status](../STATUS.md) for the C1 results, parked routes and
+reopening conditions. The [roadmap](../ROADMAP.md) defines the milestones.
+Before preparing an experiment, read the [device plan](device-tests/current-plan.md),
+[contributor rules](../AGENTS.md), [safety rules](safety.md),
+[scope decision](decisions/0003-close-idle-work-resume-hdmi.md) and
+[build guide](build.md).
 
 | Document | Purpose |
 |---|---|
-| [Status](../STATUS.md) | Verified first-picture result, limits, current artifact and one next task. |
-| [Roadmap](../ROADMAP.md) | Product phases and acceptance gates. |
-| [Prototype contract](../native/phase2-hdmi-candidate-0.1.12/README.md) | Current actions, native/report/witness/runner contract and exact artifacts. |
-| [Research map](research/c1-hdmi-interface-map.md) | HDMI input selection, connector ownership, secondary display routing and receiver allocation in the saved C1 firmware. |
-| [Evidence ledger](research/c1-hdmi-evidence-ledger.md) | Chronological path decisions, reasons for switching or pausing, and parked alternatives. |
-| [Device journal](device-tests/c1-journal.md) | Actual lifecycle/physical outcomes and evidence hashes; concise earlier summary. |
-| [Device disposition](device-tests/current-plan.md) | Active mixed-source procedure, physical HDMI pair attempts, stop rules and alternatives. |
-| [Build guide](build.md) | Host tests, local native builds, registration helper and browser probe packages. |
-| [Layout/retention](repository-layout.md) | Shared production code, optional controls and private evidence. |
-| [Policy contract](../native/phase2-hdmi-window/policy/README.md) | Exact own-app/four-method grant, checker and saved-map semantics. |
-| [Contributor rules](../AGENTS.md) / [safety](safety.md) | Standing owner permission for bounded read-only research, operational safety and privacy. |
-| [Handoff](handoff/hdmi-next-chat.md) | Reading order and continuation conventions. |
+| [Research history](research/c1-hdmi-evidence-ledger.md#research-history) | What each route tried and why it progressed or stopped. |
+| [Firmware map](research/c1-hdmi-interface-map.md) | Static and offline evidence for receiver allocation, HDMI ownership, secondary routing and built-in tuner playback. |
+| [Device journal](device-tests/c1-journal.md) | Observed TV behavior, restoration and receipt hashes. |
+| [Build guide](build.md) | Host checks, native builds and local packages. |
+
+## Repository layout
+
+| Area | Entry points |
+|---|---|
+| Native HDMI 4 control | [0.1.12 contract](../native/phase2-hdmi-candidate-0.1.12/README.md), shared session in `native/phase2-hdmi-picture`, SDL/LS2 adapter in `native/phase2-hdmi-dispatch`, bounded dispatch in `native/phase2-context-dispatch` and the [four-method UTP policy](../native/phase2-hdmi-window/policy/README.md). |
+| Browser probes | [Single HDMI preview](../apps/phase2-hdmi-preview/preview.js) and [HDMI pair and tuner probe](../apps/phase2-hdmi-pair/pair.js). [Packaging and tests](build.md#browser-hdmi-preview) |
+| Native research probes | [HDMI 1 ownership core](../native/phase2-media-registration/ownership.cpp) and [HDMI 4 plus silent clip probe](../native/phase2-hdmi-clip/main.cpp). [Ownership build](build.md#hdmi-1-ownership-probe-core) · [Clip build](build.md#hdmi-4-and-silent-clip-probe) |
+| Host tools | `scripts/physical-candidate-*` and `scripts/run-physical-candidate.cjs` own the report, evidence checks and runner. [Bounded monitor](../scripts/monitor-stock-hdmi1.cjs) · [Receiver decoder](../scripts/hdmi-receiver-decoder.cjs) · [Host checks](build.md#offline-host-checks) |
+| Passive and local-media controls | `native/probe`, `native/phase1*`, `apps/probe-ui` and `apps/phase1-browser` contain controls and shared assets. [Local playback evidence](research/c1-smp-ndl-resource-path.md) |
 
 ## Keeping the record current
 
-At the end of each task, update the record that owns its result. For a TV run, put observations and receipts in the journal. For an offline finding, put the evidence in the research map. When a route starts, pauses, resumes or closes, revise its history row with the reason and a link. Update Status in the same change whenever the current task, installed artifact or readiness changes. Revise the device procedure when the next test changes. Keep the roadmap for milestone or scope changes.
+Put TV observations and receipt hashes in the journal and offline findings in
+the firmware map. Compare private IDs only within one continuously observed
+run. Update the history row when a route starts, pauses, resumes or closes.
+Update Status when the current result, installed artifact or reopening
+condition changes. Keep procedures in the device plan and milestone changes
+in the roadmap.
 
 ## Technical references
 
 - [Receiver decoder](research/c1-receiver-decoder.md) covers offline input, redaction, acceptance tests and the completed monitor procedure.
 - [Parked HDMI 1 + HDMI 2 design](device-tests/archive/c1-dual-hdmi-design.md) preserves the first-scaler checker and proposed two-input procedure.
-
 - [Prior art/licensing](research/prior-art.md) and [pinned source lock](research/source-lock.json).
 - [Browser architectures](research/webos-browser-architecture.md); Glasshouse's
   [HDMI source](research/c1-hdmi-interface-map.md#glasshouse-preview-source-and-owner-observation)
@@ -49,8 +60,16 @@ At the end of each task, update the record that owns its result. For a TV run, p
 - [Earlier device records](device-tests/archive) preserve Phase0/1 and specific
   preparation/lifecycle observations. They are references, not an execution queue.
 
-Full research notes, raw firmware and assembly, private reports, and
-build receipts remain local under ignored build. Current IPK is under dist.
-Do not publish credentials, raw identifiers or vendor logs; do not refetch saved
-inputs. Superseded source is absent from the active tree; local cleanup snapshots
-provide rollback without maintaining historical runtime implementations.
+## Local evidence and retention
+
+Keep tested IPKs under ignored `dist/` and original reports, hashes, firmware,
+provider libraries and frozen inputs under ignored `build/`. The saved DVB
+runner also lives there with its inputs and receipts. Git carries the
+redacted findings, source and host checks. [DVB receipts](research/c1-hdmi-interface-map.md#dvb-attachment-candidates) · [Publication rules](safety.md#public-repository)
+
+Before retiring source, check imports, package inputs and acceptance tests.
+Saved collector verifiers still reference their original paths. Preserve
+current packages, pinned dependencies and original receipts when removing
+superseded scratch outputs. Earlier source snapshots and cleanup manifests
+are in `build/milestone-consolidation-20261115-001/` and
+`build/repo-consolidation-20261117-001/`.

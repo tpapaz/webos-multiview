@@ -2,13 +2,51 @@
 
 [Current status](../../STATUS.md) · [Trial receipts](c1-journal.md) · [Route history](../research/c1-hdmi-evidence-ledger.md#research-history)
 
-## HDMI 1 and a live TV channel
+All pair trials use a single foreground MultiView app with a separate pane for
+each source. Success requires independently advancing pictures in those panes
+during the same interval and continued playback in the remaining pane when
+one source closes.
 
-**Current task — offline feasibility.** Use laptop HDMI 1 as the known moving primary picture and one already-tuned, receivable antenna or cable channel as the proposed secondary picture. An internet channel uses a different playback path. [Tuner preview evidence](../research/c1-hdmi-interface-map.md#built-in-tuner-preview)
+The [C1 readiness table](../../STATUS.md#c1-trial-readiness) lists the
+evidence needed to reopen each parked trial.
 
-- **Before a TV run**, trace the C1 browser preview open, window assignment and close. Require an app-owned tuner session that can target the secondary surface and release only its own session. A MIME string, two HTML rectangles or a successful play callback alone leaves this unresolved.
-- **If those checks pass**, prepare one separately scoped trial with two nonoverlapping windows. First confirm HDMI 1 motion, then observe the channel and laptop advancing together. Close only the tuner preview and confirm HDMI 1 keeps moving. Exit and confirm normal viewing, sound and remote operation.
-- **Stop** if the preview replaces HDMI 1, either picture freezes, the channel changes unexpectedly or teardown is ambiguous. If ownership or placement cannot be established offline, park this combination and use the [clip workaround](#workarounds-if-native-ownership-ends-here).
+## Two built-in TV channels
+
+**Parked on C1.** The offline allocator rejected a second ordinary DVB
+watch at tuner allocation. The dual-stream purpose and legacy PiP caller
+did not attach a second DVB service. Reopen with evidence of an app-owned
+watch session that shares the tuner and acquires a distinct demux, decoder
+and secondary output. Use two distinct free-to-air services from the same
+multiplex. Verify both panes advance, closing the second leaves the first
+live, and normal viewing returns after exit.
+Correlate tuning status with each owned `broadcastId` and confirm a separate
+decoder grant for each full backend pipeline ID. The global current-video
+status covers the active broadcast.
+[DVB attachment checks](../research/c1-hdmi-interface-map.md#dvb-attachment-candidates)
+
+## HDMI 4 and a live TV channel
+
+**Default browser trial complete.** HDMI 4 moved first, the live channel
+replaced it, and HDMI 4 resumed when the tuner closed. The scheduled app
+close and normal viewing were confirmed. **Active trials are paused.** Reopen
+when a route under the app's own identity can acquire the secondary scaler
+for either source. A move after startup would need to show the same owned
+session advancing on `SUB0` and release of `MAIN_SCALER` before the second
+source opens. The read-only snapshot showed the stock tuner on `MAIN` and
+`SUB0` idle. The examined tuner and HDMI selectors have no group coverage
+for the probes. [Playback result](c1-journal.md#hdmi-4-and-live-tuner-playback) · [Tuner evidence](../research/c1-hdmi-interface-map.md#tuner-secondary-allocation) · [HDMI 4 evidence](../research/c1-hdmi-interface-map.md#hdmi-4-secondary-allocation)
+
+The eventual trial would pair the PS5 through the physical HDMI 4 jack with an
+already-tuned antenna or cable channel from the C1's built-in tuner. Pass when
+both pictures advance together and HDMI 4 keeps moving
+after the tuner closes. Stop if the preview replaces HDMI 4, either picture
+freezes, the channel changes unexpectedly or teardown is ambiguous.
+
+## HDMI 4 and a silent local clip
+
+**Deferred fallback.** The installed 0.1.13 probe passed idle setup and
+cleanup. Its playback preflight found zero coverage for the four HDMI methods
+and submitted zero launches. [Playback preflight](c1-journal.md#hdmi-4-and-silent-clip-playback-preflight) · [Probe and worker design](../research/c1-smp-ndl-resource-path.md#isolating-clip-playback-from-hdmi-cleanup)
 
 ## HDMI 4 and HDMI 1
 
@@ -27,12 +65,6 @@
 2. **Test ownership once if preparation succeeds.** This would be a separately scoped single-input trial. Pass only with a moving laptop picture and one ordered receipt joining the app's fresh parent registration, backend open, port-1 selection, video child's registration and accepted owner reply for that child. Close the owned session while the parent is alive, then release the parent and confirm restoration. A denial, missing join, failed picture or inconclusive cleanup ends this version of the experiment. A repeat needs a named change that addresses the recorded failure.
 3. **Test the move before starting HDMI 4.** Only after ownership passes and an app-permitted selector uniquely targets that video path, observe the same HDMI 1 context move from MAIN to SUB0, MAIN clear and the laptop resume motion. A setter acknowledgment alone is insufficient. If the move fails, stop there. [Move and observation contract](../research/c1-hdmi-interface-map.md#move-hdmi-1-to-sub0-before-opening-hdmi-4)
 4. **Test overlap once after the move passes.** Start HDMI 4 on MAIN, verify the pass condition above, close each owned session and record restoration. A freeze or handoff closes this configuration. Record which gate failed in the journal before considering a different mechanism.
-
-### Workarounds if native ownership ends here
-
-- **Controlled alternative if the tuner route stalls.** The [freshness review](../research/c1-hdmi-interface-map.md#does-the-port-1-open-reply-establish-a-fresh-session) leaves the native probe parked. Prepare the HDMI 4 + silent clip test offline. Inject stalls in clip startup, feed and unload and verify that HDMI can still submit stop and close within its existing deadlines. A stalled clip leaves its cleanup uncertain. If that check passes and worker teardown is bounded, the first C1 mixed-source trial should show both pictures advancing, then HDMI 4 continuing with sound after clip close. [Timing and cleanup constraints](../research/c1-smp-ndl-resource-path.md#isolating-clip-playback-from-hdmi-cleanup)
-- **Use the laptop as the second feed.** Keep the physical HDMI 4 picture and send an owner-selected laptop window over the LAN. A silent local clip on the secondary surface is the smaller coexistence test before adding network transport. HDMI plus that clip, and HDMI plus a laptop stream, both remain untested on this C1. [Mixed-source feasibility](../research/c1-smp-ndl-resource-path.md#hdmi-4-with-a-secondary-local-clip)
-- **Combine the two cables upstream.** A two-input HDMI multiviewer can compose one output for the C1. The external device controls the layout. This solves the two-picture viewing goal independently of C1 connector ownership. [External multiviewer reference](../research/c1-hdmi-evidence-ledger.md#remaining-options)
 
 ## TV readiness
 
@@ -58,7 +90,11 @@ Keep live research within the [standing read-only scope](../safety.md#standing-r
 
 ## Browser HDMI 4 preview
 
-All browser trial scopes are spent. Preview 0.1.0 and pair 0.1.3 were last confirmed closed. The one-shot backup closes were observed during those specific trials. Behavior during a media hang and physical release remain unknown. Any future move or pair trial needs evidence identifying the app-owned connector, an observable move, reviewed cleanup and fresh owner scope. [Pair result](c1-journal.md#browser-hdmi-pair--40-second-retry) · [Last HDMI 1 trace](c1-journal.md#browser-hdmi-1-connector-ownership)
+All completed browser trial scopes are spent. Preview 0.1.0 and the browser
+pair trials closed, including the 0.1.5 tuner trial. Behavior during a media
+hang and physical release remain unknown. A new pair trial needs an evidenced
+change to placement, reviewed cleanup and fresh owner scope.
+[HDMI pair result](c1-journal.md#browser-hdmi-pair--40-second-retry) · [Tuner result](c1-journal.md#hdmi-4-and-live-tuner-playback)
 
 ## Active experiments and restoration
 
@@ -68,7 +104,7 @@ Acquisition, app install/launch, permission/policy changes, service restarts and
 power actions are outside passive permission. Any future active proposal must
 retain the [0.1.12 contract](../../native/phase2-hdmi-candidate-0.1.12/README.md):
 both strict three-second guards, issue+17-second progression, one-second focus,
-32-event bound, native22-second immediate-exit alarm,100 ms worker sub-bounds,
+32-event bound, native22-second immediate-exit alarm,100 ms dispatch and witness-arm sub-bounds,
 issue+25-second witness, two30-second connection caps and dispatch+27-second
 collection; app report cap2 KiB, witness256 bytes. These are preserved constraints,
 not a queued launch or authorization to replay an old runner.

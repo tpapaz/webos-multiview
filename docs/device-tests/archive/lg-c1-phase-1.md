@@ -27,7 +27,7 @@ No further idle or endurance run is scheduled. Phase 1 audio, wider geometry,
 final-build repeatability and the interrupted long recovery remain deferred.
 
 Next is Phase 2 read-only HDMI discovery, with only one connected source.
-Use the [handoff](../../handoff/hdmi-next-chat.md) and
+Use the [documentation index](../../README.md) and
 [scope decision](../../decisions/0003-close-idle-work-resume-hdmi.md).
 The journal below preserves actual runs, builds, hashes and human observations.
 Earlier “next test” statements are historical, not renewed instructions.

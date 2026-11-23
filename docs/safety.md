@@ -41,10 +41,11 @@ Those are outside read-only scope. Keep the device boundaries below; do not
 trade operational safety for speed. The current plan owns practical read bounds
 and the single next research task, without adding another per-read approval gate.
 
-Permission coverage is not actual UTP admission. Installed-file verification is
-not app execution. The retained one-app/four-method grant must be reported as
-loaded pending separate cleanup, never as revoked. Do not repeat activation,
-removal, mode repair or a boot because an archived instruction says to do so.
+Report permission coverage, actual admission and app execution separately.
+Use the latest observed C1 disposition in [Status](../STATUS.md) for the
+one-app/four-method grant. Archive entries record prior observations. Do not
+repeat activation, removal, mode repair or a boot because an archived
+instruction says to do so.
 
 Acquisition is active: explicit picture mode opens a hardware session/selects
 HDMI 4 and can affect existing viewing. Admission-only modes make permission

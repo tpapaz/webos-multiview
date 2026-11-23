@@ -3,57 +3,47 @@
 > **Experimental prototype for research and controlled testing only.**
 > [Device safety and disclaimer](#device-safety-and-disclaimer)
 
-webOS MultiView is a root-assisted homebrew research project for LG TVs. The
-long-term goal is to show **several independently live sources at once** in
-movable windows, including layouts with more than two sources. A layout could
-combine HDMI inputs, live TV, another webOS app and a network stream in
-picture-in-picture, split-screen or a grid. The available combinations will
-depend on the TV model and firmware.
+webOS MultiView is an experimental homebrew project for LG TVs. The goal is
+a standalone foreground app where you choose two or more of the TV's inputs
+and watch them advance independently in a split-screen, grid or inset layout.
+Research starts with physical HDMI and the built-in tuner.
 
 ## What works today
 
-- **Verified on an LG OLED C1 running firmware 03.53.45.** Prototype 0.1.12
-  displayed continuously moving video from physical HDMI 4 in a fixed, centered
-  app window with audible sound during one eight-second trial. The app exited
-  and normal picture, sound and remote control returned. [Device test and evidence](docs/device-tests/c1-journal.md#0112-physical-hdmi-4--moving-picture-and-sound)
-- **HDMI 4 and HDMI 1 played in sequence on the C1.** In the standalone browser
-  probe, the laptop on HDMI 1 took over the HDMI 4 picture. HDMI 4 resumed when
-  the probe closed HDMI 1. The pair experiment is parked because the app cannot
-  yet tell whether opening HDMI 1 created a session it owns or reused an existing
-  one. [Pair trial](docs/device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry) · [Ownership finding](docs/research/c1-hdmi-interface-map.md#does-the-port-1-open-reply-establish-a-fresh-session)
+On the **LG OLED55C14LB running firmware 03.53.45**, native probe 0.1.12
+showed moving HDMI 4 with sound in an app window for eight seconds.
+Normal picture, sound and remote control returned on exit.
+[Device test](docs/device-tests/c1-journal.md#0112-physical-hdmi-4--moving-picture-and-sound)
 
 ## Which sources play together?
 
-On the **LG OLED C1, firmware 03.53.45**, a pair passes when both pictures
-visibly advance at the same time. Each result applies to the setup tested.
+The matrix records C1 device trials by input type. A pass means both pictures
+advanced together. A fail means the tested setup did not achieve overlap.
 
 ✅ **Pass** · ❌ **Fail** · **—** Untested
 
 | Source type | HDMI | Live TV (tuner) | Local clip | Network video | webOS app |
 |:---|:---:|:---:|:---:|:---:|:---:|
-| **HDMI** | ❌ Fail | — | — | — | — |
-| **Live TV (tuner)** | — | — | — | — | — |
+| **HDMI** | ❌ Fail | ❌ Fail | — | — | — |
+| **Live TV (tuner)** | ❌ Fail | — | — | — | — |
 | **Local clip** | — | — | ✅ Pass | — | — |
 | **Network video** | — | — | — | — | — |
 | **webOS app** | — | — | — | — | — |
 
-- **HDMI + HDMI** took turns in the browser probe. HDMI 1 replaced HDMI 4, which resumed after HDMI 1 closed. Other HDMI pairs or routes remain unverified. [HDMI pair trial](docs/device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry)
+- **HDMI + HDMI** took turns in the browser probe. HDMI 4 resumed after HDMI 1 closed. [HDMI pair trial](docs/device-tests/c1-journal.md#browser-hdmi-pair--40-second-retry)
+- **HDMI + live TV** took turns in the browser probe. HDMI 4 resumed after the tuner preview closed. [Tuner playback trial](docs/device-tests/c1-journal.md#hdmi-4-and-live-tuner-playback)
 - **Local clip + local clip** briefly played in separate windows with both pictures moving. Audio ownership and sustained playback remain open. [Local clip trial](docs/device-tests/c1-journal.md#phase-1)
 
-Network video includes IPTV. Three or more sources need their own trial even when every pair plays together. [Source combinations](docs/research/c1-hdmi-evidence-ledger.md#source-combinations)
+Network video includes IPTV. Three or more sources require their own trial.
+[Source combinations](docs/research/c1-hdmi-evidence-ledger.md#source-combinations)
 
-## Next experiment
+## Where Phase 2 stands
 
-**HDMI 1 + a live TV channel is at the offline research stage.** The laptop
-provides a known moving picture on HDMI 1. Before a C1 trial, we need to
-establish whether the app can open an already-tuned antenna or cable channel
-in a second window and close that preview independently. A trial passes only
-if both pictures advance together and HDMI 1 keeps moving after the preview
-closes. [Current status](STATUS.md) · [Tuner experiment](docs/device-tests/current-plan.md#hdmi-1-and-a-live-tv-channel)
-
-The primary hardware milestone remains **independently live HDMI 1 + HDMI 2**.
-Simultaneous physical HDMI playback on the C1 is still unverified.
-[Phase 2 roadmap](ROADMAP.md#phase-2-route-to-two-pictures)
+The hardware milestone is **independently live HDMI 1 + HDMI 2**. C1 pair
+trials are parked pending evidence of a second app-owned playback path.
+For two live TV channels, the offline allocator kept the first channel's
+allocation and granted no second decoder.
+[Trial reopening conditions](STATUS.md#c1-trial-readiness) · [Roadmap](ROADMAP.md#phase-2-route-to-two-pictures)
 
 ## Concept layouts
 
@@ -66,12 +56,9 @@ still unverified on the TV.
 
 ## Run the host checks
 
-The tested `0.1.12` IPK is a local research artifact under ignored `dist/`.
-A fresh checkout contains the source and host checks. Native builds use an
-existing webOS SDK and retained device libraries. [Build and package details](docs/build.md)
-
 Run these commands from the repository root in PowerShell. The quick start
-was verified with Node.js 24 and npm 11.
+was verified with Node.js 24 and npm 11. The monitor tests use Git for Windows
+Bash and AWK.
 
 ```powershell
 npm ci
@@ -79,26 +66,15 @@ npm test
 npm run lint
 ```
 
-These checks run offline after dependency installation. The tests exercise the
-native prototype's launch rules, both browser HDMI probes, cleanup and evidence
-reporting with simulated transports. Synthetic TV resource manager (TVRM)
-exchanges exercise the offline receiver decoder. Lint checks JavaScript and JSON syntax,
-Markdown links, source references and policy consistency. The device runner
-requires retained private files. [Native checks and build guide](docs/build.md)
+The tests run offline after dependency installation. Native builds use the
+webOS SDK and retained device libraries. Tested IPKs live under local
+`dist/`. [Build and package details](docs/build.md)
 
 ## Follow or contribute to the research
 
-For the progression from the native HDMI prototype to the Glasshouse-style JS probe, connector ownership and receiver allocation, read the [research history](docs/research/c1-hdmi-evidence-ledger.md#research-history). Each stage records what ran on the C1, why the route changed, and the evidence behind that decision.
-
-- Read the [current status](STATUS.md) for the next task and the [roadmap](ROADMAP.md)
-  for the planned milestones.
-- Find the app entry point and report format in the [prototype contract](native/phase2-hdmi-candidate-0.1.12/README.md).
-  The [repository layout](docs/repository-layout.md) maps the shared native code
-  and host runner.
-- Trace the HDMI path in the [C1 research map](docs/research/c1-hdmi-interface-map.md)
-  and find prior results in the [documentation index](docs/README.md).
-- Review the [contributor rules](AGENTS.md) and [device safety](docs/safety.md)
-  before proposing changes or experiments.
+- Find the active source, tests and artifact rules in the [documentation index](docs/README.md).
+- See what was tried, what worked and why each investigation stopped in the [research history](docs/research/c1-hdmi-evidence-ledger.md#research-history).
+- Review the [contributor rules](AGENTS.md) and [device safety](docs/safety.md) before a TV experiment.
 
 ## Device safety and disclaimer
 
